@@ -1,0 +1,18 @@
+export const commonMessages = {
+  "name.required": "o nome é obrigatório",
+  "first_name.required": "o nome é obrigatório",
+  "last_name.required": "o sobrenome é obrigatório",
+  "email.required": "o e-mail é obrigatório",
+  "email.unique": "o e-mail informado já está em uso",
+  "document.required": "o CPF é obrigatório",
+  "document.unique": "o CPF informado já está em uso",
+  "phone.required": "o telefone é obrigatório",
+  "phone.unique": "o telefone informado já está em uso",
+  "birthday.required": "a data de nascimento é obrigatória",
+  "birthday.date": "a data de nascimento informada não é válida",
+  "password.required": "A senha é obrigatória",
+  "password_confirmation": "Confirme a nova senha.",
+  "password_confirmation.confirmed": "As senhas não conferem.",
+  "name.unique": "o Nome informado já está em uso",
+  "slug.unique": "o Slug informado já está em uso",
+};

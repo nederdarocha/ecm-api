@@ -1,0 +1,54 @@
+###
+# @name login
+POST http://localhost:3333/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "admin@admin.com",
+  "password": "secret"
+}
+
+###
+@JTW = {{login.response.body.$.token}}
+
+###
+POST http://localhost:3333/type-options HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+{
+  "name": "Material"
+}
+
+###
+GET http://localhost:3333/type-options HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+
+###
+PUT http://localhost:3333/type-options/25d33603-27ad-4e26-9efd-772bbe7c6ad7 HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+{
+  "name": "Acabamento"
+}
+
+###
+POST http://localhost:3333/products HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+{
+  "name": "Material"
+}
+
+###
+PUT http://localhost:3333/products/8ce05e65-9611-4241-b734-30e412bd537b HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+{
+  "name": "Cadeira IaIá"
+}

@@ -1,0 +1,24 @@
+{
+  "cSpell.words": ["adonisjs", "extnames", "loadsh", "preloads", "Sahfe", "uids", "unaccent"],
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#7669dd",
+    "activityBar.activeBorder": "#e7a097",
+    "activityBar.background": "#7669dd",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#e7a097",
+    "activityBarBadge.foreground": "#15202b",
+    "sash.hoverBorder": "#7669dd",
+    "statusBar.background": "#503fd4",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#7669dd",
+    "statusBarItem.remoteBackground": "#503fd4",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#503fd4",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#503fd499",
+    "titleBar.inactiveForeground": "#e7e7e799",
+    "commandCenter.border": "#e7e7e799"
+  },
+  "peacock.color": "#503FD4"
+}

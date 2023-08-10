@@ -1,0 +1,16 @@
+@layout('emails/layout')
+
+@section('body')
+  <p>Seja bem-vindo(a), {{ name }}!</p>
+  <p>Seu cadastro está quase pronto.</p>
+  <p>
+    Para criar uma senha segura será necessário:<br/>
+    - conter no mínimo 6(seis) caracteres; e<br/>
+    - combinar letras(maíusculas e minúsculas), números e caracteres especiais($, &, @, #).<br />
+  </p>
+  <p>Click no botão abaixo para criar sua senha de acesso.</p>
+  <a href="{{ url }}" target="_blank" class="button">Criar senha</a>
+
+  <p>Caso o botão não funcione você poderá copiar o link abaixo e colar no seu navegador</p>
+  <small>{{ url }}</small>
+@end

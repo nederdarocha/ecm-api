@@ -1,0 +1,28 @@
+###
+# @name login
+POST http://localhost:3333/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "admin@admin.com",
+  "password": "secret"
+}
+
+###
+@JTW = {{login.response.body.$.token}}
+
+###
+# @name avatar
+POST http://localhost:3333/files
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+Authorization: Bearer {{JTW}}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"
+
+field-value
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="avatar.png"
+
+< ./files/avatar.png
+--WebAppBoundary--

@@ -1,0 +1,49 @@
+###
+# @name login
+POST http://localhost:3333/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "admin@admin.com",
+  "password": "secret"
+}
+
+###
+@JTW = {{login.response.body.$.token}}
+
+###
+# @name list-all-customers
+GET http://localhost:3333/customers?page=1&per_page=10&filter= HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+###
+# @name show-customers
+GET http://localhost:3333/customers/7a30b5d0-269b-46ff-af2a-eb6cb96ff43c HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+###
+# @name create customer
+POST http://localhost:3333/customers
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+{
+  "name": "Amanda",
+  "document": "24220610014"
+}
+
+
+###
+# @name updated customer
+PUT http://localhost:3333/customers/7a30b5d0-269b-46ff-af2a-eb6cb96ff43c
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+{
+  "name": "Amanda",
+  "document": "24220610014",
+  "email": "amanda@bento.dev.com",
+  "phone":"21996381097"
+}

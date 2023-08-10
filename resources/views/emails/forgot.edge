@@ -1,0 +1,26 @@
+@layout('emails/layout')
+
+@section('body')
+  <p>Olá, {{ name }}.</p>
+  <p>
+    Você solicitou a recuperação da sua senha.
+  </p>
+  <p>
+    Para criar uma senha segura será necessário:<br/>
+    - conter no mínimo 6(seis) caracteres; e<br/>
+    - combinar letras(maíusculas e minúsculas), números e caracteres especiais($, &, @, #).<br />
+  </p>
+  <p>Click no botão abaixo para criar sua senha de acesso.</p>
+  <p>
+    <a href="{{url}}" target="_blank" style="text-decoration: none; color: #fff; font-weight: 400; min-width: 200px; padding: 8px 16px; border-radius: 4px; background-color: #4285F4;" >
+      Criar nova senha
+    </a>
+  </p>
+
+  <p>Caso o botão não funcione você poderá copiar o link abaixo e colar no seu navegador</p>
+  <small>{{ url }}</small>
+  <p>
+    <br />
+    Caso não tenha sido você que fez essa solicitação ignore este e-mail.
+  </p>
+@end

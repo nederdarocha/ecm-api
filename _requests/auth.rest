@@ -1,0 +1,43 @@
+###
+# @name login
+POST http://localhost:3333/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "admin@admin.com",
+  "password": "secret"
+}
+
+###
+@JTW = {{login.response.body.$.token}}
+@REFRESH_TOKEN = {{login.response.body.$.refreshToken}}
+
+###
+# @name forgot
+POST http://localhost:3333/auth/forgot HTTP/1.1
+content-type: application/json
+
+{
+  "email": "admin@admin.com",
+  "redirect_url": "http://127.0.0.1:3000"
+}
+
+###
+# @name refresh
+POST http://localhost:3333/auth/refresh HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+{
+  "refreshToken":  "{{REFRESH_TOKEN}}"
+}
+
+###
+# @name logout
+POST http://localhost:3333/auth/logout HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+{
+  "refreshToken": "{{REFRESH_TOKEN}}"
+}

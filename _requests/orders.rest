@@ -1,0 +1,21 @@
+###
+# @name login
+POST http://localhost:3333/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "admin@admin.com",
+  "password": "secret"
+}
+
+###
+@JTW = {{login.response.body.$.token}}
+
+###
+# @name show-order
+GET http://localhost:3333/orders/d4966849-5130-4926-b8b2-6b9196d69e7a HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+
+

@@ -1,0 +1,19 @@
+node_modules
+build
+coverage
+
+.DS_STORE
+.env
+tmp
+refresh.sh
+
+# Docker
+.docker/*
+.docker/dbdata
+!.docker/entrypoint.sh
+!.docker/postgres/Dockerfile
+!.docker/postgres
+
+*.yaml
+*.zip
+*.sh

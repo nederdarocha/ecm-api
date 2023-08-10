@@ -1,0 +1,57 @@
+###
+# @name login
+POST http://localhost:3333/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "email": "admin@admin.com",
+  "password": "secret"
+}
+
+###
+@JTW = {{login.response.body.$.token}}
+
+###
+# @name list-all-addresses
+GET http://localhost:3333/addresses?page=1&per_page=10&filter= HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+###
+# @name show-addresses
+GET http://localhost:3333/addresses/705033a9-4606-469f-bc2c-da7b992bcab0 HTTP/1.1
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+###
+# @name create customer
+POST http://localhost:3333/addresses
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+{
+  "name": "Casa",
+  "favorite": true
+}
+
+
+###
+# @name updated customer
+PUT http://localhost:3333/addresses/f82ed1c6-7393-4d79-b8e3-1cbe99e892a2
+content-type: application/json
+Authorization: Bearer {{JTW}}
+
+{
+  "name": "Casa",
+  "favorite": true,
+  "street": null,
+  "number": null,
+  "complement": null,
+  "neighborhood": null,
+  "city": null,
+  "state": null,
+  "country": null,
+  "reference": null,
+  "latitude": null,
+  "longitude": null,
+}
