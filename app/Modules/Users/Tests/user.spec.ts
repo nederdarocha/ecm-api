@@ -7,6 +7,7 @@ import { file } from "@ioc:Adonis/Core/Helpers";
 import { UserStoreValidator } from "../Validators";
 import Role from "App/Modules/Auth/Models/Role";
 import Mail from "@ioc:Adonis/Addons/Mail";
+import { tenants } from "Database/seeders/00_Tenants";
 
 const userSchema = new UserStoreValidator();
 type UserAttributes = typeof userSchema.schema.props;
@@ -21,6 +22,7 @@ test.group("users", async (group) => {
   test("should be able to list users", async ({ client }) => {
     const auth = await makeAuth();
     const response = await client.get("users").qs({ filter: "" }).bearerToken(auth.token);
+    if (response.status() !== 200) console.log(response.error);
     response.assertStatus(200);
   });
 
@@ -28,7 +30,7 @@ test.group("users", async (group) => {
     const mailer = Mail.fake();
     const auth = await makeAuth();
     // get role vendedor id
-    const roleIdVendor = await Role.findByOrFail("slug", "vend");
+    const roleIdVendor = await Role.findByOrFail("slug", "assis");
 
     const user: UserAttributes = {
       name: "John doe",

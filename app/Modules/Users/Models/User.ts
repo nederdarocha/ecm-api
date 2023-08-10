@@ -20,6 +20,9 @@ export default class User extends BaseModel {
   public id: string;
 
   @column()
+  public tenant_id: string;
+
+  @column()
   public name: string;
 
   @column()

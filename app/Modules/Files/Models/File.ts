@@ -6,6 +6,9 @@ export default class File extends BaseModel {
   public id: string;
 
   @column()
+  public tenant: string;
+
+  @column()
   public user_id: string;
 
   @column()

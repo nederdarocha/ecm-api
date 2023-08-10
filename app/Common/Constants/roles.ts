@@ -1,8 +1,8 @@
 import { string } from "@ioc:Adonis/Core/Helpers";
 
-export const SYSTEM_ROLES = ["Admin", "Seller", "Reports"] as const;
+export const SYSTEM_ROLES = ["admin", "seller", "reports"] as const;
 
-export type SystemRoles = typeof SYSTEM_ROLES[number];
+export type SystemRoles = (typeof SYSTEM_ROLES)[number];
 
 type Role = {
   name: string;

@@ -3,9 +3,8 @@ import Permission from "App/Modules/Auth/Models/Permission";
 import Role from "App/Modules/Auth/Models/Role";
 
 const roles = [
-  { name: "Administrador", slug: "admin" },
-  { name: "Vendedor", slug: "vend" },
-  { name: "Produção", slug: "prod" },
+  { name: "ADMINISTRADOR", slug: "admin" },
+  { name: "ASSISTENTE", slug: "assis" },
 ];
 
 export default class RoleSeeder extends BaseSeeder {
@@ -17,7 +16,7 @@ export default class RoleSeeder extends BaseSeeder {
     let ids = permissions.map((permission: Permission) => permission.id);
     await role.related("permissions").sync(ids);
 
-    role = await Role.query().where("slug", "prod").firstOrFail();
+    role = await Role.query().where("slug", "assis").firstOrFail();
     permissions = await Permission.query().select("id").whereNot("slug", "iLike", "%user").pojo();
     ids = permissions.map((permission: Permission) => permission.id);
 

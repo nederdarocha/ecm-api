@@ -8,6 +8,7 @@
     "dev": "node ace serve --watch",
     "build": "node ace build --production",
     "start": "node server.js",
+    "test": "node ace test",
     "lint": "eslint . --ext=.ts",
     "lint-fix": "eslint . --ext=.ts --fix",
     "format": "prettier --write ."
@@ -40,7 +41,7 @@
     "@adonisjs/repl": "^3.1.11",
     "@adonisjs/view": "^6.2.0",
     "adonis5-jwt": "^1.1.7",
-    "aws-sdk": "^2.1378.0",
+    "aws-sdk": "^2.1434.0",
     "jsonwebtoken": "^9.0.0",
     "lodash": "^4.17.21",
     "luxon": "^3.3.0",

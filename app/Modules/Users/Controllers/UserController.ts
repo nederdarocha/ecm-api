@@ -33,9 +33,14 @@ export default class UsersController {
       .paginate(page, limit);
   }
 
-  public async store({ request }: HttpContextContract) {
+  public async store({ auth, request }: HttpContextContract) {
     const { role_ids, redirect_url, ...data } = await request.validate(UserStoreValidator);
-    const user = await User.create({ ...data, password: "secret" });
+    const { tenant_id } = auth.user!;
+    const salt = Math.floor(Math.random() * 9) + 1;
+
+    // TODO: criar o salt
+    const user = await User.create({ ...data, tenant_id, password: "secret", salt });
+
     if (role_ids) {
       await user.related("roles").sync(role_ids);
     }

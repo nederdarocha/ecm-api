@@ -35,8 +35,8 @@ export default class AuthController {
   }
 
   public async login({ auth, request }: HttpContextContract) {
+    const { user, password } = await request.validate(LoginValidator);
     try {
-      const { user, password } = await request.validate(LoginValidator);
       const { id, salt } = await User.query()
         .select("id", "salt")
         .where("email", user)

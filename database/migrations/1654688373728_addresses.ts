@@ -6,6 +6,7 @@ export default class Addresses extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
+      table.uuid("tenant_id").references("id").inTable("tenants").notNullable().index();
       table.uuid("user_id").references("id").inTable("users").onDelete("SET NULL");
       table.uuid("owner_id").nullable();
       table.string("name");

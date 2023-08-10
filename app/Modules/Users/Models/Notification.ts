@@ -11,6 +11,9 @@ export default class Notification extends BaseModel {
   public id: string;
 
   @column()
+  public tenant_id: string;
+
+  @column()
   public subject: string;
 
   @column()

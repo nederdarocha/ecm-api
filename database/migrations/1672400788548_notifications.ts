@@ -6,6 +6,7 @@ export default class Notifications extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
+      table.uuid("tenant_id").references("id").inTable("tenants").notNullable().index();
       table.uuid("from_id").references("id").inTable("users").onDelete("SET NULL");
       table.uuid("to_id").references("id").inTable("users").onDelete("SET NULL");
       table.uuid("user_id").references("id").inTable("users").onDelete("SET NULL");

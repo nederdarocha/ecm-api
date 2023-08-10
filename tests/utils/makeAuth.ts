@@ -15,9 +15,9 @@ interface MakeAuth {
   user: User;
 }
 
-export async function makeAuth(email = "admin@admin.com", password = "secret"): Promise<MakeAuth> {
+export async function makeAuth(user = "admin@admin.com", password = "secret"): Promise<MakeAuth> {
   const api = new ApiClient();
-  const response = await api.post("auth/login").json({ email, password });
+  const response = await api.post("auth/login").json({ user, password: password });
 
   return response.body();
 }
