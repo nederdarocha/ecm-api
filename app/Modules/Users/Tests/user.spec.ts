@@ -7,7 +7,6 @@ import { file } from "@ioc:Adonis/Core/Helpers";
 import { UserStoreValidator } from "../Validators";
 import Role from "App/Modules/Auth/Models/Role";
 import Mail from "@ioc:Adonis/Addons/Mail";
-import { tenants } from "Database/seeders/00_Tenants";
 
 const userSchema = new UserStoreValidator();
 type UserAttributes = typeof userSchema.schema.props;
