@@ -12,7 +12,7 @@ export default class UsersSchema extends BaseSchema {
       table.string("email", 255).nullable().index();
       table.string("phone", 50).nullable().index();
       table.string("password", 180).notNullable();
-      table.integer("salt").nullable();
+      table.string("salt").nullable();
       table.string("avatar", 255).nullable();
       table.boolean("status").defaultTo(true);
       table.string("access_token").nullable();

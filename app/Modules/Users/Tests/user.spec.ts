@@ -28,8 +28,8 @@ test.group("users", async (group) => {
   test("should be able to create user", async ({ client, assert }) => {
     const mailer = Mail.fake();
     const auth = await makeAuth();
-    // get role vendedor id
-    const roleIdVendor = await Role.findByOrFail("slug", "assis");
+    // get role supporter id
+    const roleIdSupporter = await Role.findByOrFail("slug", "supp");
 
     const user: UserAttributes = {
       name: "John doe",
@@ -37,7 +37,7 @@ test.group("users", async (group) => {
       phone: "21996381097",
       email: "john@mail.com",
       redirect_url: "app.bento.com",
-      role_ids: [roleIdVendor.id],
+      role_ids: [roleIdSupporter.id],
     };
 
     const response = await client.post("users").json(user).bearerToken(auth.token);

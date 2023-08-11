@@ -4,7 +4,7 @@ import Role from "App/Modules/Auth/Models/Role";
 
 const roles = [
   { name: "ADMINISTRADOR", slug: "admin" },
-  { name: "ASSISTENTE", slug: "assis" },
+  { name: "ASSISTENTE", slug: "supp" },
 ];
 
 export default class RoleSeeder extends BaseSeeder {
@@ -16,7 +16,7 @@ export default class RoleSeeder extends BaseSeeder {
     let ids = permissions.map((permission: Permission) => permission.id);
     await role.related("permissions").sync(ids);
 
-    role = await Role.query().where("slug", "assis").firstOrFail();
+    role = await Role.query().where("slug", "supp").firstOrFail();
     permissions = await Permission.query().select("id").whereNot("slug", "iLike", "%user").pojo();
     ids = permissions.map((permission: Permission) => permission.id);
 

@@ -38,7 +38,7 @@ export default class User extends BaseModel {
   public password: string;
 
   @column({ serializeAs: null })
-  public salt: number;
+  public salt: string;
 
   @column()
   public avatar: string;
