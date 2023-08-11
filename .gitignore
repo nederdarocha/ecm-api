@@ -3,7 +3,6 @@ build
 coverage
 
 .DS_STORE
-.env
 tmp
 refresh.sh
 
@@ -17,3 +16,6 @@ refresh.sh
 *.yaml
 *.zip
 *.sh
+
+.env.test
+.env
