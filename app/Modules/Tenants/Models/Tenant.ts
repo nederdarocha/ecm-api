@@ -10,6 +10,8 @@ export default class Tenant extends BaseModel {
 
   @column()
   public name: string;
+  @column()
+  public url: string;
 
   @column()
   public status: boolean;

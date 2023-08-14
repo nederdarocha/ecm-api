@@ -2,10 +2,10 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import Env from "@ioc:Adonis/Core/Env";
 import { v4 as uuid } from "uuid";
+import { DateTime } from "luxon";
 
 import User from "../../Users/Models/User";
 import {
-  SignInValidator,
   ForgotValidator,
   RefreshValidator,
   LogoutValidator,
@@ -16,6 +16,8 @@ import { AuthService } from "../Services/AuthService";
 
 import UserToken from "App/Modules/Users/Models/UserToken";
 import { BadRequest } from "App/Exceptions";
+import Tenant from "App/Modules/Tenants/Models/Tenant";
+import Database from "@ioc:Adonis/Lucid/Database";
 
 export default class AuthController {
   private service: AuthService;
@@ -24,17 +26,7 @@ export default class AuthController {
     this.service = new AuthService();
   }
 
-  public async signIn({ request, response }: HttpContextContract) {
-    const { phone } = await request.validate(SignInValidator);
-    try {
-      await User.findByOrFail("phone", phone);
-      return response.status(200);
-    } catch (_) {
-      return response.status(204);
-    }
-  }
-
-  public async login({ auth, request }: HttpContextContract) {
+  public async signIn({ auth, request }: HttpContextContract) {
     const { user, password } = await request.validate(LoginValidator);
     try {
       const { id, salt } = await User.query()
@@ -53,15 +45,29 @@ export default class AuthController {
   }
 
   public async forgot({ request, response }: HttpContextContract) {
-    const { email, redirect_url } = await request.validate(ForgotValidator);
+    const { email } = await request.validate(ForgotValidator);
     const message = `Se você forneceu um e-mail cadastrado em breve receberá um e-mail com o link para você criar uma nova senha.`;
 
     try {
       const user = await User.findByOrFail("email", email);
+      const { url } = await Tenant.findByOrFail("id", user.tenant_id);
       const token = uuid();
-      user.related("tokens").create({ token, type: "forgot" });
 
-      // TODO  verificar o tempo do último link enviado para evitar span
+      const isForgotTokenActive = await Database.query()
+        .where("user_id", user.id)
+        .from("user_tokens")
+        .andWhere("expires_at", ">", DateTime.now().toSQL()!)
+        .first();
+
+      if (isForgotTokenActive) {
+        return response.status(400).send({
+          message: `você já solicitou a recuperação para este e-mail. Verifique sua caixa de Spam ou aguarde 60 minutos para uma novo pedido.`,
+          expires_at: isForgotTokenActive.expires_at,
+        });
+      }
+
+      const expiresAt = DateTime.now().plus({ hours: 1 });
+      user.related("tokens").create({ token, type: "forgot", expiresAt });
 
       Mail.send((message) => {
         message
@@ -70,7 +76,7 @@ export default class AuthController {
           .subject(`${Env.get("MAIL_SUBJECT")} - Criar nova senha`)
           .htmlView("emails/forgot", {
             name: user.name,
-            url: `${redirect_url}/${token}`,
+            url: `${url}/auth/reset-password/${token}`,
           });
       });
 
@@ -88,16 +94,21 @@ export default class AuthController {
     const { token, password } = await request.validate(ResetValidator);
 
     try {
-      const userToken = await UserToken.query().preload("user").where("token", token).firstOrFail();
+      const userToken = await UserToken.query()
+        .preload("user")
+        .where("token", token)
+        .andWhere("expires_at", ">", "NOW()")
+        .firstOrFail();
+
       const { user } = userToken;
-      // TODO verificar o tempo de expiração do token
+
       user.password = password;
       await user.save();
       await userToken.delete();
 
       return response.ok({ message: "senha alterada com sucesso." });
     } catch (error) {
-      return response.badRequest({ message: "Link inválido ou expirado" });
+      return response.badRequest({ message: "token inválido ou expirado" });
     }
   }
 
@@ -117,7 +128,7 @@ export default class AuthController {
     return { token: accessToken, refreshToken, expires_at: expiresAt };
   }
 
-  public async logout({ auth, request }: HttpContextContract) {
+  public async signOut({ auth, request }: HttpContextContract) {
     const { refreshToken } = await request.validate(LogoutValidator);
 
     await auth.use("jwt").revoke({

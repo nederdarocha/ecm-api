@@ -1,6 +1,6 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import User from "../Models/User";
-import { AvatarValidator, UserStoreValidator } from "../Validators";
+import { AvatarValidator, UserStoreValidator, UserIndexValidator } from "../Validators";
 import { UserService } from "../Services/UserService";
 import UserUpdateValidator from "../Validators/UserUpdateValidator";
 import { v4 as uuid } from "uuid";
@@ -12,6 +12,10 @@ import Hash from "@ioc:Adonis/Core/Hash";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import Env from "@ioc:Adonis/Core/Env";
 import { getUserAcl } from "App/Common/utils";
+import bcrypt from "bcrypt";
+import { createId } from "@paralleldrive/cuid2";
+import Tenant from "App/Modules/Tenants/Models/Tenant";
+import { DateTime } from "luxon";
 
 export default class UsersController {
   private service: UserService;
@@ -21,32 +25,41 @@ export default class UsersController {
   }
 
   public async index({ paginate, request }: HttpContextContract) {
+    await request.validate(UserIndexValidator);
     const { page, limit } = paginate;
     const { filter } = request.qs();
 
-    return User.query()
+    const users = await User.query()
       .whereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
       .orWhere("email", "iLike", `%${filter}%`)
-      .orWhere("document", "iLike", `%${filter.replace(/[.|-]/g, "")}%`)
+      .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       .orWhere("phone", "iLike", `%${filter}%`)
       .orderBy("name", "asc")
       .paginate(page, limit);
+
+    return users.serialize({ fields: { omit: ["tenant_id", "user_id"] } });
   }
 
   public async store({ auth, request }: HttpContextContract) {
-    const { role_ids, redirect_url, ...data } = await request.validate(UserStoreValidator);
+    const { role_ids, ...data } = await request.validate(UserStoreValidator);
     const { tenant_id } = auth.user!;
-    const salt = Math.floor(Math.random() * 9) + 1;
-
-    // TODO: criar o salt
-    const user = await User.create({ ...data, tenant_id, password: "secret", salt });
+    const salt = await bcrypt.genSalt(10);
+    const user = await User.create({
+      ...data,
+      tenant_id,
+      password: createId(),
+      salt,
+      user_id: auth.user!.id,
+    });
+    const tenant = await Tenant.findOrFail(tenant_id);
 
     if (role_ids) {
       await user.related("roles").sync(role_ids);
     }
 
     const token = uuid();
-    user.related("tokens").create({ token, type: "forgot" });
+    const expiresAt = DateTime.now().plus({ hours: 24 });
+    user.related("tokens").create({ token, type: "forgot", expiresAt });
 
     Mail.send((message) => {
       message
@@ -55,11 +68,15 @@ export default class UsersController {
         .subject(`${Env.get("MAIL_SUBJECT")} - Bem vindo`)
         .htmlView("emails/welcome", {
           name: user.name,
-          url: `${redirect_url}/${token}`,
+          url: `${tenant.url}/auth/new-password/${token}`,
         });
     });
 
-    return user;
+    return user.serialize({
+      fields: {
+        omit: ["salt", "password", "tenant_id", "user_id", "createdAt", "updatedAt"],
+      },
+    });
   }
 
   public async show({ params }: HttpContextContract) {
@@ -71,7 +88,12 @@ export default class UsersController {
       const acl = await getUserAcl(user.id);
 
       return {
-        user,
+        id: user.id,
+        name: user.name,
+        document: user.document,
+        email: user.email,
+        phone: user.phone,
+        avatar: user.avatar,
         acl,
       };
     }

@@ -7,6 +7,7 @@ export default class UsersSchema extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
       table.string("name").unique().nullable();
+      table.string("url").nullable();
       table.boolean("status").defaultTo(true);
       table.uuid("user_id").nullable();
       /**

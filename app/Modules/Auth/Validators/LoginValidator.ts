@@ -10,7 +10,7 @@ export class LoginValidator {
   });
 
   public messages = {
-    "user.required": "Você precisa informar o telefone",
+    "user.required": "Você precisa informar o e-mail",
     "password.required": "Você precisa informar a senha",
   };
 }

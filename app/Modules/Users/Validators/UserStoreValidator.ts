@@ -14,7 +14,6 @@ export class UserStoreValidator {
   public schema = schema.create({
     name: schema.string({ trim: true }, [rules.required()]),
     role_ids: schema.array([rules.nullable()]).members(schema.string()),
-    redirect_url: schema.string(),
     document: schema.string({ trim: true }, [
       rules.minLength(11),
       rules.maxLength(11),

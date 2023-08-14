@@ -22,17 +22,22 @@ export default Env.rules({
   API_URL: Env.schema.string(),
   APP_URL: Env.schema.string(),
   APP_NAME: Env.schema.string(),
+  USER_PASSWORD: Env.schema.string.optional(),
+  NODE_ENV: Env.schema.enum(["development", "production", "testing", "test"] as const),
+  // jwt
   JWT_PRIVATE_KEY: Env.schema.string(),
   JWT_PUBLIC_KEY: Env.schema.string(),
   JWT_DEFAULT_EXPIRE: Env.schema.string(),
   JWT_REFRESH_TOKEN_EXPIRE: Env.schema.string(),
+  //
   DRIVE_DISK: Env.schema.enum(["local", "s3"] as const),
-  NODE_ENV: Env.schema.enum(["development", "production", "testing", "test"] as const),
+  // aws s3
   S3_KEY: Env.schema.string(),
   S3_SECRET: Env.schema.string(),
   S3_BUCKET: Env.schema.string(),
   S3_REGION: Env.schema.string(),
   S3_ENDPOINT: Env.schema.string.optional(),
+  // mail
   MAIL_DRIVER: Env.schema.enum(["smtp", "ses"] as const),
   MAIL_FROM: Env.schema.string(),
   MAIL_NAME: Env.schema.string(),
@@ -41,8 +46,10 @@ export default Env.rules({
   SMTP_PORT: Env.schema.number(),
   SMTP_USERNAME: Env.schema.string(),
   SMTP_PASSWORD: Env.schema.string(),
+  // aws ses
   SES_ACCESS_KEY: Env.schema.string(),
   SES_ACCESS_SECRET: Env.schema.string(),
   SES_REGION: Env.schema.string(),
+  //
   CACHE_VIEWS: Env.schema.boolean(),
 });

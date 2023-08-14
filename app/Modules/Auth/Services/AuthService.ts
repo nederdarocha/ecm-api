@@ -4,7 +4,6 @@ import Env from "@ioc:Adonis/Core/Env";
 import { DateTime } from "luxon";
 import { v4 as uuid } from "uuid";
 import { BadRequest } from "App/Exceptions";
-import { getUserAcl } from "../../../Common/utils";
 
 import User from "../../Users/Models/User";
 
@@ -12,8 +11,6 @@ type LoginProps = {
   token: string;
   refreshToken: string;
   expires_at: DateTime | undefined;
-  acl: string[];
-  user: { id: string; name: string; email: string; avatar?: string };
 };
 
 export class AuthService {
@@ -43,10 +40,7 @@ export class AuthService {
       const { accessToken, refreshToken, expiresAt } = await auth
         .use("jwt")
         .attempt(user.phone, password, {
-          payload: {
-            phone: user.phone,
-            access_token,
-          },
+          payload: { access_token },
         });
 
       await this.destroyOldRefreshTokens(user.id, refreshToken);
@@ -54,17 +48,13 @@ export class AuthService {
       user.access_token = access_token;
       await user.save();
 
-      const acl = await getUserAcl(user.id);
-
       return {
         token: accessToken,
         refreshToken,
         expires_at: expiresAt,
-        acl,
-        user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar },
       };
     } catch (error) {
-      console.log({ error });
+      if (Env.get("NODE_ENV") === "development") console.log({ error });
       throw new BadRequest("Usuário e/ou Senha inválidos", 400);
     }
   }

@@ -1,12 +1,12 @@
-import { test } from "@japa/runner";
-import Database from "@ioc:Adonis/Lucid/Database";
 import Env from "@ioc:Adonis/Core/Env";
-import { makeAuth } from "Tests/utils";
+import Database from "@ioc:Adonis/Lucid/Database";
 import Drive from "@ioc:Adonis/Core/Drive";
 import { file } from "@ioc:Adonis/Core/Helpers";
-import { UserStoreValidator } from "../Validators";
+import { test } from "@japa/runner";
 import Role from "App/Modules/Auth/Models/Role";
 import Mail from "@ioc:Adonis/Addons/Mail";
+import { getToken, getMe } from "Tests/utils";
+import { UserStoreValidator } from "../Validators";
 
 const userSchema = new UserStoreValidator();
 type UserAttributes = typeof userSchema.schema.props;
@@ -18,17 +18,25 @@ test.group("users", async (group) => {
     return () => Database.rollbackGlobalTransaction();
   });
 
-  test("should be able to list users", async ({ client }) => {
-    const auth = await makeAuth();
-    const response = await client.get("users").qs({ filter: "" }).bearerToken(auth.token);
-    if (response.status() !== 200) console.log(response.error);
+  test("conseguir listar usuários", async ({ client }) => {
+    const token = await getToken();
+    const response = await client
+      .get("users")
+      .qs({ filter: "", page: 1, per_page: 9 })
+      .bearerToken(token);
+    console.log(response.body());
+
     response.assertStatus(200);
+    response.assert?.exists(response.body().data);
+    response.assert?.exists(response.body().meta);
+    response.assert?.notExists(response.body().data[0].password, "password exposta");
+    response.assert?.notExists(response.body().data[0].tenant_id, "tenet_id exposto");
   });
 
-  test("should be able to create user", async ({ client, assert }) => {
+  test("conseguir criar usuário", async ({ client, assert }) => {
     const mailer = Mail.fake();
-    const auth = await makeAuth();
-    // get role supporter id
+    const token = await getToken();
+    // get role supporter
     const roleIdSupporter = await Role.findByOrFail("slug", "supp");
 
     const user: UserAttributes = {
@@ -36,38 +44,36 @@ test.group("users", async (group) => {
       document: "08931946708",
       phone: "21996381097",
       email: "john@mail.com",
-      redirect_url: "app.bento.com",
       role_ids: [roleIdSupporter.id],
     };
 
-    const response = await client.post("users").json(user).bearerToken(auth.token);
+    const response = await client.post("users").json(user).bearerToken(token);
+    response.assertStatus(200);
 
     assert.isTrue(
       mailer.exists({ from: { address: Env.get("MAIL_FROM"), name: Env.get("MAIL_NAME") } })
     );
     assert.isTrue(mailer.exists({ to: [{ address: user.email }] }));
     assert.isTrue(mailer.exists({ subject: `${Env.get("MAIL_SUBJECT")} - Bem vindo` }));
-    assert.isTrue(
-      mailer.exists(
-        (mail) => mail.html!.includes(user.name) && mail.html!.includes(user.redirect_url)
-      )
-    );
+    assert.isTrue(mailer.exists((mail) => mail.html!.includes(user.name)));
 
-    response.assertStatus(200);
-
-    const { redirect_url, role_ids, ..._user } = user;
+    const { role_ids, ..._user } = user;
     response.assertBodyContains(_user);
-    assert.notExists(response.body().password, "Password defined");
+    assert.notExists(response.body().password, "hash password exposta");
+    assert.notExists(response.body().tenant_id, "tenet_id exposto");
+    assert.notExists(response.body().salt, "salt exposto");
   });
 
-  test("should be able to upload avatar", async ({ client, assert }) => {
-    const auth = await makeAuth();
+  test("conseguir o upload avatar", async ({ client, assert }) => {
+    const token = await getToken();
+    const user = await getMe(token);
+
     Drive.fake();
     const fakeAvatar = await file.generatePng("1mb");
     const response = await client
       .post(`/users/avatar`)
-      .bearerToken(auth.token)
-      .fields({ user_id: auth.user.id })
+      .bearerToken(token)
+      .fields({ user_id: user.id })
       .file("file", fakeAvatar.contents, { filename: fakeAvatar.name });
 
     response.assertStatus(200);

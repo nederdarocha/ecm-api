@@ -1,1 +1,2 @@
-export * from "./makeAuth";
+export * from "./getToken";
+export * from "./getMe";

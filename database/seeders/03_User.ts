@@ -1,3 +1,4 @@
+import Env from "@ioc:Adonis/Core/Env";
 import BaseSeeder from "@ioc:Adonis/Lucid/Seeder";
 import { UserFactory } from "Database/factories";
 import Role from "App/Modules/Auth/Models/Role";
@@ -12,7 +13,7 @@ export default class UserSeeder extends BaseSeeder {
         email: "admin@admin.com",
         document: "11111111111",
         phone: "21964276349",
-        password: "secret",
+        password: Env.get("USER_PASSWORD", "secret"),
         salt: await bcrypt.genSalt(10),
       },
       {
@@ -20,7 +21,7 @@ export default class UserSeeder extends BaseSeeder {
         name: "User",
         email: "user@user.com",
         document: "22222222222",
-        password: "secret",
+        password: Env.get("USER_PASSWORD", "secret"),
         salt: await bcrypt.genSalt(10),
       },
     ]).createMany(3);
