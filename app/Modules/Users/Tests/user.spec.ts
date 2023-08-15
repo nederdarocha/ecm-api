@@ -22,7 +22,7 @@ test.group("users", async (group) => {
     const token = await getToken();
     const response = await client
       .get("users")
-      .qs({ filter: "", page: 1, per_page: 9 })
+      .qs({ filter: "", page: 1, perPage: 9 })
       .bearerToken(token);
     console.log(response.body());
 

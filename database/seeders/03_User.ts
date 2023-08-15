@@ -24,7 +24,7 @@ export default class UserSeeder extends BaseSeeder {
         password: Env.get("USER_PASSWORD", "secret"),
         salt: await bcrypt.genSalt(10),
       },
-    ]).createMany(3);
+    ]).createMany(99);
 
     const [roleAdmin, roleProd] = await Role.query().whereIn("slug", ["admin", "supp"]);
     await admin.related("roles").sync([roleAdmin.id, roleProd.id]);

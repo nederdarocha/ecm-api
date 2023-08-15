@@ -1,20 +1,19 @@
-import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext"
+import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 
 export default class Paginate {
   public async handle(ctx: HttpContextContract, next: () => Promise<void>) {
-    const { request } = ctx
+    const { request } = ctx;
 
     if (request.method() === "GET") {
-      const page: number = +request.input("page", 1)
-      const limit: number = +request.input("limit", 0)
-      const perPage: number = +request.input("per_page", 0)
+      const page: number = +request.input("page", 1);
+      const perPage: number = +request.input("perPage", 10);
 
       ctx.paginate = {
         page,
-        limit: limit + perPage,
-      }
+        perPage,
+      };
     }
 
-    await next()
+    await next();
   }
 }
