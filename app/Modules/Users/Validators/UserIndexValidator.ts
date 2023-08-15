@@ -7,7 +7,7 @@ export class UserIndexValidator {
   public schema = schema.create({
     filter: schema.string.optional(),
     page: schema.number(),
-    perPage: schema.number(),
+    per_page: schema.number(),
   });
 
   public messages = {};

@@ -6,11 +6,11 @@ export default class Paginate {
 
     if (request.method() === "GET") {
       const page: number = +request.input("page", 1);
-      const perPage: number = +request.input("perPage", 10);
+      const per_page: number = +request.input("perPage", 10);
 
       ctx.paginate = {
         page,
-        perPage,
+        per_page,
       };
     }
 

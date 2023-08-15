@@ -26,7 +26,7 @@ export default class UsersController {
 
   public async index({ paginate, request }: HttpContextContract) {
     await request.validate(UserIndexValidator);
-    const { page, perPage } = paginate;
+    const { page, per_page } = paginate;
     const { filter } = request.qs();
 
     const users = await User.query()
@@ -35,7 +35,7 @@ export default class UsersController {
       .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       .orWhere("phone", "iLike", `%${filter}%`)
       .orderBy("name", "asc")
-      .paginate(page, perPage);
+      .paginate(page, per_page);
 
     return users.serialize({ fields: { omit: ["tenant_id", "user_id"] } });
   }

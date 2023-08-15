@@ -1,5 +1,5 @@
 declare module "@ioc:Adonis/Core/HttpContext" {
   interface HttpContextContract {
-    paginate: { page: number; perPage: number };
+    paginate: { page: number; per_page: number };
   }
 }
