@@ -34,10 +34,14 @@ export default class UsersController {
       .orWhere("email", "iLike", `%${filter}%`)
       .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       .orWhere("phone", "iLike", `%${filter}%`)
+      .preload("roles", (sq) => sq.select("name").orderBy("name", "asc"))
       .orderBy("name", "asc")
       .paginate(page, per_page);
 
-    return users.serialize({ fields: { omit: ["tenant_id", "user_id"] } });
+    return users.serialize({
+      fields: { omit: ["tenant_id", "user_id"] },
+      relations: { roles: { fields: { omit: ["id"] } } },
+    });
   }
 
   public async store({ auth, request }: HttpContextContract) {
