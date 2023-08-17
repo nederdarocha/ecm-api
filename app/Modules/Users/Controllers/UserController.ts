@@ -103,16 +103,31 @@ export default class UsersController {
     }
   }
 
-  public async profile({ request, auth }: HttpContextContract) {
+  public async profile({ request, auth, response }: HttpContextContract) {
     const { ...data } = await request.validate(UserProfileValidator);
 
     const user = await User.findOrFail(auth.user?.id);
+
+    //check is phone exists
+    const phoneExists = await User.query()
+      .where("phone", data.phone)
+      .whereNot("id", user.id)
+      .first();
+
+    if (phoneExists) {
+      return response.badRequest({ message: "o telefone informado já está em uso." });
+    }
 
     await user.merge(data).save();
     const acl = await getUserAcl(user?.id!);
 
     return {
-      user,
+      id: user.id,
+      name: user.name,
+      document: user.document,
+      email: user.email,
+      phone: user.phone,
+      avatar: user.avatar,
       acl,
     };
   }
@@ -120,6 +135,8 @@ export default class UsersController {
   public async update({ request, params }: HttpContextContract) {
     const { role_ids, ...data } = await request.validate(UserUpdateValidator);
     const user = await User.findOrFail(params.id);
+
+    //polices
 
     await user.merge(data).save();
     await user.related("roles").sync(role_ids);

@@ -11,20 +11,8 @@ export default class UserProfileValidator {
   });
 
   public schema = schema.create({
-    first_name: schema.string({ trim: true }, [rules.required()]),
-    last_name: schema.string({ trim: true }),
-    gender: schema.string({ trim: true }),
-    birthday: schema.date({ format: "yyyy-MM-dd" }),
-
-    phone: schema.string({ trim: true }, [
-      rules.unique({
-        table: "users",
-        column: "phone",
-        whereNot: {
-          id: this.refs.id,
-        },
-      }),
-    ]),
+    name: schema.string({ trim: true }, [rules.required()]),
+    phone: schema.string({ trim: true }, [rules.mobile({ locale: ["pt-BR"] })]),
   });
 
   public messages = { ...commonMessages };

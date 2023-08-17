@@ -7,7 +7,7 @@ export const UserFactory = Factory.define(User, async ({ faker }) => {
   const salt = await bcrypt.genSalt(10);
 
   return {
-    tenant_id: tenants[0].id,
+    tenant_id: tenants[faker.helpers.arrayElement([0, 1, 2])].id,
     name: faker.name.firstName(),
     document: faker.helpers.unique(() => faker.finance.account(11)),
     email: faker.helpers.unique(() => faker.internet.email()),

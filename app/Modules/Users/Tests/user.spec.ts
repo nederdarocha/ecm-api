@@ -7,6 +7,7 @@ import Role from "App/Modules/Auth/Models/Role";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import { getToken, getMe } from "Tests/utils";
 import { UserStoreValidator } from "../Validators";
+import User from "../Models/User";
 
 const userSchema = new UserStoreValidator();
 type UserAttributes = typeof userSchema.schema.props;
@@ -18,11 +19,32 @@ test.group("users", async (group) => {
     return () => Database.rollbackGlobalTransaction();
   });
 
+  test("falhar se usuário sem privilégio tentar acessar os recursos.", async ({ client }) => {
+    const token = await getToken("user@user.com");
+
+    const resp_store = await client.post(`/users`).json({}).bearerToken(token);
+    resp_store.assertStatus(403);
+
+    const resp_list = await client.get("users").bearerToken(token);
+    resp_list.assertStatus(403);
+
+    const resp_show = await client
+      .get(`/users/ee73b0f5-ffd6-40b9-9a3f-917fdd284f7a`)
+      .bearerToken(token);
+    resp_show.assertStatus(403);
+
+    const resp_update = await client
+      .put(`/users/ee73b0f5-ffd6-40b9-9a3f-917fdd284f7a`)
+      .json({ name: "John Doe" })
+      .bearerToken(token);
+    resp_update.assertStatus(403);
+  });
+
   test("conseguir listar usuários", async ({ client }) => {
     const token = await getToken();
     const response = await client
       .get("users")
-      .qs({ filter: "", page: 1, per_page: 9 })
+      .qs({ filter: "Supporter", page: 1, per_page: 9 })
       .bearerToken(token);
 
     response.assertStatus(200);
@@ -80,5 +102,37 @@ test.group("users", async (group) => {
     assert.exists(avatar, "Not result avatar");
 
     Drive.restore();
+  });
+
+  test("conseguir editar usuário", async ({ client }) => {
+    const token = await getToken();
+    const user = await User.findOrFail("ee73b0f5-ffd6-40b9-9a3f-917fdd284f7a");
+    const _user = user.toJSON();
+
+    const response = await client
+      .put(`users/${user.id}`)
+      .json({ ..._user, name: "Nome Alterado", role_ids: [] })
+      .bearerToken(token);
+
+    console.log(response.body());
+
+    response.assertStatus(200);
+    response.assert?.deepInclude(response.body(), { name: "Nome Alterado" });
+  });
+
+  test("falhar ao editar usuário de tenant diferente", async ({ client }) => {
+    const token = await getToken();
+    const userAdmin = await User.query().where("email", "admin@admin.com").firstOrFail();
+
+    const user = await User.query().where("tenant_id", "!=", userAdmin.tenant_id).firstOrFail();
+    const _user = user.toJSON();
+
+    const response = await client
+      .put(`users/${user.id}`)
+      .json({ ..._user, name: "Nome Alterado", role_ids: [] })
+      .bearerToken(token);
+
+    response.assertStatus(400);
+    response.assert?.deepInclude(response.body(), { name: "Nome Alterado" });
   });
 });
