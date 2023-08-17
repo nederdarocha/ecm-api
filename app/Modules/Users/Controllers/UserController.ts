@@ -34,7 +34,6 @@ export default class UsersController {
       .andWhere((sq) =>
         sq
           .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
-          .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
           .orWhere("email", "iLike", `%${filter}%`)
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
           .orWhere("phone", "iLike", `%${filter}%`)

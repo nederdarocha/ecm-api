@@ -47,7 +47,7 @@ const databaseConfig: DatabaseConfig = {
         naturalSort: true,
       },
       healthCheck: false,
-      debug: Env.get("DB_DEBUG", false),
+      debug: false,
     },
   },
 };
