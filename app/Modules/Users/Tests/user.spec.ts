@@ -114,10 +114,18 @@ test.group("users", async (group) => {
       .json({ ..._user, name: "Nome Alterado", role_ids: [] })
       .bearerToken(token);
 
-    console.log(response.body());
-
     response.assertStatus(200);
     response.assert?.deepInclude(response.body(), { name: "Nome Alterado" });
+  });
+
+  test("falhar ao ver um usuário de tenant diferente", async ({ client }) => {
+    const token = await getToken();
+    const userAdmin = await User.query().where("email", "admin@admin.com").firstOrFail();
+
+    const user = await User.query().where("tenant_id", "!=", userAdmin.tenant_id).firstOrFail();
+    const response = await client.get(`users/${user.id}`).bearerToken(token);
+
+    response.assertStatus(403);
   });
 
   test("falhar ao editar usuário de tenant diferente", async ({ client }) => {
@@ -132,7 +140,6 @@ test.group("users", async (group) => {
       .json({ ..._user, name: "Nome Alterado", role_ids: [] })
       .bearerToken(token);
 
-    response.assertStatus(400);
-    response.assert?.deepInclude(response.body(), { name: "Nome Alterado" });
+    response.assertStatus(403);
   });
 });

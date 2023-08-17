@@ -24,16 +24,21 @@ export default class UsersController {
     this.service = new UserService();
   }
 
-  public async index({ paginate, request }: HttpContextContract) {
+  public async index({ paginate, request, auth }: HttpContextContract) {
     await request.validate(UserIndexValidator);
     const { page, per_page } = paginate;
     const { filter } = request.qs();
 
     const users = await User.query()
-      .whereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
-      .orWhere("email", "iLike", `%${filter}%`)
-      .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
-      .orWhere("phone", "iLike", `%${filter}%`)
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere((sq) =>
+        sq
+          .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
+          .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
+          .orWhere("email", "iLike", `%${filter}%`)
+          .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
+          .orWhere("phone", "iLike", `%${filter}%`)
+      )
       .preload("roles", (sq) => sq.select("name").orderBy("name", "asc"))
       .orderBy("name", "asc")
       .paginate(page, per_page);
@@ -83,8 +88,11 @@ export default class UsersController {
     });
   }
 
-  public async show({ params }: HttpContextContract) {
-    return await this.service.findById(params.id);
+  public async show({ params, bouncer }: HttpContextContract) {
+    const user = await User.findOrFail(params.id);
+    await bouncer.with("UserPolicy").authorize("tenant", user);
+
+    return user;
   }
 
   public async me({ auth: { user } }: HttpContextContract) {
@@ -132,11 +140,14 @@ export default class UsersController {
     };
   }
 
-  public async update({ request, params }: HttpContextContract) {
+  public async update({ request, params, bouncer, auth }: HttpContextContract) {
     const { role_ids, ...data } = await request.validate(UserUpdateValidator);
     const user = await User.findOrFail(params.id);
 
-    //polices
+    //policy
+    console.log("auth =>", auth.user?.name);
+
+    await bouncer.with("UserPolicy").authorize("tenant", user);
 
     await user.merge(data).save();
     await user.related("roles").sync(role_ids);

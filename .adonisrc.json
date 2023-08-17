@@ -5,7 +5,8 @@
     "@adonisjs/core/build/commands/index.js",
     "@adonisjs/repl/build/commands",
     "@adonisjs/lucid/build/commands",
-    "@adonisjs/mail/build/commands"
+    "@adonisjs/mail/build/commands",
+    "@adonisjs/bouncer/build/commands"
   ],
   "exceptionHandlerNamespace": "App/Exceptions/Handler",
   "aliases": {
@@ -20,7 +21,12 @@
     "validators": "App/Modules",
     "httpControllers": "App/Modules"
   },
-  "preloads": ["./start/routes", "./start/kernel", "./start/mail"],
+  "preloads": [
+    "./start/routes",
+    "./start/kernel",
+    "./start/mail",
+    "./start/bouncer"
+  ],
   "providers": [
     "./providers/AppProvider",
     "@adonisjs/core",
@@ -29,9 +35,12 @@
     "@adonisjs/auth",
     "adonis5-jwt",
     "@adonisjs/mail",
-    "@adonisjs/view"
+    "@adonisjs/view",
+    "@adonisjs/bouncer"
   ],
-  "aceProviders": ["@adonisjs/repl"],
+  "aceProviders": [
+    "@adonisjs/repl"
+  ],
   "metaFiles": [
     {
       "pattern": "resources/views/**/*.edge",
@@ -42,10 +51,15 @@
     "suites": [
       {
         "name": "functional",
-        "files": ["app/Modules/**/Tests/**/*.spec(.ts|.js)", "tests/functional/**/*.spec(.ts|.js)"],
+        "files": [
+          "app/Modules/**/Tests/**/*.spec(.ts|.js)",
+          "tests/functional/**/*.spec(.ts|.js)"
+        ],
         "timeout": 60000
       }
     ]
   },
-  "testProviders": ["@japa/preset-adonis/TestsProvider"]
+  "testProviders": [
+    "@japa/preset-adonis/TestsProvider"
+  ]
 }
