@@ -25,7 +25,8 @@
     "./start/routes",
     "./start/kernel",
     "./start/mail",
-    "./start/bouncer"
+    "./start/bouncer",
+    "./start/events"
   ],
   "providers": [
     "./providers/AppProvider",

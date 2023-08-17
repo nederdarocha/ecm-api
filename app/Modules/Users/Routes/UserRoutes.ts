@@ -6,7 +6,7 @@ Route.group(() => {
   Route.get("me", "UserController.me");
   Route.post("profile", "UserController.profile");
   Route.post("users/avatar", "UserController.avatar");
-  Route.post("users/password", "UserController.password");
+  Route.post("users/change-password", "UserController.changePassword");
 
   Route.group(() => {
     Route.resource("users", "UserController").except(["edit", "create"]);

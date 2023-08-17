@@ -1,7 +1,6 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import User from "../Models/User";
 import { AvatarValidator, UserStoreValidator, UserIndexValidator } from "../Validators";
-import { UserService } from "../Services/UserService";
 import UserUpdateValidator from "../Validators/UserUpdateValidator";
 import { v4 as uuid } from "uuid";
 import sharp from "sharp";
@@ -18,18 +17,13 @@ import Tenant from "App/Modules/Tenants/Models/Tenant";
 import { DateTime } from "luxon";
 
 export default class UsersController {
-  private service: UserService;
-
-  constructor() {
-    this.service = new UserService();
-  }
-
   public async index({ paginate, request, auth }: HttpContextContract) {
     await request.validate(UserIndexValidator);
     const { page, per_page } = paginate;
     const { filter } = request.qs();
 
     const users = await User.query()
+      // .debug(true)
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
@@ -38,7 +32,7 @@ export default class UsersController {
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
           .orWhere("phone", "iLike", `%${filter}%`)
       )
-      .preload("roles", (sq) => sq.select("name").orderBy("name", "asc"))
+      .preload("roles", (sq) => sq.select("id", "name").orderBy("name", "asc"))
       .orderBy("name", "asc")
       .paginate(page, per_page);
 
@@ -209,7 +203,7 @@ export default class UsersController {
     }
   }
 
-  public async password({ auth, request, response }: HttpContextContract) {
+  public async changePassword({ auth, request, response }: HttpContextContract) {
     const { password, new_password } = await request.validate(UserPasswordValidator);
     const user = await User.findOrFail(auth.user?.id);
 
