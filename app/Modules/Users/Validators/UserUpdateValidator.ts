@@ -1,15 +1,15 @@
-import { schema, rules } from "@ioc:Adonis/Core/Validator"
-import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext"
+import { schema, rules } from "@ioc:Adonis/Core/Validator";
+import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 
-import { shape } from "./UserStoreValidator"
-import { commonMessages } from "../../../Common"
+import { shape } from "./UserStoreValidator";
+import { commonMessages } from "../../../Common";
 
 export default class UserUpdateValidator {
   constructor(protected ctx: HttpContextContract) {}
 
   public refs = schema.refs({
     id: this.ctx.params.id,
-  })
+  });
 
   public schema = schema.create({
     ...shape,
@@ -43,7 +43,9 @@ export default class UserUpdateValidator {
         },
       }),
     ]),
-  })
+    role_ids: schema.array([rules.nullable()]).members(schema.string()),
+    status: schema.boolean(),
+  });
 
-  public messages = { ...commonMessages }
+  public messages = { ...commonMessages };
 }

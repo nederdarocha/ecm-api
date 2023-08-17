@@ -11,9 +11,17 @@ export default class UserPasswordValidator {
   });
 
   public schema = schema.create({
-    password: schema.string({ trim: true }, [rules.required()]),
+    password: schema.string({ trim: true }, [
+      rules.required(),
+      rules.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/),
+    ]),
     new_password: schema.string({ trim: true }, [rules.confirmed()]),
   });
 
-  public messages = { ...commonMessages };
+  public messages = {
+    ...commonMessages,
+
+    "password.regex":
+      "A senha deve conter pelo menos 8 caracteres, combinando letras maiúsculas, minúsculas, números e símbolos",
+  };
 }

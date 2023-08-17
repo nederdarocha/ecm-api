@@ -82,7 +82,11 @@ export default class UsersController {
   }
 
   public async show({ params, bouncer }: HttpContextContract) {
-    const user = await User.findOrFail(params.id);
+    const user = await User.query()
+      .preload("roles", (sq) => sq.select("id", "name").orderBy("name"))
+      .where("id", params.id)
+      .firstOrFail();
+
     await bouncer.with("UserPolicy").authorize("tenant", user);
 
     return user;
@@ -133,13 +137,11 @@ export default class UsersController {
     };
   }
 
-  public async update({ request, params, bouncer, auth }: HttpContextContract) {
+  public async update({ request, params, bouncer }: HttpContextContract) {
     const { role_ids, ...data } = await request.validate(UserUpdateValidator);
     const user = await User.findOrFail(params.id);
 
     //policy
-    console.log("auth =>", auth.user?.name);
-
     await bouncer.with("UserPolicy").authorize("tenant", user);
 
     await user.merge(data).save();
@@ -213,6 +215,19 @@ export default class UsersController {
 
     user.password = new_password;
     await user.save();
+
+    Mail.send((message) => {
+      message
+        .from(Env.get("MAIL_FROM"), Env.get("MAIL_NAME"))
+        .to(user.email)
+        .subject(`${Env.get("MAIL_SUBJECT")} - Senha alterada`)
+        .htmlView("emails/change-password", {
+          name: user.name,
+          date: user.updatedAt.toFormat("dd/MM/yyyy"),
+          time: user.updatedAt.toFormat("HH:mm:ss"),
+          logs: request.ip(),
+        });
+    });
 
     return response.ok("success");
   }

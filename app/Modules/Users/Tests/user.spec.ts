@@ -142,4 +142,42 @@ test.group("users", async (group) => {
 
     response.assertStatus(403);
   });
+
+  test("falhar em alterar senha usando uma senha fraca", async ({ client }) => {
+    const token = await getToken();
+
+    const pass = {
+      password: Env.get("USER_PASSWORD", "secret"),
+      new_password: "12345678",
+      new_password_confirmation: "12345678",
+    };
+
+    const response = await client.post("users/change-password ").json(pass).bearerToken(token);
+    // console.log(response.body());
+
+    response.assertStatus(422);
+    response.assert?.exists(response.body().errors);
+  });
+
+  test("conseguir alterar senha", async ({ client, assert }) => {
+    const mailer = Mail.fake();
+    const token = await getToken();
+    const user = await getMe(token);
+
+    const pass = {
+      password: Env.get("USER_PASSWORD", "secret"),
+      new_password: "aaAA11@@",
+      new_password_confirmation: "aaAA11@@",
+    };
+
+    const response = await client.post("users/change-password ").json(pass).bearerToken(token);
+    response.assertStatus(200);
+
+    assert.isTrue(
+      mailer.exists({ from: { address: Env.get("MAIL_FROM"), name: Env.get("MAIL_NAME") } })
+    );
+    assert.isTrue(mailer.exists({ to: [{ address: user.email }] }));
+    assert.isTrue(mailer.exists({ subject: `${Env.get("MAIL_SUBJECT")} - Senha alterada` }));
+    assert.isTrue(mailer.exists((mail) => mail.html!.includes(user.name)));
+  });
 });
