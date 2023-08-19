@@ -8,9 +8,10 @@ export default class Sleep {
     middlewareParams: string
   ) {
     //simulate a slow connection
-    console.log("sleep=>", middlewareParams[0]);
     if (Env.get("NODE_ENV") === "development") {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      console.log("middle sleep =>", middlewareParams[0]);
+      const sleepTime = middlewareParams[0] ? parseInt(middlewareParams[0]) : 1000;
+      await new Promise((resolve) => setTimeout(resolve, sleepTime));
     }
 
     await next();

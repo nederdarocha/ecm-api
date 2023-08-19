@@ -12,5 +12,5 @@ Route.group(() => {
     Route.resource("users", "UserController").except(["edit", "create"]);
   }).middleware("acl:crud-user");
 })
-  .middleware(["auth"])
+  .middleware(["auth", "sleep:1000"])
   .namespace("App/Modules/Users/Controllers");

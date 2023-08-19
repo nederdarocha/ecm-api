@@ -45,4 +45,5 @@ Server.middleware.registerNamed({
   auth: () => import("App/Middleware/Auth"),
   authByUrl: () => import("App/Middleware/AuthByUrl"),
   acl: () => import("App/Middleware/Acl"),
+  sleep: () => import("App/Middleware/Sleep"),
 });
