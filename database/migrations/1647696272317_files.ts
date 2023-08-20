@@ -7,7 +7,6 @@ export default class Files extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
       table.uuid("tenant_id").references("id").inTable("tenants").notNullable().index();
-      table.uuid("user_id").references("id").inTable("users").onDelete("SET NULL");
       table.uuid("owner_id").nullable();
       table.integer("order").defaultTo(1).index();
       table.string("name", 255).nullable();
@@ -24,6 +23,7 @@ export default class Files extends BaseSchema {
        */
       table.timestamp("created_at", { useTz: true });
       table.timestamp("updated_at", { useTz: true });
+      table.uuid("user_id").references("id").inTable("users").onDelete("SET NULL");
     });
   }
 

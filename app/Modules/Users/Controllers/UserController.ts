@@ -55,6 +55,7 @@ export default class UsersController {
     });
     const tenant = await Tenant.findOrFail(tenant_id);
 
+    //TODO validar unicidades considerando o tenant
     if (role_ids) {
       await user.related("roles").sync(role_ids);
     }
@@ -143,7 +144,7 @@ export default class UsersController {
 
     //policy
     await bouncer.with("UserPolicy").authorize("tenant", user);
-
+    //TODO validar unicidades considerando o tenant
     await user.merge(data).save();
     await user.related("roles").sync(role_ids);
 

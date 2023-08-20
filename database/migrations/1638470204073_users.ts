@@ -16,7 +16,6 @@ export default class UsersSchema extends BaseSchema {
       table.string("avatar", 255).nullable();
       table.boolean("status").defaultTo(true);
       table.string("access_token").nullable();
-      table.uuid("user_id").nullable();
 
       table.unique(["email", "tenant_id"]);
       /**
@@ -24,6 +23,7 @@ export default class UsersSchema extends BaseSchema {
        */
       table.timestamp("created_at", { useTz: true }).notNullable();
       table.timestamp("updated_at", { useTz: true }).notNullable();
+      table.uuid("user_id").nullable();
     });
   }
 
