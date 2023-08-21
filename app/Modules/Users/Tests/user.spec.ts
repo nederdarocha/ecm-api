@@ -8,6 +8,8 @@ import Mail from "@ioc:Adonis/Addons/Mail";
 import { getToken, getMe } from "Tests/utils";
 import { UserValidator } from "../Validators";
 import User from "../Models/User";
+import { UserFactory } from "Database/factories";
+import { tenants } from "Database/seeders/00_Tenants";
 
 const userSchema = new UserValidator();
 type UserAttributes = typeof userSchema.schema.props;
@@ -54,6 +56,77 @@ test.group("users", async (group) => {
     response.assert?.exists(response.body().meta);
     response.assert?.notExists(response.body().data[0].password, "password exposta");
     response.assert?.notExists(response.body().data[0].tenant_id, "tenet_id exposto");
+  });
+
+  test("falhar ao criar 2 usuários com dados únicos", async ({ client }) => {
+    const token = await getToken();
+
+    const [user, user2] = await UserFactory.mergeRecursive({
+      tenant_id: tenants[0].id,
+    }).createMany(2);
+
+    await user2.delete();
+
+    //cria o usuário
+    await client.post("users").json(user).bearerToken(token);
+
+    //cria o segundo usuário com documento repetido
+    let response = await client
+      .post("users")
+      .json({ ...user2, role_ids: [], document: user.document })
+      .bearerToken(token);
+    response.assertStatus(400);
+    response.assertTextIncludes("CPF");
+
+    //cria o segundo usuário com email repetido
+    response = await client
+      .post("users")
+      .json({ ...user2, role_ids: [], email: user.email })
+      .bearerToken(token);
+    response.assertStatus(400);
+    response.assertTextIncludes("email");
+
+    //cria o segundo usuário com phone repetido
+    response = await client
+      .post("users")
+      .json({ ...user2, role_ids: [], phone: user.phone })
+      .bearerToken(token);
+
+    response.assertStatus(400);
+    response.assertTextIncludes("celular");
+  });
+
+  test("falhar ao editar usuário com dados únicos", async ({ client }) => {
+    const token = await getToken();
+    const [user, user2, user3] = await UserFactory.mergeRecursive({
+      tenant_id: tenants[0].id,
+    }).createMany(3);
+
+    await user2.delete();
+
+    let response = await client
+      .put(`users/${user3.id}`)
+      .json({ ...user2, role_ids: [], document: user.document })
+      .bearerToken(token);
+    response.assertStatus(400);
+    response.assertTextIncludes("CPF");
+
+    //cria o segundo usuário com email repetido
+    response = await client
+      .put(`users/${user3.id}`)
+      .json({ ...user2, role_ids: [], email: user.email })
+      .bearerToken(token);
+    response.assertStatus(400);
+    response.assertTextIncludes("email");
+
+    //cria o segundo usuário com phone repetido
+    response = await client
+      .put(`users/${user3.id}`)
+      .json({ ...user2, role_ids: [], phone: user.phone })
+      .bearerToken(token);
+
+    response.assertStatus(400);
+    response.assertTextIncludes("celular");
   });
 
   test("conseguir criar usuário", async ({ client, assert }) => {

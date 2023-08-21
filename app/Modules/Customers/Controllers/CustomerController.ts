@@ -1,8 +1,15 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Customer from "../Models/Customer";
 import { CustomerValidator, CustomerIndexValidator } from "../Validators";
+import { CustomerService } from "../Services/CustomerService";
 
 export default class CustomerController {
+  private service: CustomerService;
+
+  constructor() {
+    this.service = new CustomerService();
+  }
+
   public async index({ paginate, request, auth }: HttpContextContract) {
     await request.validate(CustomerIndexValidator);
     const { page, per_page } = paginate;
@@ -27,11 +34,14 @@ export default class CustomerController {
     });
   }
 
-  public async store({ auth, request }: HttpContextContract) {
+  public async store({ auth, request, response }: HttpContextContract) {
     const { ...data } = await request.validate(CustomerValidator);
     const { tenant_id } = auth.user!;
 
-    //TODO validar unicidades considerando o tenant
+    const isSigleCustomer = await this.service.isSigleCustomer({ auth, request });
+    if (isSigleCustomer instanceof Error) {
+      return response.badRequest({ message: isSigleCustomer.message });
+    }
 
     const customer = await Customer.create({
       ...data,
@@ -54,14 +64,17 @@ export default class CustomerController {
     return customer;
   }
 
-  public async update({ request, params, bouncer }: HttpContextContract) {
+  public async update({ auth, request, response, params, bouncer }: HttpContextContract) {
     const { ...data } = await request.validate(CustomerValidator);
     const customer = await Customer.findOrFail(params.id);
 
     //policy
     await bouncer.with("CustomerPolicy").authorize("tenant", customer);
 
-    //TODO validar unicidades considerando o tenant
+    const isSigleCustomer = await this.service.isSigleCustomer({ auth, request, id: params.id });
+    if (isSigleCustomer instanceof Error) {
+      return response.badRequest({ message: isSigleCustomer.message });
+    }
 
     await customer.merge(data).save();
 

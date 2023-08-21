@@ -8,3 +8,4 @@ import "App/Modules/Auth/Routes";
 import "App/Modules/Users/Routes";
 import "App/Modules/Files/Routes";
 import "App/Modules/Addresses/Routes";
+import "App/Modules/Customers/Routes";

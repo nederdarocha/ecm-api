@@ -14,8 +14,15 @@ import bcrypt from "bcrypt";
 import { createId } from "@paralleldrive/cuid2";
 import Tenant from "App/Modules/Tenants/Models/Tenant";
 import { DateTime } from "luxon";
+import { UserService } from "../Services/UserService";
 
 export default class UsersController {
+  private service: UserService;
+
+  constructor() {
+    this.service = new UserService();
+  }
+
   public async index({ paginate, request, auth }: HttpContextContract) {
     await request.validate(UserIndexValidator);
     const { page, per_page } = paginate;
@@ -43,10 +50,16 @@ export default class UsersController {
     });
   }
 
-  public async store({ auth, request }: HttpContextContract) {
+  public async store({ auth, request, response }: HttpContextContract) {
     const { role_ids, ...data } = await request.validate(UserValidator);
     const { tenant_id } = auth.user!;
     const salt = await bcrypt.genSalt(10);
+
+    const isSigleUser = await this.service.isSigleUser({ auth, request });
+    if (isSigleUser && isSigleUser instanceof Error) {
+      return response.badRequest({ message: isSigleUser.message });
+    }
+
     const user = await User.create({
       ...data,
       tenant_id,
@@ -56,7 +69,6 @@ export default class UsersController {
     });
     const tenant = await Tenant.findOrFail(tenant_id);
 
-    //TODO validar unicidades considerando o tenant
     if (role_ids) {
       await user.related("roles").sync(role_ids);
     }
@@ -141,13 +153,18 @@ export default class UsersController {
     };
   }
 
-  public async update({ request, params, bouncer }: HttpContextContract) {
+  public async update({ auth, request, response, params, bouncer }: HttpContextContract) {
     const { role_ids, ...data } = await request.validate(UserValidator);
     const user = await User.findOrFail(params.id);
 
     //policy
     await bouncer.with("UserPolicy").authorize("tenant", user);
+
     //TODO validar unicidades considerando o tenant
+    const isSigleUser = await this.service.isSigleUser({ auth, request, id: params.id });
+    if (isSigleUser && isSigleUser instanceof Error) {
+      return response.badRequest({ message: isSigleUser.message });
+    }
 
     await user.merge(data).save();
     await user.related("roles").sync(role_ids);
@@ -213,7 +230,6 @@ export default class UsersController {
   public async changePassword({ auth, request, response }: HttpContextContract) {
     const { password, new_password } = await request.validate(UserPasswordValidator);
     const user = await User.findOrFail(auth.user?.id);
-    console.log("aqui");
 
     if (!(await Hash.verify(user.password, `${password}${user.salt}`))) {
       return response.badRequest({ message: "a senha atual não confere" });
