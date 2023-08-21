@@ -8,7 +8,8 @@ export const UserFactory = Factory.define(User, async ({ faker }) => {
 
   return {
     tenant_id: tenants[faker.helpers.arrayElement([0, 1, 2])].id,
-    name: faker.name.firstName(),
+    first_name: faker.name.firstName(),
+    last_name: faker.name.lastName(),
     document: faker.helpers.unique(() => faker.finance.account(11)),
     email: faker.helpers.unique(() => faker.internet.email()),
     phone: faker.helpers.unique(() => faker.phone.number("###########")),

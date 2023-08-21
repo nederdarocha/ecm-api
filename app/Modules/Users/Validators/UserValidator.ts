@@ -8,15 +8,17 @@ export const shape = {
   role_ids: schema.array().members(schema.string()),
 };
 
-export class UserStoreValidator {
+export class UserValidator {
   constructor(protected ctx?: HttpContextContract) {}
 
   public schema = schema.create({
-    name: schema.string({ trim: true }, [rules.required()]),
+    first_name: schema.string({ trim: true }, [rules.required()]),
+    last_name: schema.string({ trim: true }),
     role_ids: schema.array([rules.nullable()]).members(schema.string()),
     document: schema.string({ trim: true }, [rules.minLength(11), rules.maxLength(11)]),
     email: schema.string({ trim: true }, [rules.email()]),
     phone: schema.string({ trim: true }, [rules.mobile()]),
+    status: schema.boolean.optional(),
   });
 
   public messages = { ...commonMessages };

@@ -9,7 +9,8 @@ export default class UserSeeder extends BaseSeeder {
     const [admin, supp, supp_2] = await UserFactory.merge([
       {
         tenant_id: "a2db73d8-c917-4558-8451-1a9f235b7d6b",
-        name: "Admin",
+        first_name: "Admin",
+        last_name: "Bento",
         email: "admin@admin.com",
         document: "11111111111",
         phone: "21964276349",
@@ -18,7 +19,8 @@ export default class UserSeeder extends BaseSeeder {
       },
       {
         tenant_id: "a2db73d8-c917-4558-8451-1a9f235b7d6b",
-        name: "User",
+        first_name: "User",
+        last_name: "Bento",
         email: "user@user.com",
         document: "22222222222",
         password: Env.get("USER_PASSWORD", "secret"),
@@ -27,7 +29,8 @@ export default class UserSeeder extends BaseSeeder {
       {
         id: "ee73b0f5-ffd6-40b9-9a3f-917fdd284f7a",
         tenant_id: "a2db73d8-c917-4558-8451-1a9f235b7d6b",
-        name: "Supporter",
+        first_name: "Supporter",
+        last_name: "Bento",
         email: "supp@supp.com",
         document: "33333333333",
         password: Env.get("USER_PASSWORD", "secret"),

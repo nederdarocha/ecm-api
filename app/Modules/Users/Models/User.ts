@@ -8,6 +8,7 @@ import {
   HasMany,
   manyToMany,
   ManyToMany,
+  computed,
 } from "@ioc:Adonis/Lucid/Orm";
 import Role from "App/Modules/Auth/Models/Role";
 import UserToken from "./UserToken";
@@ -23,7 +24,10 @@ export default class User extends BaseModel {
   public tenant_id: string;
 
   @column()
-  public name: string;
+  public first_name: string;
+
+  @column()
+  public last_name: string;
 
   @column()
   public document?: string;
@@ -45,6 +49,11 @@ export default class User extends BaseModel {
 
   @column()
   public status: boolean;
+
+  @computed()
+  public get name() {
+    return `${this.first_name} ${this.last_name}`;
+  }
 
   @column({ serializeAs: null })
   public access_token: string;

@@ -75,7 +75,7 @@ export default class AuthController {
           .to(email)
           .subject(`${Env.get("MAIL_SUBJECT")} - Criar nova senha`)
           .htmlView("emails/forgot", {
-            name: user.name,
+            name: user.first_name,
             url: `${url}/auth/reset-password/${token}`,
           });
       });

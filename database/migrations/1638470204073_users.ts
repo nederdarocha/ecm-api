@@ -7,7 +7,8 @@ export default class UsersSchema extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
       table.uuid("tenant_id").references("id").inTable("tenants").notNullable().index();
-      table.string("name", 180).nullable();
+      table.string("first_name", 180).nullable();
+      table.string("last_name", 180).nullable();
       table.string("document", 50).nullable().index();
       table.string("email", 255).nullable().index();
       table.string("phone", 50).nullable().index();

@@ -72,7 +72,7 @@ test.group("auth", (group) => {
     );
     assert.isTrue(mailer.exists({ to: [{ address: EMAIL }] }));
     assert.isTrue(mailer.exists({ subject: `${Env.get("MAIL_SUBJECT")} - Criar nova senha` }));
-    assert.isTrue(mailer.exists((mail) => mail.html!.includes(user.name)));
+    assert.isTrue(mailer.exists((mail) => mail.html!.includes(user.first_name)));
   });
 
   test("falhar em solicitar por muitas vezes a recuperação de senha", async ({ client }) => {

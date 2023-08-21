@@ -1,5 +1,4 @@
-export * from "./UserStoreValidator";
-export * from "./UserUpdateValidator";
+export * from "./UserValidator";
 export * from "./AvatarValidator";
 export * from "./UserProfileValidator";
 export * from "./UserPasswordValidator";

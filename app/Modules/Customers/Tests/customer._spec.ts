@@ -6,10 +6,10 @@ import { test } from "@japa/runner";
 import Role from "App/Modules/Auth/Models/Role";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import { getToken, getMe } from "Tests/utils";
-import { UserStoreValidator } from "../Validators";
+import { UserValidator } from "../Validators";
 import User from "../Models/Customer";
 
-const userSchema = new UserStoreValidator();
+const userSchema = new UserValidator();
 type UserAttributes = typeof userSchema.schema.props;
 
 test.group("customers", async (group) => {

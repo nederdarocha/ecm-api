@@ -1,7 +1,6 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import User from "../Models/User";
-import { AvatarValidator, UserStoreValidator, UserIndexValidator } from "../Validators";
-import UserUpdateValidator from "../Validators/UserUpdateValidator";
+import { AvatarValidator, UserValidator, UserIndexValidator } from "../Validators";
 import { v4 as uuid } from "uuid";
 import sharp from "sharp";
 import Drive from "@ioc:Adonis/Core/Drive";
@@ -27,13 +26,15 @@ export default class UsersController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
-          .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
+          .orWhereRaw("unaccent(concat(first_name,' ',last_name)) iLike unaccent(?) ", [
+            `%${filter}%`,
+          ])
           .orWhere("email", "iLike", `%${filter}%`)
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
           .orWhere("phone", "iLike", `%${filter}%`)
       )
       .preload("roles", (sq) => sq.select("id", "name").orderBy("name", "asc"))
-      .orderBy("name", "asc")
+      .orderBy("first_name", "asc")
       .paginate(page, per_page);
 
     return users.serialize({
@@ -43,7 +44,7 @@ export default class UsersController {
   }
 
   public async store({ auth, request }: HttpContextContract) {
-    const { role_ids, ...data } = await request.validate(UserStoreValidator);
+    const { role_ids, ...data } = await request.validate(UserValidator);
     const { tenant_id } = auth.user!;
     const salt = await bcrypt.genSalt(10);
     const user = await User.create({
@@ -70,7 +71,7 @@ export default class UsersController {
         .to(data.email)
         .subject(`${Env.get("MAIL_SUBJECT")} - Bem vindo`)
         .htmlView("emails/welcome", {
-          name: user.name,
+          name: user.first_name,
           url: `${tenant.url}/auth/new-password/${token}`,
         });
     });
@@ -99,6 +100,8 @@ export default class UsersController {
 
       return {
         id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
         name: user.name,
         document: user.document,
         email: user.email,
@@ -139,12 +142,13 @@ export default class UsersController {
   }
 
   public async update({ request, params, bouncer }: HttpContextContract) {
-    const { role_ids, ...data } = await request.validate(UserUpdateValidator);
+    const { role_ids, ...data } = await request.validate(UserValidator);
     const user = await User.findOrFail(params.id);
 
     //policy
     await bouncer.with("UserPolicy").authorize("tenant", user);
     //TODO validar unicidades considerando o tenant
+
     await user.merge(data).save();
     await user.related("roles").sync(role_ids);
 
@@ -209,6 +213,7 @@ export default class UsersController {
   public async changePassword({ auth, request, response }: HttpContextContract) {
     const { password, new_password } = await request.validate(UserPasswordValidator);
     const user = await User.findOrFail(auth.user?.id);
+    console.log("aqui");
 
     if (!(await Hash.verify(user.password, `${password}${user.salt}`))) {
       return response.badRequest({ message: "a senha atual não confere" });

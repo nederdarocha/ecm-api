@@ -11,11 +11,11 @@ export default class UserPasswordValidator {
   });
 
   public schema = schema.create({
-    password: schema.string({ trim: true }, [
-      rules.required(),
+    password: schema.string({ trim: true }, [rules.required()]),
+    new_password: schema.string({ trim: true }, [
+      rules.confirmed(),
       rules.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/),
     ]),
-    new_password: schema.string({ trim: true }, [rules.confirmed()]),
   });
 
   public messages = {

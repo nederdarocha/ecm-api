@@ -6,10 +6,10 @@ import { test } from "@japa/runner";
 import Role from "App/Modules/Auth/Models/Role";
 import Mail from "@ioc:Adonis/Addons/Mail";
 import { getToken, getMe } from "Tests/utils";
-import { UserStoreValidator } from "../Validators";
+import { UserValidator } from "../Validators";
 import User from "../Models/User";
 
-const userSchema = new UserStoreValidator();
+const userSchema = new UserValidator();
 type UserAttributes = typeof userSchema.schema.props;
 
 test.group("users", async (group) => {
@@ -46,6 +46,8 @@ test.group("users", async (group) => {
       .get("users")
       .qs({ filter: "Supporter", page: 1, per_page: 9 })
       .bearerToken(token);
+    // console.log(response.status());
+    // console.log(response.body());
 
     response.assertStatus(200);
     response.assert?.exists(response.body().data);
@@ -61,11 +63,13 @@ test.group("users", async (group) => {
     const roleIdSupporter = await Role.findByOrFail("slug", "supp");
 
     const user: UserAttributes = {
-      name: "John doe",
+      first_name: "John",
+      last_name: "Doe",
       document: "08931946708",
       phone: "21996381097",
       email: "john@mail.com",
       role_ids: [roleIdSupporter.id],
+      status: true,
     };
 
     const response = await client.post("users").json(user).bearerToken(token);
@@ -76,7 +80,7 @@ test.group("users", async (group) => {
     );
     assert.isTrue(mailer.exists({ to: [{ address: user.email }] }));
     assert.isTrue(mailer.exists({ subject: `${Env.get("MAIL_SUBJECT")} - Bem vindo` }));
-    assert.isTrue(mailer.exists((mail) => mail.html!.includes(user.name)));
+    assert.isTrue(mailer.exists((mail) => mail.html!.includes(user.first_name)));
 
     const { role_ids, ..._user } = user;
     response.assertBodyContains(_user);
@@ -111,11 +115,11 @@ test.group("users", async (group) => {
 
     const response = await client
       .put(`users/${user.id}`)
-      .json({ ..._user, name: "Nome Alterado", role_ids: [] })
+      .json({ ..._user, first_name: "Nome Alterado", role_ids: [] })
       .bearerToken(token);
 
     response.assertStatus(200);
-    response.assert?.deepInclude(response.body(), { name: "Nome Alterado" });
+    response.assert?.deepInclude(response.body(), { first_name: "Nome Alterado" });
   });
 
   test("falhar ao ver um usuário de tenant diferente", async ({ client }) => {
@@ -153,6 +157,7 @@ test.group("users", async (group) => {
     };
 
     const response = await client.post("users/change-password ").json(pass).bearerToken(token);
+    // console.log(response.status());
     // console.log(response.body());
 
     response.assertStatus(422);
