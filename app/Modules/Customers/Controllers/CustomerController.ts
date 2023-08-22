@@ -10,13 +10,30 @@ export default class CustomerController {
     this.service = new CustomerService();
   }
 
+  public async indicators({ auth, request }: HttpContextContract) {
+    const { filter } = request.qs();
+    const customers = await Customer.query()
+      .select("id", "name", "document")
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere((sq) =>
+        sq
+          .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
+          .orWhere("email", "iLike", `%${filter}%`)
+      )
+      .orderBy("name", "asc")
+      .limit(20);
+
+    return customers;
+  }
+
   public async index({ paginate, request, auth }: HttpContextContract) {
     await request.validate(CustomerIndexValidator);
     const { page, per_page } = paginate;
     const { filter } = request.qs();
 
-    const users = await Customer.query()
+    const customers = await Customer.query()
       // .debug(true)
+      .preload("indicator", (sq) => sq.select("id", "name", "document", "natural"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
@@ -28,7 +45,7 @@ export default class CustomerController {
       .orderBy("name", "asc")
       .paginate(page, per_page);
 
-    return users.serialize({
+    return customers.serialize({
       fields: { omit: ["tenant_id", "user_id"] },
       relations: { roles: { fields: { omit: ["id"] } } },
     });
@@ -57,7 +74,10 @@ export default class CustomerController {
   }
 
   public async show({ params, bouncer }: HttpContextContract) {
-    const customer = await Customer.query().where("id", params.id).firstOrFail();
+    const customer = await Customer.query()
+      .preload("indicator", (sq) => sq.select("id", "name", "document", "natural"))
+      .where("id", params.id)
+      .firstOrFail();
 
     await bouncer.with("CustomerPolicy").authorize("tenant", customer);
 

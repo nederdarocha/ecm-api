@@ -64,7 +64,7 @@ export default class Customer extends BaseModel {
     foreignKey: "indicated_id",
     localKey: "id",
   })
-  public indicated: BelongsTo<typeof Customer>;
+  public indicator: BelongsTo<typeof Customer>;
 
   @belongsTo(() => User, {
     foreignKey: "user_id",

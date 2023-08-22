@@ -9,7 +9,6 @@ export default class Addresses extends BaseSchema {
       table.uuid("tenant_id").references("id").inTable("tenants").notNullable().index();
       table.uuid("owner_id").nullable();
       table.string("name");
-      table.boolean("commercial").defaultTo(false);
       table.boolean("favorite").defaultTo(false);
       table.string("zip");
       table.string("street");

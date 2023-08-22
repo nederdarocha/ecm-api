@@ -4,6 +4,7 @@ Route.where("id", Route.matchers.uuid());
 
 Route.group(() => {
   Route.group(() => {
+    Route.get("customers/indicators", "CustomerController.indicators");
     Route.resource("customers", "CustomerController").apiOnly().except(["destroy"]);
   }).middleware(["acl:crud-customer"]);
 })

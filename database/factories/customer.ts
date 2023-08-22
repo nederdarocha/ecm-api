@@ -22,5 +22,5 @@ export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
 })
   .relation("created_by", () => UserFactory)
   .relation("addresses", () => AddressFactory)
-  .relation("indicated", () => CustomerFactory)
+  .relation("indicator", () => CustomerFactory)
   .build();

@@ -17,9 +17,6 @@ export default class Address extends BaseModel {
   public zip: string;
 
   @column()
-  public commercial: boolean;
-
-  @column()
   public favorite: boolean;
 
   @column()

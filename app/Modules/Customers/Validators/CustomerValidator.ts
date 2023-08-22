@@ -13,7 +13,7 @@ export class CustomerValidator {
 
   public schema = schema.create({
     name: schema.string({ trim: true }, [rules.required()]),
-    document: schema.string({ trim: true }, [rules.minLength(11), rules.maxLength(11)]),
+    document: schema.string({ trim: true }, [rules.minLength(11), rules.maxLength(14)]),
     email: schema.string({ trim: true }, [rules.email()]),
     phone: schema.string({ trim: true }),
     document_secondary: schema.string.nullableAndOptional({ trim: true }),

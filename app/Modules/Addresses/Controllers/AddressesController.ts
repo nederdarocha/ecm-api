@@ -1,45 +1,64 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import { CustomerValidator } from "../Validators";
 import Address from "../Models/Address";
-import Order from "App/Modules/Orders/Models/Order";
 
 export default class AddressesController {
-  public async addresses({ params: { id } }: HttpContextContract) {
-    return Address.query().where("owner_id", id).orderBy("name");
+  public async addressesOwner({ auth, params: { id } }: HttpContextContract) {
+    return Address.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("owner_id", id)
+      .orderBy("favorite", "desc");
   }
 
-  public async index({}: HttpContextContract) {
-    return Address.query().orderBy("name");
+  public async index({ auth, paginate }: HttpContextContract) {
+    const addresses = await Address.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .orderBy("favorite", "desc")
+      .paginate(paginate.page, paginate.per_page);
+
+    return addresses.serialize({
+      fields: { omit: ["tenant_id", "user_id"] },
+    });
   }
 
   public async store({ auth, request }: HttpContextContract) {
     let { ...data } = await request.validate(CustomerValidator);
 
-    return await Address.create({ ...data, user_id: auth.user?.id });
+    const address = await Address.create({
+      ...data,
+      tenant_id: auth.user?.tenant_id,
+      user_id: auth.user?.id,
+    });
+
+    return address.serialize({
+      fields: { omit: ["tenant_id", "user_id"] },
+    });
   }
 
-  public async show({ params: { id } }: HttpContextContract) {
-    return await Address.query().where("id", id).firstOrFail();
+  public async show({ auth, params: { id } }: HttpContextContract) {
+    return await Address.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
   }
 
   public async update({ auth, request, params: { id } }: HttpContextContract) {
     let { ...data } = await request.validate(CustomerValidator);
 
-    const customer = await Address.findOrFail(id);
+    const address = await Address.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
 
-    await customer.merge({ ...data, user_id: auth.user?.id }).save();
-    return customer;
+    await address.merge({ ...data, user_id: auth.user?.id }).save();
+    return address;
   }
 
-  public async destroy({ params: { id }, response }: HttpContextContract) {
-    const customer = await Address.findOrFail(id);
-
-    const order = await Order.query().where("address_id", id).first();
-    if (order) {
-      return response.status(400).json({
-        message: `Este endereço não pode ser removido pois está sendo utilizado no Orçamento ${order.number}`,
-      });
-    }
+  public async destroy({ auth, params: { id }, response }: HttpContextContract) {
+    const customer = await Address.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
 
     await customer.delete();
     return response.status(204);

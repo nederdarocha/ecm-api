@@ -14,7 +14,6 @@ export class CustomerValidator {
   public schema = schema.create({
     name: schema.string({ trim: true }),
     owner_id: schema.string({}, [rules.uuid()]),
-    commercial: schema.boolean.optional(),
     favorite: schema.boolean.optional(),
     zip: schema.string.optional({ trim: true }),
     street: schema.string.optional({ trim: true }),

@@ -7,7 +7,6 @@ export const AddressFactory = Factory.define(Address, ({ faker }) => {
     tenant_id: tenants[0].id,
     name: "Casa",
     zip: faker.helpers.unique(() => faker.address.zipCode("#####-###")),
-    commercial: faker.datatype.boolean(),
     favorite: true,
     street: faker.address.street(),
     number: faker.address.buildingNumber(),
