@@ -41,8 +41,8 @@ export default class AddressesController {
   }
 
   public async store({ auth, request }: HttpContextContract) {
-    let { ...data } = await request.validate(CustomerValidator);
-
+    const { ...data } = await request.validate(CustomerValidator);
+    //TODO verificar se existe outro endereço favorito, caso não exista, setar como favorito
     const address = await Address.create({
       ...data,
       tenant_id: auth.user?.tenant_id,
@@ -74,6 +74,7 @@ export default class AddressesController {
   }
 
   public async destroy({ auth, params: { id }, response }: HttpContextContract) {
+    //TODO verificar se existe outro endereço para favoritar
     const customer = await Address.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
