@@ -17,16 +17,25 @@ export default class AddressesController {
       .andWhere("id", id)
       .firstOrFail();
 
+    console.log(address.owner_id);
+
     await Database.rawQuery(
       `
       UPDATE addresses SET favorite = false
-      WHERE tenant_id = :tenant_id AND owner_id = :owner_id
+      WHERE tenant_id = :tenant_id AND owner_id = :owner_id;
     `,
       { tenant_id: auth.user!.tenant_id, owner_id: address.owner_id! }
     );
 
-    await address.merge({ favorite: true }).save();
-    return response.ok({ message: "Endereço favoritado com sucesso!" });
+    await Database.rawQuery(
+      `
+      UPDATE addresses SET favorite = true
+      WHERE id = :id AND owner_id = :owner_id;
+    `,
+      { id, owner_id: address.owner_id! }
+    );
+
+    return response.status(200).send({ message: "Endereço favoritado com sucesso." });
   }
 
   public async index({ auth, paginate }: HttpContextContract) {
@@ -42,7 +51,20 @@ export default class AddressesController {
 
   public async store({ auth, request }: HttpContextContract) {
     const { ...data } = await request.validate(CustomerValidator);
-    //TODO verificar se existe outro endereço favorito, caso não exista, setar como favorito
+    if (data.favorite) {
+      const isAddressFavorite = await Address.query()
+        .where("tenant_id", auth.user!.tenant_id)
+        .andWhere("favorite", true)
+        .first();
+
+      if (isAddressFavorite) {
+        await Address.query()
+          .where("tenant_id", auth.user!.tenant_id)
+          .andWhere("favorite", true)
+          .update({ favorite: false });
+      }
+    }
+
     const address = await Address.create({
       ...data,
       tenant_id: auth.user?.tenant_id,
