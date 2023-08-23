@@ -160,7 +160,6 @@ export default class UsersController {
     //policy
     await bouncer.with("UserPolicy").authorize("tenant", user);
 
-    //TODO validar unicidades considerando o tenant
     const isSigleUser = await this.service.isSigleUser({ auth, request, id: params.id });
     if (isSigleUser && isSigleUser instanceof Error) {
       return response.badRequest({ message: isSigleUser.message });

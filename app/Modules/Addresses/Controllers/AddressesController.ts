@@ -96,13 +96,31 @@ export default class AddressesController {
   }
 
   public async destroy({ auth, params: { id }, response }: HttpContextContract) {
-    //TODO verificar se existe outro endereço para favoritar
-    const customer = await Address.query()
+    const address = await Address.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
+    const { owner_id } = address;
 
-    await customer.delete();
+    await address.delete();
+
+    const addresses = await Address.query()
+      .select("id", "favorite")
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("owner_id", owner_id!)
+      .orderBy("created_at", "desc");
+
+    if (addresses && addresses.length > 0) {
+      const isAddressFavorite = addresses.find((address) => address.favorite === true);
+
+      if (!isAddressFavorite) {
+        await Address.query()
+          .where("tenant_id", auth.user!.tenant_id)
+          .andWhere("id", addresses[0].id)
+          .update({ favorite: true });
+      }
+    }
+
     return response.status(204);
   }
 }

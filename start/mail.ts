@@ -8,8 +8,6 @@ Mail.monitorQueue(async (error) => {
     return;
   }
 
-  // TODO encontrar a ordem de serviço e salvar o processamento
-
   // console.log("Email sent subject => ", message.subject);
   // console.log(result?.mail);
   // console.log(result?.response);
