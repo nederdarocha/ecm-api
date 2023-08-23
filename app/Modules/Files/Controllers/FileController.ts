@@ -1,29 +1,31 @@
-import sharp from "sharp";
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import Drive from "@ioc:Adonis/Core/Drive";
-
 import { FileStoreValidator } from "../Validators";
+import File from "../Models/File";
 
 export default class FilesController {
-  public async store({ request, response }: HttpContextContract) {
-    const { file } = await request.validate(FileStoreValidator);
+  public async store({ auth, request, response }: HttpContextContract) {
+    const { file, owner_id } = await request.validate(FileStoreValidator);
 
-    const fileBuffer = await sharp(file.tmpPath)
-      .resize(150, 150, {
-        fit: "cover",
-        position: "center",
-      })
-      .toBuffer();
+    const _file = await File.create({
+      owner_id,
+      tenant_id: auth.user!.tenant_id,
+      name: file.fieldName,
+      type: file.extname,
+      user_id: auth.user?.id,
+      is_public: false,
+    });
 
-    try {
-      await Drive.put("name_file2.png", fileBuffer, {
-        visibility: "public",
-        contentType: "image/png",
+    const s3 = await file.moveToDisk(
+      "/customers",
+      {
+        name: `${_file.id}.${file.extname}`,
+        visibility: "private",
         cacheControl: "public,max-age=290304000",
-      });
-    } catch (error) {
-      console.log(error);
-    }
+      },
+      "s3"
+    );
+
+    console.log({ s3 });
 
     response.status(200);
   }

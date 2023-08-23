@@ -12,7 +12,7 @@ export default class People extends BaseSchema {
       table.string("name").index();
       table.string("email");
       table.string("phone");
-      table.string("document", 50).unique().index();
+      table.string("document", 50).index();
       table.string("document_secondary", 50);
       table.boolean("natural").defaultTo(true);
       table.string("gender");
@@ -21,6 +21,8 @@ export default class People extends BaseSchema {
       table.string("account_number", 50);
       table.string("pix_key");
       table.text("notes");
+
+      table.unique(["document", "tenant_id"]);
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

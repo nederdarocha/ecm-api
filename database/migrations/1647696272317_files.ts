@@ -8,9 +8,9 @@ export default class Files extends BaseSchema {
       table.uuid("id").primary().defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
       table.uuid("tenant_id").references("id").inTable("tenants").notNullable().index();
       table.uuid("owner_id").nullable();
-      table.integer("order").defaultTo(1).index();
-      table.string("name", 255).nullable();
       table.string("key", 255).nullable();
+      table.integer("order").defaultTo(1);
+      table.string("name", 255).nullable();
       table.string("url", 255).nullable();
       table.text("description").nullable();
       table.string("type", 255).nullable();
