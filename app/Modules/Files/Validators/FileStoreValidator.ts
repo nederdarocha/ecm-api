@@ -23,7 +23,7 @@ export class FileStoreValidator {
   public schema = schema.create({
     owner_id: schema.string({}, [rules.uuid()]),
     file: schema.file({
-      size: Env.get("MAX_UPLOAD_FILE_SIZE", "5mb"),
+      size: Env.get("MAX_UPLOAD_FILE_SIZE", "10mb"),
       extnames: EXTNAMES,
     }),
   });

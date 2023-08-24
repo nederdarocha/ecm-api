@@ -84,4 +84,19 @@ export default class FilesController {
 
     response.status(200);
   }
+
+  public async destroy({ auth, params: { id }, response }: HttpContextContract) {
+    const file = await File.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .where("id", id)
+      .firstOrFail();
+
+    try {
+      await Drive.delete(file.key);
+      await file.delete();
+      response.status(204);
+    } catch (error) {
+      return response.status(500).json({ error: error.message });
+    }
+  }
 }
