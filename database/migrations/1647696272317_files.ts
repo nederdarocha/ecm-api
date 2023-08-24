@@ -7,7 +7,7 @@ export default class Files extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
       table.uuid("tenant_id").references("id").inTable("tenants").notNullable().index();
-      table.uuid("owner_id").nullable();
+      table.uuid("owner_id").nullable().index();
       table.string("key", 255).nullable();
       table.integer("order").defaultTo(1);
       table.string("name", 255).nullable();
@@ -17,6 +17,7 @@ export default class Files extends BaseSchema {
       table.string("content_type", 255).nullable();
       table.boolean("default").defaultTo(false);
       table.boolean("is_public").defaultTo(true);
+      table.integer("size").nullable();
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

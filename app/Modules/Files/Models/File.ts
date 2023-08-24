@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
-import { BaseModel, column, computed } from "@ioc:Adonis/Lucid/Orm";
+import { BaseModel, BelongsTo, belongsTo, column, computed } from "@ioc:Adonis/Lucid/Orm";
 import Env from "@ioc:Adonis/Core/Env";
+import User from "App/Modules/Users/Models/User";
 
 export default class File extends BaseModel {
   @column({ isPrimary: true })
@@ -8,9 +9,6 @@ export default class File extends BaseModel {
 
   @column()
   public tenant_id: string;
-
-  @column()
-  public user_id: string;
 
   @column()
   public owner_id: string;
@@ -36,6 +34,15 @@ export default class File extends BaseModel {
   @column()
   public is_public: boolean;
 
+  @column()
+  public order: number;
+
+  @column()
+  public size: number;
+
+  @column()
+  public user_id: string;
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
 
@@ -46,4 +53,10 @@ export default class File extends BaseModel {
   public get url_download() {
     return `${Env.get("API_URL")}/files/download/${this.id}`;
   }
+
+  @belongsTo(() => User, {
+    foreignKey: "user_id",
+    localKey: "id",
+  })
+  public user: BelongsTo<typeof User>;
 }

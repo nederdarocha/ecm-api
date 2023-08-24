@@ -7,6 +7,8 @@ import User from "App/Modules/Users/Models/User";
 export default class FilesController {
   public async ownerIndex({ auth, params: { id } }: HttpContextContract) {
     const files = await File.query()
+      .select("id", "name", "type", "content_type", "is_public", "size", "created_at", "user_id")
+      .preload("user", (q) => q.select("id", "first_name", "last_name"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("owner_id", id)
       .orderBy("name", "asc");
@@ -52,7 +54,6 @@ export default class FilesController {
 
   public async store({ auth, request, response }: HttpContextContract) {
     const { file, owner_id } = await request.validate(FileStoreValidator);
-    console.log(file);
 
     const _file = await File.create({
       owner_id,
@@ -62,6 +63,7 @@ export default class FilesController {
       user_id: auth.user?.id,
       content_type: file.headers["content-type"],
       is_public: false,
+      size: file.size,
     });
 
     try {
