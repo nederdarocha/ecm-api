@@ -55,6 +55,8 @@ export default class FilesController {
   public async store({ auth, request, response }: HttpContextContract) {
     const { file, owner_id } = await request.validate(FileStoreValidator);
 
+    //TODO validar se já exite um arquivo com o mesmo nome
+
     const _file = await File.create({
       owner_id,
       tenant_id: auth.user!.tenant_id,
