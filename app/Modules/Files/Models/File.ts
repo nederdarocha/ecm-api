@@ -43,7 +43,12 @@ export default class File extends BaseModel {
   @column()
   public user_id: string;
 
-  @column.dateTime({ autoCreate: true })
+  @column.dateTime({
+    autoCreate: true,
+    serialize: (value?: DateTime) => {
+      return value ? value.toFormat("dd/MM/yyyy hh:mm") : null;
+    },
+  })
   public createdAt: DateTime;
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
