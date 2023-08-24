@@ -31,12 +31,14 @@ export default Env.rules({
   JWT_REFRESH_TOKEN_EXPIRE: Env.schema.string(),
   //
   DRIVE_DISK: Env.schema.enum(["local", "s3"] as const),
+  MAX_UPLOAD_FILE_SIZE: Env.schema.string(),
+
   // aws s3
   S3_KEY: Env.schema.string(),
   S3_SECRET: Env.schema.string(),
   S3_BUCKET: Env.schema.string(),
   S3_REGION: Env.schema.string(),
-  S3_ENDPOINT: Env.schema.string.optional(),
+  S3_ENDPOINT: Env.schema.string.optional(), //https://s3.us-east-1.amazonaws.com
   // mail
   MAIL_DRIVER: Env.schema.enum(["smtp", "ses"] as const),
   MAIL_FROM: Env.schema.string(),

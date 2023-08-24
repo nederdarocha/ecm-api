@@ -1,5 +1,6 @@
 import { DateTime } from "luxon";
 import { BaseModel, column, computed } from "@ioc:Adonis/Lucid/Orm";
+import Env from "@ioc:Adonis/Core/Env";
 
 export default class File extends BaseModel {
   @column({ isPrimary: true })
@@ -42,8 +43,7 @@ export default class File extends BaseModel {
   public updatedAt: DateTime;
 
   @computed()
-  public get urlKey() {
-    return encodeURIComponent(this.key);
+  public get url_download() {
+    return `${Env.get("API_URL")}/files/download/${this.id}`;
   }
 }
-export { File };

@@ -1,19 +1,20 @@
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import Env from "@ioc:Adonis/Core/Env";
 
 const EXTNAMES = [
-  "jpg",
-  "jpeg",
-  "png",
-  "pdf",
   "doc",
-  "docx",
   "xls",
-  "xlsx",
-  "ppt",
-  "pptx",
   "csv",
   "txt",
+  "docx",
+  "xlsx",
+  "pdf",
+  "png",
+  "jpg",
+  "jpeg",
+  "bmp",
+  "zip",
 ];
 
 export class FileStoreValidator {
@@ -22,7 +23,7 @@ export class FileStoreValidator {
   public schema = schema.create({
     owner_id: schema.string({}, [rules.uuid()]),
     file: schema.file({
-      size: "5mb",
+      size: Env.get("MAX_UPLOAD_FILE_SIZE", "5mb"),
       extnames: EXTNAMES,
     }),
   });

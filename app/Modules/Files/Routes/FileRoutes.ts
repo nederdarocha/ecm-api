@@ -1,8 +1,19 @@
 import Route from "@ioc:Adonis/Core/Route";
 
 Route.group(() => {
-  Route.get("/:key", "Files/Controllers/FileController.index");
-  Route.post("/", "Files/Controllers/FileController.store");
+  Route.get("/download/:id", "FileController.download");
+  Route.get("/:id", "FileController.redirect");
 })
-  .middleware("auth")
-  .prefix("/files");
+  .prefix("/files")
+  .namespace("App/Modules/Files/Controllers")
+  .middleware(["authByUrl"]);
+
+Route.group(() => {
+  Route.get("/owner/:id", "FileController.ownerIndex");
+  Route.put("/:id", "FileController.update");
+  Route.delete("/:id", "FileController.destroy");
+  Route.post("/", "FileController.store");
+})
+  .prefix("/files")
+  .namespace("App/Modules/Files/Controllers")
+  .middleware("auth");
