@@ -1,1 +1,2 @@
-export * from "./FileStoreValidator"
+export * from "./FileStoreValidator";
+export * from "./FileUpdateValidator";

@@ -1,10 +1,17 @@
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import { FileStoreValidator } from "../Validators";
+import { FileStoreValidator, FileUpdateValidator } from "../Validators";
 import File from "../Models/File";
 import Drive from "@ioc:Adonis/Core/Drive";
 import User from "App/Modules/Users/Models/User";
+import { FileService } from "../Services/FileService";
 
 export default class FilesController {
+  private service;
+
+  constructor() {
+    this.service = new FileService();
+  }
+
   public async ownerIndex({ auth, params: { id } }: HttpContextContract) {
     const files = await File.query()
       .select("id", "name", "type", "content_type", "is_public", "size", "created_at", "user_id")
@@ -54,13 +61,12 @@ export default class FilesController {
 
   public async store({ auth, request, response }: HttpContextContract) {
     const { file, owner_id } = await request.validate(FileStoreValidator);
-
-    //TODO validar se já exite um arquivo com o mesmo nome
+    const name = await this.service.generateName({ auth, request });
 
     const _file = await File.create({
       owner_id,
       tenant_id: auth.user!.tenant_id,
-      name: file.clientName,
+      name,
       type: file.extname,
       user_id: auth.user?.id,
       content_type: file.headers["content-type"],
@@ -84,6 +90,23 @@ export default class FilesController {
       return response.status(500).json({ error: error.message });
     }
 
+    response.status(200);
+  }
+
+  public async update({ auth, params: { id }, request, response }: HttpContextContract) {
+    const { name } = await request.validate(FileUpdateValidator);
+
+    const file = await File.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .where("id", id)
+      .firstOrFail();
+
+    const isFileNameExist = await this.service.isFileNameExist({ auth, file, name });
+    if (isFileNameExist) {
+      return response.status(400).json({ message: isFileNameExist.message });
+    }
+
+    await file.merge({ name }).save();
     response.status(200);
   }
 

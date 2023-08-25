@@ -2,7 +2,7 @@ import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import type { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Env from "@ioc:Adonis/Core/Env";
 
-const EXTNAMES = [
+export const EXTNAMES = [
   "doc",
   "xls",
   "csv",
