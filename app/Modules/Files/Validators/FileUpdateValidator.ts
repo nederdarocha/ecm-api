@@ -8,6 +8,7 @@ export class FileUpdateValidator {
 
   public schema = schema.create({
     name: schema.string({}, [
+      rules.maxLength(100),
       rules.regex(/^[^\\/|<>*":?]+$/),
       rules.regex(new RegExp(`^.+\\.(${EXTNAMES.join("|")})$`, "i")),
     ]),
