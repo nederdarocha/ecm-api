@@ -2,11 +2,10 @@ import BaseSeeder from "@ioc:Adonis/Lucid/Seeder";
 import Permission from "App/Modules/Auth/Models/Permission";
 
 export const permissions = [
-  { name: "CRUD-USUÁRIOS", slug: "crud-user" },
-  { name: "CRUD-ENDEREÇO", slug: "crud-address" },
-  { name: "CRUD-PERMISSION", slug: "crud-permission" },
-  { name: "CRUD-ROLE", slug: "crud-role" },
-  { name: "CRUD-CLIENTES", slug: "crud-customer" },
+  { name: "Usuário", slug: "cru-user" },
+  { name: "Endereços", slug: "cru-address" },
+  { name: "Clientes", slug: "cru-customer" },
+  { name: "Arquivos", slug: "cru-file" },
 ];
 
 export default class PermissionSeeder extends BaseSeeder {

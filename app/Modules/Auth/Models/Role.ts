@@ -15,6 +15,9 @@ export default class Role extends BaseModel {
   @column()
   public description?: string;
 
+  @column({ serializeAs: null })
+  public visible: boolean;
+
   @manyToMany(() => Permission, {
     pivotTable: "permission_role",
     pivotForeignKey: "role_id",

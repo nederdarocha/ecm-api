@@ -5,11 +5,11 @@ import RoleUpdateValidator from "../Validators/RoleUpdateValidator";
 
 export default class RoleController {
   public async all({}: HttpContextContract) {
-    return Role.query().select("id", "name").orderBy("name", "asc");
+    return Role.query().select("id", "name").where("visible", true).orderBy("name", "asc");
   }
 
   public async index({}: HttpContextContract) {
-    return Role.query().select("*").preload("permissions").orderBy("name", "asc");
+    return Role.query().where("visible", true).preload("permissions").orderBy("name", "asc");
   }
 
   public async store({ request }: HttpContextContract) {
@@ -20,7 +20,13 @@ export default class RoleController {
     return role.load("permissions");
   }
 
-  public async show({}: HttpContextContract) {}
+  public async show({ params }: HttpContextContract) {
+    return Role.query()
+      .where("visible", true)
+      .where("id", params.id)
+      .preload("permissions")
+      .firstOrFail();
+  }
 
   public async update({ request, params, response }: HttpContextContract) {
     const { permission_ids, ...data } = await request.validate(RoleUpdateValidator);

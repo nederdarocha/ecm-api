@@ -9,10 +9,10 @@ Route.group(() => {
   .middleware(["authByUrl"]);
 
 Route.group(() => {
-  Route.get("/owner/:id", "FileController.ownerIndex");
-  Route.put("/:id", "FileController.update");
-  Route.delete("/:id", "FileController.destroy");
-  Route.post("/", "FileController.store");
+  Route.get("/owner/:id", "FileController.ownerIndex").middleware("acl:r-file");
+  Route.put("/:id", "FileController.update").middleware("acl:u-file");
+  Route.delete("/:id", "FileController.destroy").middleware("acl:d-file");
+  Route.post("/", "FileController.store").middleware("acl:c-file");
 })
   .prefix("/files")
   .namespace("App/Modules/Files/Controllers")

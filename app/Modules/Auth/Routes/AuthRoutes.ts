@@ -5,7 +5,7 @@ Route.group(() => {
   Route.post("/refresh", "AuthController.refresh");
   Route.post("/forgot", "AuthController.forgot");
   Route.post("/reset", "AuthController.reset");
-  Route.post("/sign-out", "AuthController.signOut").middleware("auth");
+  Route.post("/sign-out", "AuthController.signOut").middleware(["auth"]);
 })
   .prefix("auth")
   .namespace("App/Modules/Auth/Controllers");

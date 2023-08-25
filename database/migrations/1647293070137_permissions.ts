@@ -6,8 +6,12 @@ export default class Permissions extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
-      table.string("name", 100).notNullable().unique();
+      table.string("name", 100);
       table.string("slug", 100).notNullable().unique().index();
+      table.boolean("c").defaultTo(false);
+      table.boolean("r").defaultTo(false);
+      table.boolean("u").defaultTo(false);
+      table.boolean("d").defaultTo(false);
       table.string("description").nullable();
 
       /**

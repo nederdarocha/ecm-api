@@ -12,7 +12,7 @@ export default class Acl {
       return response.unauthorized();
     }
 
-    const slug = await getUserAcl(user.id);
+    const slug = await getUserAcl({ user_id: user.id });
     const middlewareParamsWithAdmin = [...middlewareParams, "admin"];
 
     if (intersection(slug, middlewareParamsWithAdmin).length < 1) {

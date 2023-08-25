@@ -108,7 +108,7 @@ export default class UsersController {
 
   public async me({ auth: { user } }: HttpContextContract) {
     if (user) {
-      const acl = await getUserAcl(user.id);
+      const acl = await getUserAcl({ user_id: user.id, short: true });
 
       return {
         id: user.id,
@@ -140,7 +140,7 @@ export default class UsersController {
     }
 
     await user.merge(data).save();
-    const acl = await getUserAcl(user?.id!);
+    const acl = await getUserAcl({ user_id: user?.id!, short: true });
 
     return {
       id: user.id,

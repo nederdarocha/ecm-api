@@ -6,12 +6,12 @@ import bcrypt from "bcrypt";
 
 export default class UserSeeder extends BaseSeeder {
   public async run() {
-    const [admin, supp, supp_2] = await UserFactory.merge([
+    const [supAdmin, admin, supp] = await UserFactory.merge([
       {
         tenant_id: "a2db73d8-c917-4558-8451-1a9f235b7d6b",
-        first_name: "Admin",
-        last_name: "Bento",
-        email: "admin@admin.com",
+        first_name: "Super",
+        last_name: "Admin",
+        email: "admin@bento.dev.br",
         document: "11111111111",
         phone: "21964276349",
         password: Env.get("USER_PASSWORD", "secret"),
@@ -21,7 +21,7 @@ export default class UserSeeder extends BaseSeeder {
         tenant_id: "a2db73d8-c917-4558-8451-1a9f235b7d6b",
         first_name: "User",
         last_name: "Bento",
-        email: "user@user.com",
+        email: "user@bento.dev.br",
         document: "22222222222",
         password: Env.get("USER_PASSWORD", "secret"),
         salt: await bcrypt.genSalt(10),
@@ -31,16 +31,18 @@ export default class UserSeeder extends BaseSeeder {
         tenant_id: "a2db73d8-c917-4558-8451-1a9f235b7d6b",
         first_name: "Supporter",
         last_name: "Bento",
-        email: "supp@supp.com",
+        email: "supp@bento.dev.br",
         document: "33333333333",
         password: Env.get("USER_PASSWORD", "secret"),
         salt: await bcrypt.genSalt(10),
       },
     ]).createMany(99);
 
-    const [roleAdmin, roleSupp] = await Role.query().whereIn("slug", ["admin", "supp"]);
-    await admin.related("roles").sync([roleAdmin.id, roleSupp.id]);
+    const [roleSupAdmin, roleAdmin, roleSupp] = await Role.query()
+      .whereIn("slug", ["sup_admin", "admin", "supp"])
+      .orderBy("created_at", "asc");
+    await supAdmin.related("roles").sync([roleSupAdmin.id, roleAdmin.id]);
+    await admin.related("roles").sync([roleAdmin.id]);
     await supp.related("roles").sync([roleSupp.id]);
-    await supp_2.related("roles").sync([roleSupp.id]);
   }
 }

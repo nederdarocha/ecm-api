@@ -9,6 +9,7 @@ export default class Roles extends BaseSchema {
       table.string("name", 100).notNullable().unique();
       table.string("slug", 100).notNullable().unique().index();
       table.string("description").nullable();
+      table.boolean("visible").defaultTo(true);
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

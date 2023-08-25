@@ -1,6 +1,11 @@
 import Database from "@ioc:Adonis/Lucid/Database";
+interface GetUserAclProps {
+  user_id: string;
+  short?: boolean;
+}
 
-export async function getUserAcl(user_id: string): Promise<string[]> {
+export async function getUserAcl({ user_id, short = false }: GetUserAclProps): Promise<string[]> {
+  //TODO criar cache as permissões do usuário
   const { rows } = await Database.rawQuery(
     `
     (SELECT r.slug FROM role_user ru
@@ -15,5 +20,25 @@ export async function getUserAcl(user_id: string): Promise<string[]> {
     { id: user_id }
   );
 
-  return rows.map(({ slug }) => slug);
+  if (!rows || rows.length < 1) {
+    return [];
+  }
+
+  if (short) {
+    return rows.map((row) => row.slug);
+  }
+
+  let permissions: Array<string> = [];
+
+  for (const row of rows) {
+    if (row.slug.match(/-/)) {
+      const [initialsAction, name] = row.slug.split("-");
+      const _permissions = initialsAction.split("").map((initial) => `${initial}-${name}`);
+      permissions = [...permissions, ..._permissions];
+    } else {
+      permissions.push(row.slug);
+    }
+  }
+
+  return permissions;
 }

@@ -8,9 +8,13 @@ Route.group(() => {
   Route.post("users/avatar", "UserController.avatar");
   Route.post("users/change-password", "UserController.changePassword");
 
-  Route.group(() => {
-    Route.resource("users", "UserController").except(["edit", "create"]);
-  }).middleware("acl:crud-user");
+  Route.resource("users", "UserController").apiOnly().middleware({
+    store: "acl:c-user",
+    index: "acl:r-user",
+    show: "acl:r-user",
+    update: "acl:u-user",
+    destroy: "acl:d-user",
+  });
 })
   .middleware(["auth", "sleep:1000"])
   .namespace("App/Modules/Users/Controllers");
