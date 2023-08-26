@@ -9,7 +9,7 @@ export default class RoleController {
   }
 
   public async index({}: HttpContextContract) {
-    return Role.query().where("visible", true).preload("permissions").orderBy("name", "asc");
+    return Role.query().preload("permissions").where("visible", true).orderBy("name", "asc");
   }
 
   public async store({ request }: HttpContextContract) {
@@ -23,7 +23,7 @@ export default class RoleController {
   public async show({ params }: HttpContextContract) {
     return Role.query()
       .where("visible", true)
-      .where("id", params.id)
+      .andWhere("id", params.id)
       .preload("permissions")
       .firstOrFail();
   }

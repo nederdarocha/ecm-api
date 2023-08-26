@@ -1,8 +1,21 @@
 import Route from "@ioc:Adonis/Core/Route";
 
 Route.group(() => {
-  Route.get("permissions/all", "PermissionController.all");
-  Route.resource("permissions", "PermissionController").except(["edit", "create"]);
+  Route.get("/all", "PermissionController.all");
+
+  Route.group(() => {
+    Route.put("/related-role/:id", "PermissionController.updateRelatedRole");
+    Route.post("/related-role", "PermissionController.storeRelatedRole");
+    Route.delete(":id", "PermissionController.destroy");
+  }).middleware(["acl:sup_admin"]);
+
+  Route.group(() => {
+    Route.put("/partial/:id", "PermissionController.updatePartial").middleware("sleep:1000");
+    Route.put(":id", "PermissionController.update");
+    Route.post("", "PermissionController.store");
+    Route.get("", "PermissionController.index");
+  }).middleware("acl:admin");
 })
-  .middleware(["auth", "acl:crud-permission"])
+  .prefix("permissions")
+  .middleware(["auth"])
   .namespace("App/Modules/Auth/Controllers");

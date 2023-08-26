@@ -2,7 +2,10 @@ import Route from "@ioc:Adonis/Core/Route";
 
 Route.group(() => {
   Route.get("roles/all", "RoleController.all");
-  Route.resource("roles", "RoleController").except(["edit", "create"]);
+
+  Route.group(() => {
+    Route.resource("roles", "RoleController").except(["edit", "create"]);
+  }).middleware("acl:admin");
 })
-  .middleware(["auth", "acl:crud-role"])
+  .middleware(["auth"])
   .namespace("App/Modules/Auth/Controllers");

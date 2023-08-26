@@ -7,3 +7,5 @@ export * from "./RoleStoreValidator";
 export * from "./RoleUpdateValidator";
 export * from "./PermissionStoreValidator";
 export * from "./PermissionUpdateValidator";
+export * from "./PermissionUpdatePartialValidator";
+export * from "./PermissionStoreRelatedRoleValidator";

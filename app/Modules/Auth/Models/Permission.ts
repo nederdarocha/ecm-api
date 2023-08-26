@@ -15,6 +15,18 @@ export default class Permission extends BaseModel {
   @column()
   public description?: string;
 
+  @column()
+  public c: boolean;
+
+  @column()
+  public r: boolean;
+
+  @column()
+  public u: boolean;
+
+  @column()
+  public d: boolean;
+
   @manyToMany(() => Role, {
     pivotTable: "permission_role",
     pivotForeignKey: "permission_id",
