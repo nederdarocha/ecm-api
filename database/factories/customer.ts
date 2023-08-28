@@ -1,12 +1,12 @@
 import Factory from "@ioc:Adonis/Lucid/Factory";
-import { tenants } from "Database/seeders/00_Tenants";
+import { TENANTS } from "Database/constants";
 import Customer from "App/Modules/Customers/Models/Customer";
 import { AddressFactory } from "./address";
 import { UserFactory } from "./user";
 
 export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
   return {
-    tenant_id: tenants[faker.helpers.arrayElement([0, 1, 2])].id,
+    tenant_id: TENANTS[faker.helpers.arrayElement(["alfa", "bravo", "charlie"])].id,
     name: faker.name.fullName(),
     email: faker.helpers.unique(() => faker.internet.email()),
     phone: faker.helpers.unique(() => faker.phone.number("###########")),

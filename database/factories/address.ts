@@ -1,10 +1,10 @@
 import Address from "App/Modules/Addresses/Models/Address";
 import Factory from "@ioc:Adonis/Lucid/Factory";
-import { tenants } from "Database/seeders/00_Tenants";
+import { TENANTS } from "Database/constants";
 
 export const AddressFactory = Factory.define(Address, ({ faker }) => {
   return {
-    tenant_id: tenants[0].id,
+    tenant_id: TENANTS.alfa.id,
     name: "Casa",
     zip: faker.helpers.unique(() => faker.address.zipCode("#####-###")),
     favorite: true,
