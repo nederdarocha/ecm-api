@@ -2,7 +2,7 @@ import Database from "@ioc:Adonis/Lucid/Database";
 import { test } from "@japa/runner";
 import { getToken } from "Tests/utils";
 import { CustomerFactory, UserFactory } from "Database/factories";
-import { tenants } from "Database/seeders/00_Tenants";
+import { TENANTS } from "Database/constants";
 
 test.group("customers", async (group) => {
   // abre uma transação para cada teste
@@ -36,7 +36,7 @@ test.group("customers", async (group) => {
 
   test("conseguir listar clientes", async ({ client }) => {
     const token = await getToken();
-    const customer = await CustomerFactory.merge({ tenant_id: tenants[0].id })
+    const customer = await CustomerFactory.merge({ tenant_id: TENANTS.alfa.id })
       .with("addresses", 1)
       .create();
 
@@ -54,7 +54,7 @@ test.group("customers", async (group) => {
 
   test("conseguir criar cliente", async ({ client }) => {
     const token = await getToken();
-    const user = await CustomerFactory.merge({ tenant_id: tenants[0].id }).make();
+    const user = await CustomerFactory.merge({ tenant_id: TENANTS.alfa.id }).make();
 
     const response = await client.post("customers").json(user.toJSON()).bearerToken(token);
     response.assertStatus(200);
@@ -66,8 +66,8 @@ test.group("customers", async (group) => {
   test("conseguir editar cliente", async ({ client }) => {
     const token = await getToken();
 
-    const customer = await CustomerFactory.merge({ tenant_id: tenants[0].id }).create();
-    const customer2 = await CustomerFactory.merge({ tenant_id: tenants[0].id }).make();
+    const customer = await CustomerFactory.merge({ tenant_id: TENANTS.alfa.id }).create();
+    const customer2 = await CustomerFactory.merge({ tenant_id: TENANTS.alfa.id }).make();
     const { tenant_id, ..._customer } = customer2.toJSON();
 
     const response = await client
@@ -82,7 +82,7 @@ test.group("customers", async (group) => {
   test("falhar ao ver um cliente de tenant diferente", async ({ client }) => {
     const token = await getToken();
 
-    const customer = await CustomerFactory.merge({ tenant_id: tenants[2].id }).create();
+    const customer = await CustomerFactory.merge({ tenant_id: TENANTS.bravo.id }).create();
     const response = await client.get(`customers/${customer.id}`).bearerToken(token);
 
     response.assertStatus(403);
@@ -91,13 +91,11 @@ test.group("customers", async (group) => {
   test("falhar ao editar usuário de tenant diferente", async ({ client }) => {
     const token = await getToken();
 
-    const customer = await CustomerFactory.merge({ tenant_id: tenants[1].id }).create();
-    const customer2 = await CustomerFactory.make();
-    const { tenant_id, ..._customer } = customer2.toJSON();
+    const customer = await CustomerFactory.merge({ tenant_id: TENANTS.bravo.id }).create();
 
     const response = await client
       .put(`customers/${customer.id}`)
-      .json(_customer)
+      .json(customer.toJSON())
       .bearerToken(token);
 
     response.assertStatus(403);
@@ -107,12 +105,12 @@ test.group("customers", async (group) => {
     const token = await getToken();
 
     const customer = await CustomerFactory.merge({
-      tenant_id: tenants[0].id,
+      tenant_id: TENANTS.alfa.id,
     }).create();
 
     const customer2 = (
       await CustomerFactory.merge({
-        tenant_id: tenants[0].id,
+        tenant_id: TENANTS.alfa.id,
       }).make()
     ).toJSON();
 
@@ -154,7 +152,7 @@ test.group("customers", async (group) => {
     const token = await getToken();
 
     const [customer, customer2] = await CustomerFactory.merge({
-      tenant_id: tenants[0].id,
+      tenant_id: TENANTS.alfa.id,
     }).createMany(2);
 
     //cria o segundo usuário com cpf repetido

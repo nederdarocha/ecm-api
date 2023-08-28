@@ -11,7 +11,7 @@ export const USERS = {
     document: "00266668712",
     phone: "21964276349",
     password: Env.get("USER_PASSWORD", "secret"),
-    salt: crypto.randomUUID().split("-")[4],
+    salt: crypto.randomBytes(16).toString("hex"),
   },
   admin: {
     tenant_id: TENANTS.alfa.id,
@@ -20,7 +20,7 @@ export const USERS = {
     email: "admin@bento.dev.br",
     document: "11147771022",
     password: Env.get("USER_PASSWORD", "secret"),
-    salt: crypto.randomUUID().split("-")[4],
+    salt: crypto.randomBytes(16).toString("hex"),
   },
   supp: {
     tenant_id: TENANTS.alfa.id,
@@ -29,6 +29,6 @@ export const USERS = {
     email: "supp@bento.dev.br",
     document: "22830168860",
     password: Env.get("USER_PASSWORD", "secret"),
-    salt: crypto.randomUUID().split("-")[4],
+    salt: crypto.randomBytes(16).toString("hex"),
   },
 };

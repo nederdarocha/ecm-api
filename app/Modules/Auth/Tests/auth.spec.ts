@@ -5,6 +5,7 @@ import Mail from "@ioc:Adonis/Addons/Mail";
 import { getMe, getToken } from "Tests/utils";
 import { v4 as uuid } from "uuid";
 import { DateTime } from "luxon";
+import { USERS } from "Database/constants";
 
 test.group("auth", (group) => {
   group.each.setup(async () => {
@@ -42,10 +43,9 @@ test.group("auth", (group) => {
 
   test("conseguir se autenticar", async ({ client }) => {
     const response = await client.post("/auth/sign-in").json({
-      user: "admin@admin.com",
-      password: Env.get("USER_PASSWORD"),
+      user: USERS.admin.email,
+      password: USERS.admin.password,
     });
-    // console.log(response.body());
 
     response.assertStatus(200);
     response.assert?.exists(response.body().token);
@@ -61,7 +61,7 @@ test.group("auth", (group) => {
   });
 
   test("conseguir criar email de recuperar senha", async ({ client, assert }) => {
-    const EMAIL = "admin@admin.com";
+    const EMAIL = USERS.admin.email;
     const mailer = Mail.fake();
     await client.post("/auth/forgot").json({ email: EMAIL });
     const user = await Database.query().from("users").where("email", EMAIL).firstOrFail();
@@ -76,7 +76,7 @@ test.group("auth", (group) => {
   });
 
   test("falhar em solicitar por muitas vezes a recuperação de senha", async ({ client }) => {
-    const EMAIL = "admin@admin.com";
+    const EMAIL = USERS.admin.email;
 
     let response = await client.post("/auth/forgot").json({ email: EMAIL });
     response.assertStatus(200);

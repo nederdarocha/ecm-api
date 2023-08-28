@@ -1,11 +1,9 @@
 import User from "App/Modules/Users/Models/User";
 import Factory from "@ioc:Adonis/Lucid/Factory";
 import { TENANTS } from "Database/constants";
-import bcrypt from "bcrypt";
+import crypto from "node:crypto";
 
 export const UserFactory = Factory.define(User, async ({ faker }) => {
-  const salt = await bcrypt.genSalt(10);
-
   return {
     tenant_id: TENANTS[faker.helpers.arrayElement(["alfa", "bravo", "charlie"])].id,
     first_name: faker.name.firstName(),
@@ -14,7 +12,7 @@ export const UserFactory = Factory.define(User, async ({ faker }) => {
     email: faker.helpers.unique(() => faker.internet.email()),
     phone: faker.helpers.unique(() => faker.phone.number("###########")),
     password: "secret",
-    salt,
+    salt: crypto.randomBytes(16).toString("hex"),
     status: true,
   };
 }).build();

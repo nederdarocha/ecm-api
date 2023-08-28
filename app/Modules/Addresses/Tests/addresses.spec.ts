@@ -2,7 +2,7 @@ import Database from "@ioc:Adonis/Lucid/Database";
 import { test } from "@japa/runner";
 import { getToken } from "Tests/utils";
 import { AddressFactory, UserFactory } from "Database/factories";
-import { tenants } from "Database/seeders/00_Tenants";
+import { TENANTS } from "Database/constants";
 
 test.group("addresses", async (group) => {
   // abre uma transação para cada teste
@@ -16,8 +16,6 @@ test.group("addresses", async (group) => {
     const token = await getToken(user.email, "password");
 
     const resp_store = await client.post("/addresses").json({}).bearerToken(token);
-    console.log(resp_store.body());
-
     resp_store.assertStatus(403);
 
     const resp_list = await client.get("/addresses").bearerToken(token);
@@ -38,14 +36,14 @@ test.group("addresses", async (group) => {
 
   test("conseguir criar um endereço", async ({ client }) => {
     const token = await getToken();
-
     const user = await UserFactory.create();
     const address = await AddressFactory.merge({
       owner_id: user.id,
-      tenant_id: tenants[0].id,
+      tenant_id: TENANTS.alfa.id,
     }).make();
 
     const response = await client.post(`/addresses`).json(address.toJSON()).bearerToken(token);
+    console.log(response.body());
 
     response.assertStatus(200);
     response.assert?.assert(address.toJSON());
