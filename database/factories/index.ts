@@ -1,5 +1,8 @@
 // import Factory from '@ioc:Adonis/Lucid/Factory'
 
-export * from "./user";
-export * from "./address";
-export * from "./customer";
+export * from "./UserFactory";
+export * from "./AddressFactory";
+export * from "./CustomerFactory";
+export * from "./CategoryFactory";
+export * from "./ServiceFactory";
+export * from "./TemplateFactory";

@@ -1,8 +1,8 @@
 import Factory from "@ioc:Adonis/Lucid/Factory";
 import { TENANTS } from "Database/constants";
 import Customer from "App/Modules/Customers/Models/Customer";
-import { AddressFactory } from "./address";
-import { UserFactory } from "./user";
+import { AddressFactory } from "./AddressFactory";
+import { UserFactory } from "./UserFactory";
 
 export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
   return {

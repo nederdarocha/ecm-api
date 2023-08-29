@@ -43,7 +43,6 @@ test.group("addresses", async (group) => {
     }).make();
 
     const response = await client.post(`/addresses`).json(address.toJSON()).bearerToken(token);
-    console.log(response.body());
 
     response.assertStatus(200);
     response.assert?.assert(address.toJSON());
