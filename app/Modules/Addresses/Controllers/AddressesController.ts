@@ -1,5 +1,5 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import { CustomerValidator } from "../Validators";
+import { AddressValidator } from "../Validators";
 import Address from "../Models/Address";
 import Database from "@ioc:Adonis/Lucid/Database";
 
@@ -50,7 +50,7 @@ export default class AddressesController {
   }
 
   public async store({ auth, request }: HttpContextContract) {
-    const { ...data } = await request.validate(CustomerValidator);
+    const { ...data } = await request.validate(AddressValidator);
     if (data.favorite) {
       const isAddressFavorite = await Address.query()
         .where("tenant_id", auth.user!.tenant_id)
@@ -84,7 +84,7 @@ export default class AddressesController {
   }
 
   public async update({ auth, request, params: { id } }: HttpContextContract) {
-    let { ...data } = await request.validate(CustomerValidator);
+    let { ...data } = await request.validate(AddressValidator);
 
     const address = await Address.query()
       .where("tenant_id", auth.user!.tenant_id)
