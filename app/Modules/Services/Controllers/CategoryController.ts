@@ -17,15 +17,11 @@ export default class CategoryController {
       .orderBy("name", "asc");
   }
 
-  public async index({ auth, paginate }: HttpContextContract) {
-    const categories = await Category.query()
+  public async index({ auth }: HttpContextContract) {
+    return Category.query()
+      .select("id", "name", "description")
       .where("tenant_id", auth.user!.tenant_id)
-      .orderBy("name", "asc")
-      .paginate(paginate.page, paginate.per_page);
-
-    return categories.serialize({
-      fields: { omit: ["tenant_id", "user_id"] },
-    });
+      .orderBy("name", "asc");
   }
 
   public async store({ auth, request, response }: HttpContextContract) {

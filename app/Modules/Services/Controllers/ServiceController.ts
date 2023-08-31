@@ -17,15 +17,12 @@ export default class ServiceController {
       .orderBy("name", "asc");
   }
 
-  public async index({ auth, paginate }: HttpContextContract) {
-    const services = await Service.query()
+  public async index({ auth }: HttpContextContract) {
+    return Service.query()
+      .select("id", "name", "description", "out_court", "category_id")
+      .preload("category", (sq) => sq.select("id", "name"))
       .where("tenant_id", auth.user!.tenant_id)
-      .orderBy("name", "asc")
-      .paginate(paginate.page, paginate.per_page);
-
-    return services.serialize({
-      fields: { omit: ["tenant_id", "user_id"] },
-    });
+      .orderBy("name", "asc");
   }
 
   public async store({ auth, request, response }: HttpContextContract) {
