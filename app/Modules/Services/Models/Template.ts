@@ -15,7 +15,7 @@ export default class Template extends BaseModel {
   public service_id: string;
 
   @column()
-  public sequence: number;
+  public order: number;
 
   @column()
   public name: string;

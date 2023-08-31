@@ -6,7 +6,7 @@ import { CategoryFactory } from "./CategoryFactory";
 export const ServiceFactory = Factory.define(Service, ({ faker }) => {
   return {
     tenant_id: TENANTS.alfa.id,
-    name: faker.name.jobTitle(),
+    name: faker.helpers.unique(() => faker.name.jobTitle()),
     description: faker.lorem.words(3),
     out_court: faker.helpers.arrayElement([true, false]),
     price: faker.datatype.number(1000),

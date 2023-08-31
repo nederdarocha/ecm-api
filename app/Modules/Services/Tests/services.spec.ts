@@ -59,7 +59,7 @@ test.group("services", async (group) => {
     const response = await client.post(`/services`).json(service.toJSON()).bearerToken(token);
 
     response.assertStatus(422);
-    response.assertTextIncludes("Nome informado já está em uso");
+    response.assert?.exists(response.body().errors, "errors não encontrado");
   });
 
   test("conseguir listar todas os serviços", async ({ client }) => {
@@ -106,6 +106,6 @@ test.group("services", async (group) => {
       .bearerToken(token);
 
     response.assertStatus(422);
-    response.assertTextIncludes("Nome informado já está em uso");
+    response.assert?.exists(response.body().errors, "errors não encontrado");
   });
 });

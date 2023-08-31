@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.uuid("id").primary().defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
       table.uuid("tenant_id").references("id").inTable("tenants").notNullable().index();
       table.uuid("service_id").references("id").inTable("services").onDelete("CASCADE");
-      table.integer("sequence").defaultTo(0);
+      table.integer("order").defaultTo(0);
       table.string("name");
       table.string("description");
 
