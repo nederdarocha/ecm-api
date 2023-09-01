@@ -46,6 +46,7 @@ export default class ServiceController {
 
   public async show({ auth, params: { id } }: HttpContextContract) {
     return await Service.query()
+      .preload("category", (sq) => sq.select("id", "name"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
