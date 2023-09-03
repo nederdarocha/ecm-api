@@ -2,8 +2,8 @@ import { DateTime } from "luxon";
 import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
 import Service from "./Service";
 
-export default class Template extends BaseModel {
-  public static table = "templates";
+export default class ExtraData extends BaseModel {
+  public static table = "extra_data";
 
   @column({ isPrimary: true })
   public id: string;
@@ -18,10 +18,25 @@ export default class Template extends BaseModel {
   public order: number;
 
   @column()
+  public label: string;
+
+  @column()
   public name: string;
 
   @column()
-  public description: string;
+  public type: string;
+
+  @column()
+  public options: string;
+
+  @column()
+  public decimal_place: number;
+
+  @column()
+  public style: string;
+
+  @column()
+  public status: boolean;
 
   @column()
   public user_id: string;
