@@ -3,6 +3,8 @@ import { DateTime } from "luxon";
 import { CaseValidator } from "../Validators";
 import Case from "../Models/Case";
 import { CaseService } from "../Services/CaseService";
+import { schema } from "@ioc:Adonis/Core/Validator";
+import CaseCustomer from "../Models/CaseCustomer";
 
 export default class CaseController {
   private service: CaseService;
@@ -52,6 +54,31 @@ export default class CaseController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
+  }
+
+  public async addCustomer({ auth, request, response, params: { id } }: HttpContextContract) {
+    const { customer_id } = await request.validate({
+      schema: schema.create({ customer_id: schema.string() }),
+    });
+
+    const _case = await Case.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await CaseCustomer.create({
+      tenant_id: auth.user!.tenant_id,
+      case_id: _case.id,
+      customer_id,
+      user_id: auth.user!.id,
+    });
+
+    // alterar o status de rascunho para aberto
+    if (_case.status === "draft") {
+      await _case.merge({ status: "open" }).save();
+    }
+
+    response.status(200);
   }
 
   public async update({ auth, request, params: { id } }: HttpContextContract) {
