@@ -3,7 +3,7 @@ import Route from "@ioc:Adonis/Core/Route";
 Route.where("id", Route.matchers.uuid());
 
 Route.group(() => {
-  Route.get("categories/all", "CategoryController.all").middleware("acl:r-category");
+  Route.get("categories/all", "CategoryController.all");
   Route.resource("categories", "CategoryController").apiOnly().middleware({
     store: "acl:c-category",
     index: "acl:r-category",
