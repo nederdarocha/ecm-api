@@ -26,7 +26,7 @@ export default class CaseController {
     if (isCaseDraft) {
       return response.status(200).json({
         data: isCaseDraft.toJSON(),
-        message: "Use esse rascunho, para aproveitar o número.",
+        message: "Use este rascunho para aproveitar o número gerado.",
       });
     }
 
