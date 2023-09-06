@@ -2,6 +2,7 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import { ServiceValidator } from "../Validators";
 import Service from "../Models/Service";
 import { ServiceService } from "../Services/ServiceService";
+import ExtraData from "../Models/ExtraData";
 
 export default class ServiceController {
   private service: ServiceService;
@@ -78,5 +79,14 @@ export default class ServiceController {
     await address.delete();
 
     return response.status(204);
+  }
+
+  public async getExtraData({ auth, params: { id } }: HttpContextContract) {
+    const data = await ExtraData.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("service_id", id)
+      .orderBy("order", "asc");
+
+    return data.map((item) => item.serialize({ fields: { omit: ["tenant_id", "user_id"] } }));
   }
 }

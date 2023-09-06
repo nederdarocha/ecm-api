@@ -4,6 +4,8 @@ Route.where("id", Route.matchers.uuid());
 
 Route.group(() => {
   Route.get("services/all", "ServiceController.all");
+  Route.get("services/:id/extra-data", "ServiceController.getExtraData");
+
   Route.resource("services", "ServiceController").apiOnly().middleware({
     store: "acl:c-category",
     index: "acl:r-category",
