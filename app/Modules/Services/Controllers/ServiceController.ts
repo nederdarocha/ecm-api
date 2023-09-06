@@ -3,6 +3,7 @@ import { ServiceValidator } from "../Validators";
 import Service from "../Models/Service";
 import { ServiceService } from "../Services/ServiceService";
 import ExtraData from "../Models/ExtraData";
+import File from "App/Modules/Files/Models/File";
 
 export default class ServiceController {
   private service: ServiceService;
@@ -86,6 +87,15 @@ export default class ServiceController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("service_id", id)
       .orderBy("order", "asc");
+
+    return data.map((item) => item.serialize({ fields: { omit: ["tenant_id", "user_id"] } }));
+  }
+
+  public async getTemplates({ auth, params: { id } }: HttpContextContract) {
+    const data = await File.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("owner_id", id)
+      .orderBy("name", "asc");
 
     return data.map((item) => item.serialize({ fields: { omit: ["tenant_id", "user_id"] } }));
   }
