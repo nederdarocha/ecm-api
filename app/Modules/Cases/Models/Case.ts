@@ -1,6 +1,7 @@
 import { DateTime } from "luxon";
 import { column, BaseModel, manyToMany, ManyToMany } from "@ioc:Adonis/Lucid/Orm";
 import Customer from "App/Modules/Customers/Models/Customer";
+import Service from "App/Modules/Services/Models/Service";
 
 export default class Case extends BaseModel {
   public static table = "cases";
@@ -52,4 +53,11 @@ export default class Case extends BaseModel {
     localKey: "id",
   })
   public customers: ManyToMany<typeof Customer>;
+
+  @manyToMany(() => Service, {
+    pivotTable: "case_service",
+    pivotForeignKey: "service_id",
+    localKey: "id",
+  })
+  public services: ManyToMany<typeof Service>;
 }
