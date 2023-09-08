@@ -12,7 +12,7 @@ export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
     phone: faker.helpers.unique(() => faker.phone.number("###########")),
     document: faker.helpers.unique(() => faker.finance.account(11)),
     document_secondary: faker.helpers.unique(() => faker.finance.account(11)),
-    natural: faker.helpers.arrayElement([true, false]),
+    natural: true,
     gender: faker.helpers.arrayElement(["Masculino", "Feminino"]),
     bank: faker.finance.accountName(),
     branch: faker.finance.account(4),

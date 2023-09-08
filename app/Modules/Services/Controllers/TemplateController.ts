@@ -2,21 +2,34 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Drive from "@ioc:Adonis/Core/Drive";
 import File from "App/Modules/Files/Models/File";
 import User from "App/Modules/Users/Models/User";
-
-import * as fs from "fs";
-import { resolve } from "node:path";
+import { TemplateService } from "../Services/TemplateService";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 
+import slugify from "slugify";
+
 export default class TemplateController {
-  public async download({ userID, response, params: { id } }: HttpContextContract) {
+  private service;
+
+  constructor() {
+    this.service = new TemplateService();
+  }
+
+  public async download({
+    userID,
+    response,
+    params: { case_customer_service_id, id },
+  }: HttpContextContract) {
     const user = await User.findOrFail(userID);
     const file = await File.query()
       .where("tenant_id", user.tenant_id)
       .where("id", id)
       .firstOrFail();
 
-    response.attachment(file.name);
+    const data = await this.service.getData(case_customer_service_id);
+    const file_name = slugify(data.cliente_nome, "_") + "_" + file.name;
+
+    response.attachment(file_name);
     response.header("Content-Type", file.content_type);
     response.type("application/octet-stream");
 
@@ -34,26 +47,20 @@ export default class TemplateController {
       linebreaks: true,
     });
 
-    doc.render({
-      first_name: "John",
-      last_name: "Doe",
-      phone: "0652455478",
-      description: "New Website",
-    });
+    doc.render(data);
 
-    const blob = doc.getZip().generate({
+    // doc.render({
+    //   name: data.name,
+    //   document: data.document,
+    //   phone: data.phone,
+    // });
+
+    const bufferRender = doc.getZip().generate({
       type: "nodebuffer",
-      compression: "DEFLATE",
+      // compression: "DEFLATE",
       mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     });
 
-    const buf = await doc.getZip().generate({
-      type: "nodebuffer",
-      compression: "DEFLATE",
-    });
-
-    fs.writeFileSync(resolve(__dirname, "output.docx"), buf);
-
-    response.send(blob);
+    response.send(bufferRender);
   }
 }

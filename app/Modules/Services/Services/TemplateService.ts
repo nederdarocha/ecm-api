@@ -1,29 +1,51 @@
-import { RequestContract } from "@ioc:Adonis/Core/Request";
-import { AuthContract } from "@ioc:Adonis/Addons/Auth";
-import Template from "../Models/Template";
-import { TemplateValidator, TemplateUpdateValidator } from "../Validators";
-
-interface IsExiteNameProps {
-  auth: AuthContract;
-  request: RequestContract;
-  id?: string;
-}
+import Database from "@ioc:Adonis/Lucid/Database";
+import { helpers } from "App/Common/utils/helper";
 
 export class TemplateService {
-  public async isExiteNameTemplate({ auth, request, id }: IsExiteNameProps): Promise<Error | void> {
-    const { name } = id
-      ? await request.validate(TemplateUpdateValidator)
-      : await request.validate(TemplateValidator);
+  public async getData(case_customer_service_id: string): Promise<any> {
+    const {
+      rows: [data],
+    } = await Database.rawQuery(
+      `
+      select
+      c."name" as cliente_nome,
+      c."document" as cliente_cpf,
+      c.phone as cliente_celular,
+      c.gender as cliente_genero,
+      c."natural" as cliente_natural,
+      a.zip as end_cep,
+      a.street as end_rua,
+      a."number" as end_numero,
+      a.complement as end_complemento,
+      a.neighborhood as end_bairro,
+      a.city as end_cidade,
+      a.state as end_uf
+      from case_customer_service ccs
+      join case_customer cc on ccs.case_customer_id = cc.id
+      join customers c on cc.customer_id = c.id
+      left join addresses a on c.id = a.owner_id
+      where ccs.id = :case_customer_service_id
+      and a.favorite = true
+      limit 1
+      `,
+      { case_customer_service_id }
+    );
 
-    const existName = Template.query()
-      .select("id")
-      .where("name", name)
-      .andWhere("tenant_id", auth.user!.tenant_id);
+    //TODO buscar os dados extras do cliente
 
-    if (id) existName.andWhereNot("id", id);
+    const cliente_endereco = `${String(
+      `${data.end_rua}, ${data.end_numero}, ${data.end_bairro}, ${data.end_cidade}, ${data.end_uf} - CEP ${data.end_cep}`
+    )
+      .replace(/null/g, "")
+      .replace(/,\s,/g, "")}`;
 
-    if (await existName.first()) {
-      return new Error("o Nome informado já está em uso");
-    }
+    return {
+      ...data,
+      cliente_cpf: helpers.document(data.cliente_cpf, data.cliente_natural),
+      cliente_celular: helpers.phone(data.cliente_celular),
+      cliente_endereco,
+      a_o: data.cliente_genero === "Feminino" ? "a" : "o",
+      genero_a_o: data.cliente_genero === "Feminino" ? "a" : "o",
+    };
   }
 }
