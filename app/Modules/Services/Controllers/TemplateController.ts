@@ -3,6 +3,11 @@ import Drive from "@ioc:Adonis/Core/Drive";
 import File from "App/Modules/Files/Models/File";
 import User from "App/Modules/Users/Models/User";
 
+import * as fs from "fs";
+import { resolve } from "node:path";
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
+
 export default class TemplateController {
   public async download({ userID, response, params: { id } }: HttpContextContract) {
     const user = await User.findOrFail(userID);
@@ -23,8 +28,32 @@ export default class TemplateController {
 
     const buffer = Buffer.concat(chunks as Uint8Array[]);
 
-    //
+    const zip = new PizZip(buffer);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+    });
 
-    response.send(buffer);
+    doc.render({
+      first_name: "John",
+      last_name: "Doe",
+      phone: "0652455478",
+      description: "New Website",
+    });
+
+    const blob = doc.getZip().generate({
+      type: "nodebuffer",
+      compression: "DEFLATE",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+
+    const buf = await doc.getZip().generate({
+      type: "nodebuffer",
+      compression: "DEFLATE",
+    });
+
+    fs.writeFileSync(resolve(__dirname, "output.docx"), buf);
+
+    response.send(blob);
   }
 }
