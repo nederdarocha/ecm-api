@@ -27,9 +27,9 @@ export default class TemplateController {
       .firstOrFail();
 
     const data = await this.service.getData(case_customer_service_id);
-    const file_name = slugify(data.cliente_nome, "_") + "_" + file.name;
+    const file_name = slugify(file.name.replace(/\.|docx|-/gi, " ") + "_" + data.cliente_nome, "_");
 
-    response.attachment(file_name);
+    response.attachment(file_name + "." + file.type);
     response.header("Content-Type", file.content_type);
     response.type("application/octet-stream");
 
@@ -47,13 +47,13 @@ export default class TemplateController {
       linebreaks: true,
     });
 
-    doc.render(data);
-
     // doc.render({
     //   name: data.name,
     //   document: data.document,
     //   phone: data.phone,
     // });
+
+    doc.render(data);
 
     const bufferRender = doc.getZip().generate({
       type: "nodebuffer",
