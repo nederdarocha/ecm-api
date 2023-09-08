@@ -82,13 +82,17 @@ export default class ServiceController {
     return response.status(204);
   }
 
-  public async getExtraData({ auth, params: { id } }: HttpContextContract) {
-    const data = await ExtraData.query()
+  public async getExtraData({ auth, params: { id, customer_id } }: HttpContextContract) {
+    const extraData = await ExtraData.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("service_id", id)
       .orderBy("order", "asc");
 
-    return data.map((item) => item.serialize({ fields: { omit: ["tenant_id", "user_id"] } }));
+    //verifica se existe os meta dados e cria se não houver
+    for (const item of extraData) {
+    }
+
+    return extraData.map((item) => item.serialize({ fields: { omit: ["tenant_id", "user_id"] } }));
   }
 
   public async getTemplates({ auth, params: { id } }: HttpContextContract) {

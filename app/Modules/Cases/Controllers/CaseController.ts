@@ -5,7 +5,7 @@ import Case from "../Models/Case";
 import { CaseService } from "../Services/CaseService";
 import { schema } from "@ioc:Adonis/Core/Validator";
 import CaseCustomer from "../Models/CaseCustomer";
-import CaseServiceModel from "../Models/CaseServiceModel";
+import CaseCustomerServiceModel from "../Models/CaseCustomerService";
 
 export default class CaseController {
   private service: CaseService;
@@ -56,55 +56,78 @@ export default class CaseController {
       .firstOrFail();
   }
 
-  public async getServices({ auth, params: { id } }: HttpContextContract) {
-    const caseService = await CaseServiceModel.query()
+  // SERVICES
+  public async getServices({ auth, params: { case_customer_id } }: HttpContextContract) {
+    const caseService = await CaseCustomerServiceModel.query()
       .preload("service")
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("case_id", id);
+      .andWhere("case_customer_id", case_customer_id);
 
-    return caseService.map(({ service }) => ({
+    return caseService.map(({ id, service }) => ({
+      case_customer_service_id: id,
       id: service.id,
       name: service.name,
     }));
   }
+  public async getServiceExtraData({ params: { case_customer_service_id } }: HttpContextContract) {
+    //TODO refatorar para retornar extra e meta data
 
-  public async destroyService({ auth, response, params: { id, service_id } }: HttpContextContract) {
-    const caseService = await CaseServiceModel.query()
-      .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("case_id", id)
-      .andWhere("service_id", service_id)
+    // buscar o serviço
+    // buscar os extra data do serviço
+    // buscar ou criar os meta data do serviço
+
+    const caseService = await CaseCustomerServiceModel.query()
+      .preload("service", (sq) => sq.select("*").preload("extra_data", (sq) => sq.orderBy("order")))
+      .andWhere("id", case_customer_service_id)
       .firstOrFail();
 
-    //TODO verificar se cliente possui serviços vinculados ao caso antes de remover
+    const { service } = caseService;
+    return service?.extra_data?.map((extra_data) => ({
+      label: extra_data.label,
+      name: extra_data.name,
+      options: extra_data.options,
+      style: extra_data.style,
+      type: extra_data.type,
+    }));
+  }
+
+  public async destroyService({
+    auth,
+    response,
+    params: { case_customer_service_id },
+  }: HttpContextContract) {
+    const caseService = await CaseCustomerServiceModel.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", case_customer_service_id)
+      .firstOrFail();
+
+    //TODO verificar se cliente possui pagamento ao serviço antes de remover
 
     await caseService.delete();
     response.status(204);
   }
 
-  public async addService({ auth, request, response, params: { id } }: HttpContextContract) {
+  public async addService({
+    auth,
+    request,
+    response,
+    params: { case_customer_id },
+  }: HttpContextContract) {
     const { service_id } = await request.validate({
       schema: schema.create({ service_id: schema.string() }),
     });
 
-    const _case = await Case.query()
-      .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("id", id)
-      .firstOrFail();
-
-    await CaseServiceModel.create({
+    await CaseCustomerServiceModel.create({
       tenant_id: auth.user!.tenant_id,
-      case_id: id,
       service_id,
+      case_customer_id,
       user_id: auth.user!.id,
     });
 
-    // alterar o status de rascunho para aberto
-    if (_case.status === "draft") {
-      await _case.merge({ status: "open" }).save();
-    }
-
     response.status(200);
   }
+
+  // CUSTOMERS
 
   public async getCustomers({ auth, params: { id } }: HttpContextContract) {
     const caseCustomer = await CaseCustomer.query()
@@ -112,7 +135,8 @@ export default class CaseController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("case_id", id);
 
-    return caseCustomer.map(({ customer }) => ({
+    return caseCustomer.map(({ id, customer }) => ({
+      case_customer_id: id,
       id: customer.id,
       name: customer.name,
       email: customer.email,

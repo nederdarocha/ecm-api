@@ -1,6 +1,8 @@
 import { DateTime } from "luxon";
-import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
+import { column, BaseModel, belongsTo, BelongsTo, hasMany, HasMany } from "@ioc:Adonis/Lucid/Orm";
 import Category from "./Category";
+import { has } from "lodash";
+import ExtraData from "./ExtraData";
 
 export default class Service extends BaseModel {
   public static table = "services";
@@ -46,4 +48,10 @@ export default class Service extends BaseModel {
     localKey: "id",
   })
   public category: BelongsTo<typeof Category>;
+
+  @hasMany(() => ExtraData, {
+    foreignKey: "service_id",
+    localKey: "id",
+  })
+  public extra_data: HasMany<typeof ExtraData>;
 }

@@ -7,11 +7,15 @@ Route.group(() => {
     "acl:u-case"
   );
 
-  Route.post("cases/:id/service", "CaseController.addService").middleware(["acl:u-case"]);
-  Route.get("cases/:id/services", "CaseController.getServices").middleware(["acl:r-case"]);
-  Route.delete("cases/:id/service/:service_id", "CaseController.destroyService").middleware(
-    "acl:u-case"
-  );
+  Route.group(() => {
+    Route.get("services", "CaseController.getServices").middleware("acl:r-case");
+    Route.post("service", "CaseController.addService").middleware("acl:u-case");
+  }).prefix("cases/:case_customer_id");
+
+  Route.group(() => {
+    Route.get("service-extra-data", "CaseController.getServiceExtraData").middleware("acl:u-case");
+    Route.delete("service", "CaseController.destroyService").middleware("acl:u-case");
+  }).prefix("cases/:case_customer_service_id");
 
   Route.resource("cases", "CaseController").apiOnly().middleware({
     store: "acl:c-case",

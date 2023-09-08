@@ -1,7 +1,7 @@
 import BaseSchema from "@ioc:Adonis/Lucid/Schema";
 
 export default class extends BaseSchema {
-  protected tableName = "case_customer";
+  protected tableName = "case_customer_service";
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
@@ -13,10 +13,8 @@ export default class extends BaseSchema {
         .notNullable()
         .index()
         .onDelete("CASCADE");
-      table.uuid("case_id").references("id").inTable("cases").onDelete("CASCADE");
-      table.uuid("customer_id").references("id").inTable("customers").onDelete("CASCADE");
-
-      table.unique(["case_id", "customer_id", "tenant_id"]);
+      table.uuid("case_customer_id").references("id").inTable("case_customer").onDelete("CASCADE");
+      table.uuid("service_id").references("id").inTable("services").onDelete("CASCADE");
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
