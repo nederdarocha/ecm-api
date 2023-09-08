@@ -69,6 +69,7 @@ export default class CaseController {
       name: service.name,
     }));
   }
+
   public async getServiceExtraData({ params: { case_customer_service_id } }: HttpContextContract) {
     //TODO refatorar para retornar extra e meta data
 
