@@ -14,8 +14,17 @@ export default class People extends BaseSchema {
       table.string("phone");
       table.string("document", 50).index();
       table.string("document_secondary", 50);
+      table.string("issuing_agency");
       table.boolean("natural").defaultTo(true);
+      table.boolean("is_indicator").defaultTo(false);
+      table.integer("commission").defaultTo(0);
+      table.string("previdencia_id");
+      table.string("previdencia_password");
+      table.string("proderj_id");
+      table.string("proderj_password");
+      table.date("birth_date");
       table.string("gender");
+      table.string("profession");
       table.string("bank");
       table.string("branch", 50);
       table.string("account_number", 50);

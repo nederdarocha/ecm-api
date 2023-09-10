@@ -7,7 +7,7 @@ export default class Sleep {
     next: () => Promise<void>,
     middlewareParams: string
   ) {
-    //simulate a slow connection
+    // simulate a slow connection
     if (Env.get("NODE_ENV") === "development") {
       console.log("middle sleep =>", middlewareParams[0]);
       const sleepTime = middlewareParams[0] ? parseInt(middlewareParams[0]) : 1000;

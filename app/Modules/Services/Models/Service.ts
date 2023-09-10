@@ -1,7 +1,6 @@
 import { DateTime } from "luxon";
 import { column, BaseModel, belongsTo, BelongsTo, hasMany, HasMany } from "@ioc:Adonis/Lucid/Orm";
 import Category from "./Category";
-import { has } from "lodash";
 import ExtraData from "./ExtraData";
 
 export default class Service extends BaseModel {

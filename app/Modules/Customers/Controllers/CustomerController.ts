@@ -10,6 +10,21 @@ export default class CustomerController {
     this.service = new CustomerService();
   }
 
+  public async filter({ auth, request }: HttpContextContract) {
+    const { filter } = request.qs();
+    const customers = await Customer.query()
+      .select("id", "name", "document")
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere((sq) =>
+        sq
+          .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
+          .orWhere("email", "iLike", `%${filter}%`)
+      )
+      .orderBy("name", "asc")
+      .limit(20);
+
+    return customers;
+  }
   public async indicators({ auth, request }: HttpContextContract) {
     const { filter } = request.qs();
     const customers = await Customer.query()

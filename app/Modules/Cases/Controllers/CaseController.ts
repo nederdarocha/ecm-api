@@ -6,6 +6,8 @@ import { CaseService } from "../Services/CaseService";
 import { schema } from "@ioc:Adonis/Core/Validator";
 import CaseCustomer from "../Models/CaseCustomer";
 import CaseCustomerServiceModel from "../Models/CaseCustomerService";
+import ExtraData from "App/Modules/Services/Models/ExtraData";
+import MetaData from "App/Modules/Services/Models/MetaData";
 
 export default class CaseController {
   private service: CaseService;
@@ -70,20 +72,51 @@ export default class CaseController {
     }));
   }
 
-  public async getServiceExtraData({ params: { case_customer_service_id } }: HttpContextContract) {
+  public async getServiceExtraData({
+    auth,
+    params: { case_customer_service_id },
+  }: HttpContextContract) {
     //TODO refatorar para retornar extra e meta data
 
     // buscar o serviço
     // buscar os extra data do serviço
     // buscar ou criar os meta data do serviço
 
-    const caseService = await CaseCustomerServiceModel.query()
-      .preload("service", (sq) => sq.select("*").preload("extra_data", (sq) => sq.orderBy("order")))
-      .andWhere("id", case_customer_service_id)
-      .firstOrFail();
+    const caseCustomerService = await CaseCustomerServiceModel.findOrFail(case_customer_service_id);
+    const extraData = await ExtraData.query().where("service_id", caseCustomerService.service_id);
 
-    const { service } = caseService;
-    return service?.extra_data?.map((extra_data) => ({
+    const data = extraData?.map((extra_data) => ({
+      label: extra_data.label,
+      name: extra_data.name,
+      options: extra_data.options,
+      style: extra_data.style,
+      type: extra_data.type,
+      value: "",
+      meta_data_id: "",
+    }));
+
+    for await (const extra of extraData) {
+      let meta = await MetaData.query()
+        .where("case_customer_service_id", case_customer_service_id)
+        .andWhere("extra_data_id", extra.id)
+        .first();
+
+      if (!meta) {
+        meta = await MetaData.create({
+          name: extra.name,
+          case_customer_service_id,
+          extra_data_id: extra.id,
+          user_id: auth.user!.id,
+        });
+      }
+
+      data[extraData.indexOf(extra)].meta_data_id = meta.id;
+      data[extraData.indexOf(extra)].value = meta.value;
+    }
+
+    return data;
+
+    return extraData?.map((extra_data) => ({
       label: extra_data.label,
       name: extra_data.name,
       options: extra_data.options,

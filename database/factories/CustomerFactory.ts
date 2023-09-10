@@ -3,6 +3,7 @@ import { TENANTS } from "Database/constants";
 import Customer from "App/Modules/Customers/Models/Customer";
 import { AddressFactory } from "./AddressFactory";
 import { UserFactory } from "./UserFactory";
+import { DateTime } from "luxon";
 
 export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
   return {
@@ -12,8 +13,17 @@ export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
     phone: faker.helpers.unique(() => faker.phone.number("###########")),
     document: faker.helpers.unique(() => faker.finance.account(11)),
     document_secondary: faker.helpers.unique(() => faker.finance.account(11)),
+    issuing_agency: faker.helpers.arrayElement(["SSP", "DETRAN", "IFP"]),
     natural: true,
+    birth_date: DateTime.fromJSDate(faker.date.birthdate({ min: 18, max: 65, mode: "age" })),
     gender: faker.helpers.arrayElement(["Masculino", "Feminino"]),
+    profession: faker.name.jobTitle(),
+    is_indicator: faker.helpers.arrayElement([true, false]),
+    commission: faker.helpers.arrayElement([10, 20]),
+    previdencia_id: faker.finance.account(8),
+    previdencia_password: faker.finance.account(8),
+    proderj_id: faker.finance.account(8),
+    proderj_password: faker.finance.account(8),
     bank: faker.finance.accountName(),
     branch: faker.finance.account(4),
     account_number: faker.finance.account(6),

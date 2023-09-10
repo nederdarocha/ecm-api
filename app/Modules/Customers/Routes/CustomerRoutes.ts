@@ -3,6 +3,7 @@ import Route from "@ioc:Adonis/Core/Route";
 Route.where("id", Route.matchers.uuid());
 
 Route.group(() => {
+  Route.get("customers/filter", "CustomerController.filter").middleware("acl:r-customer");
   Route.get("customers/indicators", "CustomerController.indicators").middleware("acl:r-customer");
 
   Route.resource("customers", "CustomerController").apiOnly().middleware({

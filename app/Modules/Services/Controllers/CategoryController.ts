@@ -2,6 +2,7 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import { CategoryValidator } from "../Validators";
 import Category from "../Models/Category";
 import { CategoryService } from "../Services/CategoryService";
+import Service from "../Models/Service";
 
 export default class CategoryController {
   private service: CategoryService;
@@ -68,6 +69,13 @@ export default class CategoryController {
   }
 
   public async destroy({ auth, params: { id }, response }: HttpContextContract) {
+    const hasServices = await Service.query().where("category_id", id).first();
+    if (hasServices) {
+      return response
+        .status(400)
+        .send({ message: "A categoria não pode ser removida porque pertence a um serviço" });
+    }
+
     const address = await Category.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)

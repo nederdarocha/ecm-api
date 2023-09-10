@@ -28,10 +28,34 @@ export default class Customer extends BaseModel {
   public document_secondary?: string | null;
 
   @column()
+  public issuing_agency?: string | null;
+
+  @column()
+  public profession?: string | null;
+
+  @column()
   public natural: boolean;
 
   @column()
+  public is_indicator: boolean;
+
+  @column()
+  public commission?: number | null;
+
+  @column()
   public gender?: string | null;
+
+  @column()
+  public previdencia_id?: string | null;
+
+  @column()
+  public previdencia_password?: string | null;
+
+  @column()
+  public proderj_id?: string | null;
+
+  @column()
+  public proderj_password?: string | null;
 
   @column()
   public bank?: string | null;
@@ -53,6 +77,13 @@ export default class Customer extends BaseModel {
 
   @column()
   public user_id: string;
+
+  @column.date({
+    serialize: (value?: DateTime) => {
+      return value ? value.toFormat("dd/MM/yyyy") : null;
+    },
+  })
+  public birth_date: DateTime;
 
   @column.dateTime({ autoCreate: true, serializeAs: null })
   public createdAt: DateTime;
