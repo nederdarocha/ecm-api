@@ -15,6 +15,9 @@ export default class extends BaseSchema {
         .onDelete("CASCADE");
       table.uuid("case_customer_id").references("id").inTable("case_customer").onDelete("CASCADE");
       table.uuid("service_id").references("id").inTable("services").onDelete("CASCADE");
+      table.integer("service_amount");
+      table.integer("honorary_type");
+      table.integer("honorary_value");
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

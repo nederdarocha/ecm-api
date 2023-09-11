@@ -19,6 +19,15 @@ export default class CustomerService extends BaseModel {
   public service_id: string;
 
   @column()
+  public service_amount: number;
+
+  @column()
+  public honorary_type: string;
+
+  @column()
+  public honorary_value: number;
+
+  @column()
   public user_id?: string;
 
   @column.dateTime({ autoCreate: true, serializeAs: null })

@@ -22,7 +22,7 @@ export default class People extends BaseSchema {
       table.string("previdencia_password");
       table.string("proderj_id");
       table.string("proderj_password");
-      table.date("birth_date");
+      table.date("birthday");
       table.string("gender");
       table.string("profession");
       table.string("bank");

@@ -61,7 +61,8 @@ export default class CaseController {
   // SERVICES
   public async getServices({ auth, params: { case_customer_id } }: HttpContextContract) {
     const caseService = await CaseCustomerServiceModel.query()
-      .preload("service")
+      .debug(true)
+      .preload("service", (sq) => sq.select("*").preload("category"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("case_customer_id", case_customer_id);
 
@@ -69,6 +70,7 @@ export default class CaseController {
       case_customer_service_id: id,
       id: service.id,
       name: service.name,
+      category: { id: service?.category?.id, name: service?.category?.name },
     }));
   }
 

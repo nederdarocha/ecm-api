@@ -83,7 +83,7 @@ export default class Customer extends BaseModel {
       return value ? value.toFormat("dd/MM/yyyy") : null;
     },
   })
-  public birth_date: DateTime;
+  public birthday: DateTime;
 
   @column.dateTime({ autoCreate: true, serializeAs: null })
   public createdAt: DateTime;
