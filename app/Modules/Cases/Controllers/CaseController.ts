@@ -61,7 +61,6 @@ export default class CaseController {
   // SERVICES
   public async getServices({ auth, params: { case_customer_id } }: HttpContextContract) {
     const caseService = await CaseCustomerServiceModel.query()
-      .debug(true)
       .preload("service", (sq) => sq.select("*").preload("category"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("case_customer_id", case_customer_id);
