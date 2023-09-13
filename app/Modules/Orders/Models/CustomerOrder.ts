@@ -1,10 +1,10 @@
 import { DateTime } from "luxon";
 import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
 import Customer from "App/Modules/Customers/Models/Customer";
-import Case from "./Case";
+import Order from "./Order";
 
-export default class CaseCustomer extends BaseModel {
-  public static table = "case_customer";
+export default class CustomerOrder extends BaseModel {
+  public static table = "customer_order";
 
   @column({ isPrimary: true })
   public id: string;
@@ -13,7 +13,7 @@ export default class CaseCustomer extends BaseModel {
   public tenant_id: string;
 
   @column()
-  public case_id: string;
+  public order_id: string;
 
   @column()
   public customer_id: string;
@@ -27,11 +27,11 @@ export default class CaseCustomer extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: null })
   public updatedAt: DateTime;
 
-  @belongsTo(() => Case, {
-    foreignKey: "case_id",
+  @belongsTo(() => Order, {
+    foreignKey: "order_id",
     localKey: "id",
   })
-  public case: BelongsTo<typeof Case>;
+  public case: BelongsTo<typeof Order>;
 
   @belongsTo(() => Customer, {
     foreignKey: "customer_id",

@@ -3,7 +3,7 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 
 import { commonMessages } from "../../../Common";
 
-export class CaseValidator {
+export class OrderValidator {
   constructor(protected ctx: HttpContextContract) {}
 
   public schema = schema.create({

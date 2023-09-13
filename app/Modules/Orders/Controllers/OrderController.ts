@@ -1,22 +1,22 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import { DateTime } from "luxon";
-import { CaseValidator } from "../Validators";
-import Case from "../Models/Case";
-import { CaseService } from "../Services/CaseService";
+import { OrderValidator } from "../Validators";
+import Order from "../Models/Order";
+import { OrderService } from "../Services/OrderService";
 import { schema } from "@ioc:Adonis/Core/Validator";
-import CaseCustomer from "../Models/CaseCustomer";
-import CaseCustomerServiceModel from "../Models/CaseCustomerService";
+import OrderCustomer from "../Models/CustomerOrder";
+import OrderCustomerServiceModel from "../Models/CustomerOrderService";
 import ExtraData from "App/Modules/Services/Models/ExtraData";
 import MetaData from "App/Modules/Services/Models/MetaData";
 
-export default class CaseController {
-  private service: CaseService;
+export default class OrderController {
+  private service: OrderService;
   constructor() {
-    this.service = new CaseService();
+    this.service = new OrderService();
   }
 
   public async index({ auth, paginate }: HttpContextContract) {
-    const addresses = await Case.query()
+    const addresses = await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .paginate(paginate.page, paginate.per_page);
 
@@ -26,10 +26,10 @@ export default class CaseController {
   }
 
   public async store({ auth, response }: HttpContextContract) {
-    const isCaseDraft = await this.service.getCaseDraft(auth);
-    if (isCaseDraft) {
+    const isOrderDraft = await this.service.getOrderDraft(auth);
+    if (isOrderDraft) {
       return response.status(200).json({
-        data: isCaseDraft.toJSON(),
+        data: isOrderDraft.toJSON(),
         message: "Use este rascunho para aproveitar o número gerado.",
       });
     }
@@ -37,7 +37,7 @@ export default class CaseController {
     const order = await this.service.getNextSequence(auth);
     const number = await this.service.getNextNumber(auth);
 
-    const address = await Case.create({
+    const address = await Order.create({
       order,
       number,
       started_at: DateTime.now(),
@@ -52,18 +52,18 @@ export default class CaseController {
   }
 
   public async show({ auth, params: { id } }: HttpContextContract) {
-    return await Case.query()
+    return await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
   }
 
   // SERVICES
-  public async getServices({ auth, params: { case_customer_id } }: HttpContextContract) {
-    const caseService = await CaseCustomerServiceModel.query()
+  public async getServices({ auth, params: { customer_order_id } }: HttpContextContract) {
+    const caseService = await OrderCustomerServiceModel.query()
       .preload("service", (sq) => sq.select("*").preload("category"))
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("case_customer_id", case_customer_id);
+      .andWhere("customer_order_id", customer_order_id);
 
     return caseService.map(({ id, service }) => ({
       case_customer_service_id: id,
@@ -75,7 +75,7 @@ export default class CaseController {
 
   public async getServiceExtraData({
     auth,
-    params: { case_customer_service_id },
+    params: { customer_order_service_id },
   }: HttpContextContract) {
     //TODO refatorar para retornar extra e meta data
 
@@ -83,7 +83,9 @@ export default class CaseController {
     // buscar os extra data do serviço
     // buscar ou criar os meta data do serviço
 
-    const caseCustomerService = await CaseCustomerServiceModel.findOrFail(case_customer_service_id);
+    const caseCustomerService = await OrderCustomerServiceModel.findOrFail(
+      customer_order_service_id
+    );
     const extraData = await ExtraData.query().where("service_id", caseCustomerService.service_id);
 
     const data = extraData?.map((extra_data) => ({
@@ -98,14 +100,14 @@ export default class CaseController {
 
     for await (const extra of extraData) {
       let meta = await MetaData.query()
-        .where("case_customer_service_id", case_customer_service_id)
+        .where("customer_order_service_id", customer_order_service_id)
         .andWhere("extra_data_id", extra.id)
         .first();
 
       if (!meta) {
         meta = await MetaData.create({
           name: extra.name,
-          case_customer_service_id,
+          customer_order_service_id,
           extra_data_id: extra.id,
           user_id: auth.user!.id,
         });
@@ -131,7 +133,7 @@ export default class CaseController {
     response,
     params: { case_customer_service_id },
   }: HttpContextContract) {
-    const caseService = await CaseCustomerServiceModel.query()
+    const caseService = await OrderCustomerServiceModel.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", case_customer_service_id)
       .firstOrFail();
@@ -146,16 +148,16 @@ export default class CaseController {
     auth,
     request,
     response,
-    params: { case_customer_id },
+    params: { customer_order_id },
   }: HttpContextContract) {
     const { service_id } = await request.validate({
       schema: schema.create({ service_id: schema.string() }),
     });
 
-    await CaseCustomerServiceModel.create({
+    await OrderCustomerServiceModel.create({
       tenant_id: auth.user!.tenant_id,
       service_id,
-      case_customer_id,
+      customer_order_id,
       user_id: auth.user!.id,
     });
 
@@ -165,10 +167,10 @@ export default class CaseController {
   // CUSTOMERS
 
   public async getCustomers({ auth, params: { id } }: HttpContextContract) {
-    const caseCustomer = await CaseCustomer.query()
+    const caseCustomer = await OrderCustomer.query()
       .preload("customer")
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("case_id", id);
+      .andWhere("order_id", id);
 
     return caseCustomer.map(({ id, customer }) => ({
       case_customer_id: id,
@@ -186,10 +188,10 @@ export default class CaseController {
     response,
     params: { id, customer_id },
   }: HttpContextContract) {
-    const caseCustomer = await CaseCustomer.query()
+    const caseCustomer = await OrderCustomer.query()
       .preload("customer")
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("case_id", id)
+      .andWhere("order_id", id)
       .andWhere("customer_id", customer_id)
       .firstOrFail();
 
@@ -204,14 +206,14 @@ export default class CaseController {
       schema: schema.create({ customer_id: schema.string() }),
     });
 
-    const _case = await Case.query()
+    const _case = await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await CaseCustomer.create({
+    await OrderCustomer.create({
       tenant_id: auth.user!.tenant_id,
-      case_id: _case.id,
+      order_id: _case.id,
       customer_id,
       user_id: auth.user!.id,
     });
@@ -225,9 +227,9 @@ export default class CaseController {
   }
 
   public async update({ auth, request, params: { id } }: HttpContextContract) {
-    let { ...data } = await request.validate(CaseValidator);
+    let { ...data } = await request.validate(OrderValidator);
 
-    const address = await Case.query()
+    const address = await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
@@ -237,7 +239,7 @@ export default class CaseController {
   }
 
   public async destroy({ auth, params: { id }, response }: HttpContextContract) {
-    const address = await Case.query()
+    const address = await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();

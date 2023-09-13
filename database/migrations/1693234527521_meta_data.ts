@@ -7,9 +7,9 @@ export default class extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.uuid("id").primary().defaultTo(this.db.rawQuery("uuid_generate_v4()").knexQuery);
       table
-        .uuid("case_customer_service_id")
+        .uuid("customer_order_service_id")
         .references("id")
-        .inTable("case_customer_service")
+        .inTable("customer_order_service")
         .onDelete("CASCADE");
       table.uuid("extra_data_id").references("id").inTable("extra_data").onDelete("CASCADE");
       table.string("name");

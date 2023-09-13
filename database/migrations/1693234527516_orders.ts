@@ -1,7 +1,7 @@
 import BaseSchema from "@ioc:Adonis/Lucid/Schema";
 
 export default class extends BaseSchema {
-  protected tableName = "cases";
+  protected tableName = "orders";
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
@@ -13,7 +13,7 @@ export default class extends BaseSchema {
         .notNullable()
         .index()
         .onDelete("CASCADE");
-      table.integer("order");
+      table.integer("order"); // sequencia para ordenar de forma correta
       table.string("number");
       table.date("started_at");
       table.date("ended_at");

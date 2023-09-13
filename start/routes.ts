@@ -10,4 +10,4 @@ import "App/Modules/Files/Routes";
 import "App/Modules/Addresses/Routes";
 import "App/Modules/Customers/Routes";
 import "App/Modules/Services/Routes";
-import "App/Modules/Cases/Routes";
+import "App/Modules/Orders/Routes";

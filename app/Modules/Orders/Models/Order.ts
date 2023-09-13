@@ -3,8 +3,8 @@ import { column, BaseModel, manyToMany, ManyToMany } from "@ioc:Adonis/Lucid/Orm
 import Customer from "App/Modules/Customers/Models/Customer";
 import Service from "App/Modules/Services/Models/Service";
 
-export default class Case extends BaseModel {
-  public static table = "cases";
+export default class Order extends BaseModel {
+  public static table = "orders";
 
   @column({ isPrimary: true })
   public id: string;

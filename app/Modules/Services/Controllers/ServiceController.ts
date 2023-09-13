@@ -4,7 +4,7 @@ import Service from "../Models/Service";
 import { ServiceService } from "../Services/ServiceService";
 import ExtraData from "../Models/ExtraData";
 import File from "App/Modules/Files/Models/File";
-import CaseCustomerService from "App/Modules/Cases/Models/CaseCustomerService";
+import CaseCustomerService from "App/Modules/Orders/Models/CustomerOrderService";
 
 export default class ServiceController {
   private service: ServiceService;

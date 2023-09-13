@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
 import ExtraData from "./ExtraData";
-import CaseCustomerService from "App/Modules/Cases/Models/CaseCustomerService";
+import CustomerOrderService from "App/Modules/Orders/Models/CustomerOrderService";
 
 export default class MetaData extends BaseModel {
   public static table = "meta_data";
@@ -13,7 +13,7 @@ export default class MetaData extends BaseModel {
   public extra_data_id: string;
 
   @column()
-  public case_customer_service_id: string;
+  public customer_order_service_id: string;
 
   @column()
   public name: string;
@@ -39,9 +39,9 @@ export default class MetaData extends BaseModel {
   })
   public extra_data: BelongsTo<typeof ExtraData>;
 
-  @belongsTo(() => CaseCustomerService, {
-    foreignKey: "case_customer_service_id",
+  @belongsTo(() => CustomerOrderService, {
+    foreignKey: "customer_order_service_id",
     localKey: "id",
   })
-  public case_customer_service: BelongsTo<typeof CaseCustomerService>;
+  public case_customer_service: BelongsTo<typeof CustomerOrderService>;
 }

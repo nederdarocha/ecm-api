@@ -1,10 +1,10 @@
 import { DateTime } from "luxon";
 import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
 import Service from "App/Modules/Services/Models/Service";
-import CaseCustomer from "./CaseCustomer";
+import CustomerOrder from "./CustomerOrder";
 
 export default class CustomerService extends BaseModel {
-  public static table = "case_customer_service";
+  public static table = "customer_order_service";
 
   @column({ isPrimary: true })
   public id: string;
@@ -13,7 +13,7 @@ export default class CustomerService extends BaseModel {
   public tenant_id: string;
 
   @column()
-  public case_customer_id: string;
+  public customer_order_id: string;
 
   @column()
   public service_id: string;
@@ -42,9 +42,9 @@ export default class CustomerService extends BaseModel {
   })
   public service: BelongsTo<typeof Service>;
 
-  @belongsTo(() => CaseCustomer, {
-    foreignKey: "case_customer_id",
+  @belongsTo(() => CustomerOrder, {
+    foreignKey: "customer_order_id",
     localKey: "id",
   })
-  public case_customer: BelongsTo<typeof CaseCustomer>;
+  public case_customer: BelongsTo<typeof CustomerOrder>;
 }
