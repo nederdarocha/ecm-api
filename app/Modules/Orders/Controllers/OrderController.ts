@@ -4,8 +4,8 @@ import { OrderValidator } from "../Validators";
 import Order from "../Models/Order";
 import { OrderService } from "../Services/OrderService";
 import { schema } from "@ioc:Adonis/Core/Validator";
-import OrderCustomer from "../Models/CustomerOrder";
-import OrderCustomerServiceModel from "../Models/CustomerOrderService";
+import CustomerOrder from "../Models/CustomerOrder";
+import CustomerOrderServiceModel from "../Models/CustomerOrderService";
 import ExtraData from "App/Modules/Services/Models/ExtraData";
 import MetaData from "App/Modules/Services/Models/MetaData";
 
@@ -60,13 +60,13 @@ export default class OrderController {
 
   // SERVICES
   public async getServices({ auth, params: { customer_order_id } }: HttpContextContract) {
-    const caseService = await OrderCustomerServiceModel.query()
+    const caseService = await CustomerOrderServiceModel.query()
       .preload("service", (sq) => sq.select("*").preload("category"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("customer_order_id", customer_order_id);
 
     return caseService.map(({ id, service }) => ({
-      case_customer_service_id: id,
+      customer_order_service_id: id,
       id: service.id,
       name: service.name,
       category: { id: service?.category?.id, name: service?.category?.name },
@@ -83,7 +83,7 @@ export default class OrderController {
     // buscar os extra data do serviço
     // buscar ou criar os meta data do serviço
 
-    const caseCustomerService = await OrderCustomerServiceModel.findOrFail(
+    const caseCustomerService = await CustomerOrderServiceModel.findOrFail(
       customer_order_service_id
     );
     const extraData = await ExtraData.query().where("service_id", caseCustomerService.service_id);
@@ -118,30 +118,6 @@ export default class OrderController {
     }
 
     return data;
-
-    return extraData?.map((extra_data) => ({
-      label: extra_data.label,
-      name: extra_data.name,
-      options: extra_data.options,
-      style: extra_data.style,
-      type: extra_data.type,
-    }));
-  }
-
-  public async destroyService({
-    auth,
-    response,
-    params: { case_customer_service_id },
-  }: HttpContextContract) {
-    const caseService = await OrderCustomerServiceModel.query()
-      .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("id", case_customer_service_id)
-      .firstOrFail();
-
-    //TODO verificar se cliente possui pagamento ao serviço antes de remover
-
-    await caseService.delete();
-    response.status(204);
   }
 
   public async addService({
@@ -154,26 +130,49 @@ export default class OrderController {
       schema: schema.create({ service_id: schema.string() }),
     });
 
-    await OrderCustomerServiceModel.create({
+    const customerOrderServiceModel = await CustomerOrderServiceModel.create({
       tenant_id: auth.user!.tenant_id,
       service_id,
       customer_order_id,
       user_id: auth.user!.id,
     });
 
-    response.status(200);
+    await customerOrderServiceModel.load("service");
+    const service = customerOrderServiceModel.service;
+
+    response.status(200).json({
+      customer_order_service_id: customerOrderServiceModel.id,
+      id: service.id,
+      name: service.name,
+      category: { id: service?.category?.id, name: service?.category?.name },
+    });
+  }
+
+  public async destroyService({
+    auth,
+    response,
+    params: { customer_order_service_id },
+  }: HttpContextContract) {
+    const customerOrderServiceModel = await CustomerOrderServiceModel.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", customer_order_service_id)
+      .firstOrFail();
+
+    //TODO verificar se cliente possui pagamento ao serviço antes de remover
+
+    await customerOrderServiceModel.delete();
+    response.status(204);
   }
 
   // CUSTOMERS
-
   public async getCustomers({ auth, params: { id } }: HttpContextContract) {
-    const caseCustomer = await OrderCustomer.query()
+    const customerOrder = await CustomerOrder.query()
       .preload("customer")
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("order_id", id);
 
-    return caseCustomer.map(({ id, customer }) => ({
-      case_customer_id: id,
+    return customerOrder.map(({ id, customer }) => ({
+      customer_order_id: id,
       id: customer.id,
       name: customer.name,
       email: customer.email,
@@ -183,47 +182,57 @@ export default class OrderController {
     }));
   }
 
-  public async destroyCustomer({
-    auth,
-    response,
-    params: { id, customer_id },
-  }: HttpContextContract) {
-    const caseCustomer = await OrderCustomer.query()
-      .preload("customer")
-      .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("order_id", id)
-      .andWhere("customer_id", customer_id)
-      .firstOrFail();
-
-    //TODO verificar se cliente possui serviços vinculados ao caso antes de remover
-
-    await caseCustomer.delete();
-    response.status(204);
-  }
-
   public async addCustomer({ auth, request, response, params: { id } }: HttpContextContract) {
     const { customer_id } = await request.validate({
       schema: schema.create({ customer_id: schema.string() }),
     });
 
-    const _case = await Order.query()
+    const order = await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await OrderCustomer.create({
+    const orderCustomer = await CustomerOrder.create({
       tenant_id: auth.user!.tenant_id,
-      order_id: _case.id,
+      order_id: order.id,
       customer_id,
       user_id: auth.user!.id,
     });
 
     // alterar o status de rascunho para aberto
-    if (_case.status === "draft") {
-      await _case.merge({ status: "open" }).save();
+    if (order.status === "draft") {
+      await order.merge({ status: "open" }).save();
     }
 
-    response.status(200);
+    await orderCustomer.load("customer");
+    const customer = orderCustomer.customer;
+
+    response.status(200).json({
+      customer_order_id: orderCustomer.id,
+      id: customer.id,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      document: customer.document,
+      natural: customer.natural,
+    });
+  }
+
+  public async destroyCustomer({
+    auth,
+    response,
+    params: { id, customer_order_id },
+  }: HttpContextContract) {
+    const caseCustomer = await CustomerOrder.query()
+      .preload("customer")
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("order_id", id)
+      .andWhere("id", customer_order_id)
+      .firstOrFail();
+
+    //TODO verificar se cliente possui serviços vinculados ao caso antes de remover
+    await caseCustomer.delete();
+    response.status(204);
   }
 
   public async update({ auth, request, params: { id } }: HttpContextContract) {
