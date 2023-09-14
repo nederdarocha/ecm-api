@@ -18,7 +18,7 @@ export default class TemplateController {
   public async download({
     userID,
     response,
-    params: { case_customer_service_id, id },
+    params: { customer_order_service_id, id },
   }: HttpContextContract) {
     const user = await User.findOrFail(userID);
     const file = await File.query()
@@ -26,7 +26,7 @@ export default class TemplateController {
       .where("id", id)
       .firstOrFail();
 
-    const data = await this.service.getData(case_customer_service_id);
+    const data = await this.service.getData(customer_order_service_id);
     const file_name = slugify(file.name.replace(/\.|docx|-/gi, " ") + "_" + data.cliente_nome, "_");
 
     response.attachment(file_name + "." + file.type);

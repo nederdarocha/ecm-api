@@ -77,12 +77,6 @@ export default class OrderController {
     auth,
     params: { customer_order_service_id },
   }: HttpContextContract) {
-    //TODO refatorar para retornar extra e meta data
-
-    // buscar o serviço
-    // buscar os extra data do serviço
-    // buscar ou criar os meta data do serviço
-
     const caseCustomerService = await CustomerOrderServiceModel.findOrFail(
       customer_order_service_id
     );
@@ -137,7 +131,7 @@ export default class OrderController {
       user_id: auth.user!.id,
     });
 
-    await customerOrderServiceModel.load("service");
+    await customerOrderServiceModel.load("service", (sq) => sq.select("*").preload("category"));
     const service = customerOrderServiceModel.service;
 
     response.status(200).json({

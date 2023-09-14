@@ -2,17 +2,24 @@ import Database from "@ioc:Adonis/Lucid/Database";
 import { helpers } from "App/Common/utils/helper";
 
 export class TemplateService {
-  public async getData(case_customer_service_id: string): Promise<any> {
+  public async getData(customer_order_service_id: string): Promise<any> {
     const {
       rows: [data],
     } = await Database.rawQuery(
       `
       select
-      c."name" as cliente_nome,
-      c."document" as cliente_cpf,
-      c.phone as cliente_celular,
-      c.gender as cliente_genero,
       c."natural" as cliente_natural,
+      c."name" as cliente_nome,
+      c.gender as cliente_genero,
+      c.email as cliente_email,
+      c.phone as cliente_celular,
+      to_char(timezone('EAT',c.birthday), 'DD/MM/YYYY') as cliente_nascimento,
+      c."document" as cliente_cpf,
+      c.document_secondary as cliente_rg,
+      c.issuing_agency as cliente_o_expedidor,
+      c.profession as cliente_profissao,
+      c.proderj_id as cliente_proderj_id,
+      c.previdencia_id as cliente_previdencia_id,
       a.zip as end_cep,
       a.street as end_rua,
       a."number" as end_numero,
@@ -20,15 +27,15 @@ export class TemplateService {
       a.neighborhood as end_bairro,
       a.city as end_cidade,
       a.state as end_uf
-      from case_customer_service ccs
-      join case_customer cc on ccs.case_customer_id = cc.id
-      join customers c on cc.customer_id = c.id
+      from customer_order_service cos
+      join customer_order co on cos.customer_order_id = co.id
+      join customers c on co.customer_id = c.id
       left join addresses a on c.id = a.owner_id
-      where ccs.id = :case_customer_service_id
+      where cos.id = :customer_order_service_id
       and a.favorite = true
       limit 1
       `,
-      { case_customer_service_id }
+      { customer_order_service_id }
     );
 
     //TODO buscar os dados extras do cliente
