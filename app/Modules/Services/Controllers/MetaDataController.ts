@@ -1,17 +1,19 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import { ExtraDataValidator } from "../Validators";
-import ExtraData from "../Models/ExtraData";
+import { MetaDataValidator } from "../Validators";
+import Database from "@ioc:Adonis/Lucid/Database";
 
 export default class MetaDataController {
-  public async update({ auth, request, params: { id } }: HttpContextContract) {
-    let { ...data } = await request.validate(ExtraDataValidator);
+  public async update({ auth, request, response }: HttpContextContract) {
+    const { data } = await request.validate(MetaDataValidator);
 
-    const service = await ExtraData.query()
-      .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("id", id)
-      .firstOrFail();
+    let query = "";
 
-    await service.merge({ ...data, user_id: auth.user?.id }).save();
-    return service;
+    for (const item of data) {
+      query += `UPDATE meta_data SET value='${item.value}', updated_at=now(), user_id='${auth.user?.id}' WHERE id='${item.meta_data_id}';`;
+    }
+
+    await Database.rawQuery(query);
+
+    return response.status(200);
   }
 }

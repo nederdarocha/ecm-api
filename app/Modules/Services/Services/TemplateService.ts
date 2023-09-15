@@ -38,7 +38,18 @@ export class TemplateService {
       { customer_order_service_id }
     );
 
-    //TODO buscar os dados extras do cliente
+    const { rows } = await Database.rawQuery(
+      `
+      select md."name", md.value
+      from meta_data md
+      where md.customer_order_service_id  = :customer_order_service_id;
+      `,
+      { customer_order_service_id }
+    );
+
+    const extra_data = rows.map((item: { name: string; value: string }) => ({
+      [item.name]: item.value,
+    }));
 
     const cliente_endereco = `${String(
       `${data.end_rua}, ${data.end_numero}, ${data.end_bairro}, ${data.end_cidade}, ${data.end_uf} - CEP ${data.end_cep}`
@@ -51,8 +62,11 @@ export class TemplateService {
       cliente_cpf: helpers.document(data.cliente_cpf, data.cliente_natural),
       cliente_celular: helpers.phone(data.cliente_celular),
       cliente_endereco,
+      masculino: data.cliente_genero === "Masculino",
+      feminino: data.cliente_genero === "Feminino",
       a_o: data.cliente_genero === "Feminino" ? "a" : "o",
       genero_a_o: data.cliente_genero === "Feminino" ? "a" : "o",
+      ...extra_data,
     };
   }
 }

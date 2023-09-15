@@ -17,7 +17,7 @@ Route.group(() => {
     Route.get("service-extra-data", "OrderController.getServiceExtraData").middleware(
       "acl:u-order"
     );
-    Route.delete("service", "OrderController.destroyService").middleware("acl:u-order");
+    Route.delete("service", "OrderController.destroyService").middleware("acl:d-order");
   }).prefix("orders/:customer_order_service_id");
 
   Route.resource("orders", "OrderController").apiOnly().middleware({
