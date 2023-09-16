@@ -84,13 +84,15 @@ export default class OrderController {
       customer_order_service_id
     );
 
-    const { honorary, mask, service_amount } = await request.validate(
+    const { honorary_value, honorary_type, service_amount } = await request.validate(
       CustomerOrderServiceValidator
     );
 
     await customerOrderService
       .merge({
-        honorary_value: 0,
+        honorary_type,
+        honorary_value,
+        service_amount,
         user_id: auth.user!.id,
       })
       .save();

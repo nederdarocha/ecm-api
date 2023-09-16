@@ -7,9 +7,9 @@ export class CustomerOrderServiceValidator {
   constructor(protected ctx: HttpContextContract) {}
 
   public schema = schema.create({
-    mask: schema.string.optional({ trim: true }),
-    honorary: schema.string.optional({ trim: true }),
-    service_amount: schema.string.optional({ trim: true }),
+    honorary_type: schema.string({ trim: true }),
+    honorary_value: schema.number.optional(),
+    service_amount: schema.number.nullableAndOptional(),
   });
 
   public messages = { ...commonMessages };
