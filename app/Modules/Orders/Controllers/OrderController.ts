@@ -1,6 +1,6 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import { DateTime } from "luxon";
-import { OrderValidator } from "../Validators";
+import { OrderValidator, CustomerOrderServiceValidator } from "../Validators";
 import Order from "../Models/Order";
 import { OrderService } from "../Services/OrderService";
 import { schema } from "@ioc:Adonis/Core/Validator";
@@ -78,9 +78,22 @@ export default class OrderController {
     request,
     params: { customer_order_service_id },
   }: HttpContextContract) {
+    console.log("aqui", customer_order_service_id);
+
     const customerOrderService = await CustomerOrderServiceModel.findOrFail(
       customer_order_service_id
     );
+
+    const { honorary, mask, service_amount } = await request.validate(
+      CustomerOrderServiceValidator
+    );
+
+    await customerOrderService
+      .merge({
+        honorary_value: 0,
+        user_id: auth.user!.id,
+      })
+      .save();
 
     return customerOrderService;
   }
