@@ -3,6 +3,7 @@ import Route from "@ioc:Adonis/Core/Route";
 Route.group(() => {
   Route.post("orders/:id/customer", "OrderController.addCustomer").middleware(["acl:u-order"]);
   Route.get("orders/:id/customers", "OrderController.getCustomers").middleware(["acl:r-order"]);
+
   Route.delete(
     "orders/:id/customer/:customer_order_id",
     "OrderController.destroyCustomer"
@@ -15,6 +16,9 @@ Route.group(() => {
 
   Route.group(() => {
     Route.get("service-extra-data", "OrderController.getServiceExtraData").middleware(
+      "acl:u-order"
+    );
+    Route.put("customer-order-service", "OrderController.updateCustomerOrderService").middleware(
       "acl:u-order"
     );
     Route.delete("service", "OrderController.destroyService").middleware("acl:d-order");

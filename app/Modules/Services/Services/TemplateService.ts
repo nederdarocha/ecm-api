@@ -47,9 +47,10 @@ export class TemplateService {
       { customer_order_service_id }
     );
 
-    const extra_data = rows.map((item: { name: string; value: string }) => ({
-      [item.name]: item.value,
-    }));
+    const extra_data = {};
+    for (const item of rows) {
+      extra_data[item.name] = item.value;
+    }
 
     const cliente_endereco = `${String(
       `${data.end_rua}, ${data.end_numero}, ${data.end_bairro}, ${data.end_cidade}, ${data.end_uf} - CEP ${data.end_cep}`

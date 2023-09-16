@@ -73,14 +73,26 @@ export default class OrderController {
     }));
   }
 
+  public async updateCustomerOrderService({
+    auth,
+    request,
+    params: { customer_order_service_id },
+  }: HttpContextContract) {
+    const customerOrderService = await CustomerOrderServiceModel.findOrFail(
+      customer_order_service_id
+    );
+
+    return customerOrderService;
+  }
+
   public async getServiceExtraData({
     auth,
     params: { customer_order_service_id },
   }: HttpContextContract) {
-    const caseCustomerService = await CustomerOrderServiceModel.findOrFail(
+    const customerOrderService = await CustomerOrderServiceModel.findOrFail(
       customer_order_service_id
     );
-    const extraData = await ExtraData.query().where("service_id", caseCustomerService.service_id);
+    const extraData = await ExtraData.query().where("service_id", customerOrderService.service_id);
 
     const data = extraData?.map((extra_data) => ({
       label: extra_data.label,
