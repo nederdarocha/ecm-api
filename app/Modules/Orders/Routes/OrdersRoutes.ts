@@ -24,6 +24,10 @@ Route.group(() => {
     Route.delete("service", "OrderController.destroyService").middleware("acl:d-order");
   }).prefix("orders/:customer_order_service_id");
 
+  Route.group(() => {
+    Route.put("notes", "OrderController.updateNotes").middleware(["acl:u-order"]);
+  }).prefix("orders/:id");
+
   Route.resource("orders", "OrderController").apiOnly().middleware({
     store: "acl:c-order",
     index: "acl:r-order",

@@ -19,13 +19,13 @@ export default class CustomerService extends BaseModel {
   public service_id: string;
 
   @column()
-  public service_amount: number;
+  public service_amount: number | null;
 
   @column()
   public honorary_type: string;
 
   @column()
-  public honorary_value: number;
+  public honorary_value: number | null;
 
   @column()
   public user_id?: string;

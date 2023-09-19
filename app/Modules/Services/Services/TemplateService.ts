@@ -1,5 +1,6 @@
 import Database from "@ioc:Adonis/Lucid/Database";
 import { helpers } from "App/Common/utils/helper";
+import extenso from "extenso";
 
 export class TemplateService {
   public async getData(customer_order_service_id: string): Promise<any> {
@@ -8,6 +9,9 @@ export class TemplateService {
     } = await Database.rawQuery(
       `
       select
+      cos.honorary_type,
+      cos.honorary_value,
+      cos.service_amount,
       c."natural" as cliente_natural,
       c."name" as cliente_nome,
       c.gender as cliente_genero,
@@ -38,6 +42,10 @@ export class TemplateService {
       { customer_order_service_id }
     );
 
+    console.log(data.honorary_type);
+    console.log(data.honorary_value);
+    console.log(data.service_amount);
+
     const { rows } = await Database.rawQuery(
       `
       select md."name", md.value
@@ -67,7 +75,19 @@ export class TemplateService {
       feminino: data.cliente_genero === "Feminino",
       a_o: data.cliente_genero === "Feminino" ? "a" : "o",
       genero_a_o: data.cliente_genero === "Feminino" ? "a" : "o",
+      valor_causa: this.formatCurrency(data.service_amount),
       ...extra_data,
     };
+  }
+
+  private formatCurrency(value: number | null) {
+    if (!value) return "";
+    const decimalValue = value / 100;
+    const formatValue = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(decimalValue);
+
+    return `${formatValue} (${extenso(decimalValue, { mode: "currency" })})`;
   }
 }

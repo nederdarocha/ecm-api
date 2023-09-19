@@ -16,11 +16,11 @@ export default class OrderController {
   }
 
   public async index({ auth, paginate }: HttpContextContract) {
-    const addresses = await Order.query()
+    const orders = await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .paginate(paginate.page, paginate.per_page);
 
-    return addresses.serialize({
+    return orders.serialize({
       fields: { omit: ["tenant_id", "user_id"] },
     });
   }
@@ -34,11 +34,11 @@ export default class OrderController {
       });
     }
 
-    const order = await this.service.getNextSequence(auth);
+    const nextOrder = await this.service.getNextSequence(auth);
     const number = await this.service.getNextNumber(auth);
 
-    const address = await Order.create({
-      order,
+    const order = await Order.create({
+      order: nextOrder,
       number,
       started_at: DateTime.now(),
       tenant_id: auth.user?.tenant_id,
@@ -46,7 +46,7 @@ export default class OrderController {
       status: "draft",
     });
 
-    return address.serialize({
+    return order.serialize({
       fields: { omit: ["tenant_id", "user_id", "order"] },
     });
   }
@@ -58,19 +58,38 @@ export default class OrderController {
       .firstOrFail();
   }
 
+  public async updateNotes({ auth, request, params: { id } }: HttpContextContract) {
+    let { notes } = await request.validate({
+      schema: schema.create({ notes: schema.string.optional({ trim: true }) }),
+    });
+
+    const order = await Order.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await order.merge({ notes: notes || "", user_id: auth.user?.id }).save();
+    return order;
+  }
+
   // SERVICES
   public async getServices({ auth, params: { customer_order_id } }: HttpContextContract) {
-    const caseService = await CustomerOrderServiceModel.query()
+    const customerOrderService = await CustomerOrderServiceModel.query()
       .preload("service", (sq) => sq.select("*").preload("category"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("customer_order_id", customer_order_id);
 
-    return caseService.map(({ id, service }) => ({
-      customer_order_service_id: id,
-      id: service.id,
-      name: service.name,
-      category: { id: service?.category?.id, name: service?.category?.name },
-    }));
+    return customerOrderService.map(
+      ({ id, service, honorary_type, honorary_value, service_amount }) => ({
+        customer_order_service_id: id,
+        id: service.id,
+        name: service.name,
+        honorary_type,
+        honorary_value,
+        service_amount,
+        category: { id: service?.category?.id, name: service?.category?.name },
+      })
+    );
   }
 
   public async updateCustomerOrderService({
@@ -78,8 +97,6 @@ export default class OrderController {
     request,
     params: { customer_order_service_id },
   }: HttpContextContract) {
-    console.log("aqui", customer_order_service_id);
-
     const customerOrderService = await CustomerOrderServiceModel.findOrFail(
       customer_order_service_id
     );
@@ -91,8 +108,8 @@ export default class OrderController {
     await customerOrderService
       .merge({
         honorary_type,
-        honorary_value,
-        service_amount,
+        honorary_value: honorary_value || null,
+        service_amount: service_amount || null,
         user_id: auth.user!.id,
       })
       .save();
@@ -107,7 +124,12 @@ export default class OrderController {
     const customerOrderService = await CustomerOrderServiceModel.findOrFail(
       customer_order_service_id
     );
+
     const extraData = await ExtraData.query().where("service_id", customerOrderService.service_id);
+
+    if (extraData.length === 0) {
+      return [];
+    }
 
     const data = extraData?.map((extra_data) => ({
       label: extra_data.label,
@@ -222,7 +244,7 @@ export default class OrderController {
 
     // alterar o status de rascunho para aberto
     if (order.status === "draft") {
-      await order.merge({ status: "open" }).save();
+      await order.merge({ status: "opened" }).save();
     }
 
     await orderCustomer.load("customer");
@@ -259,23 +281,12 @@ export default class OrderController {
   public async update({ auth, request, params: { id } }: HttpContextContract) {
     let { ...data } = await request.validate(OrderValidator);
 
-    const address = await Order.query()
+    const order = await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await address.merge({ ...data, user_id: auth.user?.id }).save();
-    return address;
-  }
-
-  public async destroy({ auth, params: { id }, response }: HttpContextContract) {
-    const address = await Order.query()
-      .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("id", id)
-      .firstOrFail();
-
-    await address.delete();
-
-    return response.status(204);
+    await order.merge({ ...data, user_id: auth.user?.id }).save();
+    return order;
   }
 }
