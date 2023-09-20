@@ -42,14 +42,11 @@ export class TemplateService {
       { customer_order_service_id }
     );
 
-    console.log(data.honorary_type);
-    console.log(data.honorary_value);
-    console.log(data.service_amount);
-
     const { rows } = await Database.rawQuery(
       `
-      select md."name", md.value
+      select ed."name", md.value
       from meta_data md
+      join extra_data ed on md.extra_data_id = ed.id
       where md.customer_order_service_id  = :customer_order_service_id;
       `,
       { customer_order_service_id }
@@ -66,7 +63,7 @@ export class TemplateService {
       .replace(/null/g, "")
       .replace(/,\s,/g, "")}`;
 
-    return {
+    const res = {
       ...data,
       cliente_cpf: helpers.document(data.cliente_cpf, data.cliente_natural),
       cliente_celular: helpers.phone(data.cliente_celular),
@@ -75,9 +72,26 @@ export class TemplateService {
       feminino: data.cliente_genero === "Feminino",
       a_o: data.cliente_genero === "Feminino" ? "a" : "o",
       genero_a_o: data.cliente_genero === "Feminino" ? "a" : "o",
+      valor_honorario: this.formatHonorary(data.honorary_value, data.honorary_type),
       valor_causa: this.formatCurrency(data.service_amount),
       ...extra_data,
     };
+    console.log(res);
+    return res;
+  }
+
+  private formatHonorary(value: number, type: string) {
+    console.log({ value, type });
+
+    const decimalValue = value / 100;
+    const formatValue = new Intl.NumberFormat("pt-BR", {
+      currency: "BRL",
+    }).format(decimalValue);
+
+    if (type === "percent") {
+      return `${decimalValue}%`;
+    }
+    return `${formatValue}% (${extenso(decimalValue, { mode: "number" })} por cento)`;
   }
 
   private formatCurrency(value: number | null) {
