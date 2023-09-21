@@ -25,6 +25,20 @@ export default class OrderController {
     });
   }
 
+  public async getByCustomer({ auth, params: { customer_id } }: HttpContextContract) {
+    const orders = await CustomerOrder.query()
+      .preload("order", (sq) =>
+        sq.select(["id", "order", "number", "started_at", "ended_at", "status"])
+      )
+      .preload("customerOrderServices", (sq) =>
+        sq.select("*").preload("service", (sq) => sq.select(["id", "name"]))
+      )
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("customer_id", customer_id);
+
+    return orders.map((order) => order.serialize({ fields: { omit: ["tenant_id", "user_id"] } }));
+  }
+
   public async store({ auth, response }: HttpContextContract) {
     const isOrderDraft = await this.service.getOrderDraft(auth);
     if (isOrderDraft) {
@@ -56,6 +70,18 @@ export default class OrderController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
+  }
+
+  public async update({ auth, request, params: { id } }: HttpContextContract) {
+    let { ...data } = await request.validate(OrderValidator);
+
+    const order = await Order.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await order.merge({ ...data, user_id: auth.user?.id }).save();
+    return order;
   }
 
   public async updateNotes({ auth, request, params: { id } }: HttpContextContract) {
@@ -149,7 +175,6 @@ export default class OrderController {
 
       if (!meta) {
         meta = await MetaData.create({
-          name: extra.name,
           customer_order_service_id,
           extra_data_id: extra.id,
           user_id: auth.user!.id,
@@ -276,17 +301,5 @@ export default class OrderController {
     //TODO verificar se cliente possui serviços vinculados ao caso antes de remover
     await caseCustomer.delete();
     response.status(204);
-  }
-
-  public async update({ auth, request, params: { id } }: HttpContextContract) {
-    let { ...data } = await request.validate(OrderValidator);
-
-    const order = await Order.query()
-      .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("id", id)
-      .firstOrFail();
-
-    await order.merge({ ...data, user_id: auth.user?.id }).save();
-    return order;
   }
 }

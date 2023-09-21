@@ -3,7 +3,7 @@ import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
 import Service from "App/Modules/Services/Models/Service";
 import CustomerOrder from "./CustomerOrder";
 
-export default class CustomerService extends BaseModel {
+export default class CustomerServiceService extends BaseModel {
   public static table = "customer_order_service";
 
   @column({ isPrimary: true })
