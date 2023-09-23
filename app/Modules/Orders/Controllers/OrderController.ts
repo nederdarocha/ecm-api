@@ -147,13 +147,16 @@ export default class OrderController {
     auth,
     params: { customer_order_service_id },
   }: HttpContextContract) {
-    const customerOrderService = await CustomerOrderServiceModel.findOrFail(
-      customer_order_service_id
-    );
+    const customerOrderService = await CustomerOrderServiceModel.query()
+      .where("id", customer_order_service_id)
+      .first();
+    if (!customerOrderService) {
+      return [];
+    }
 
     const extraData = await ExtraData.query().where("service_id", customerOrderService.service_id);
 
-    if (extraData.length === 0) {
+    if (!extraData) {
       return [];
     }
 
