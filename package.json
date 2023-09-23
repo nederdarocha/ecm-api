@@ -45,7 +45,7 @@
     "@adonisjs/view": "^6.2.0",
     "@paralleldrive/cuid2": "^2.2.2",
     "adonis5-jwt": "^1.1.7",
-    "aws-sdk": "^2.1434.0",
+    "aws-sdk": "^2.1463.0",
     "bcrypt": "^5.1.0",
     "date-fns": "^2.30.0",
     "docxtemplater": "^3.39.1",

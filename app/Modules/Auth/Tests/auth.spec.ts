@@ -13,7 +13,7 @@ test.group("auth", (group) => {
     return () => Database.rollbackGlobalTransaction();
   });
 
-  test("falhar por fazer muitas tentativas", async ({ client }) => {
+  test("falhar por fazer muitas tentativas", async ({}) => {
     console.warn("Não implementado! - falhar por fazer muitas tentativas");
     // const response = await client.post("/auth/sign-in").json({});
     // console.log(response.body());

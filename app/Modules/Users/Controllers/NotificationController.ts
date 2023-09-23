@@ -22,7 +22,7 @@ export default class NotificationController {
   }
 
   public async index({ auth: { user }, paginate, request }: HttpContextContract) {
-    const { page, limit } = paginate;
+    const { page, per_page } = paginate;
     const { filter } = request.qs();
 
     return Notification.query()
@@ -30,6 +30,6 @@ export default class NotificationController {
       .orWhereRaw("unaccent(message) iLike unaccent(?) ", [`%${filter}%`])
       .andWhere("to_id", user?.id!)
       .orderBy("subject", "asc")
-      .paginate(page, limit);
+      .paginate(page, per_page);
   }
 }
