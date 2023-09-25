@@ -25,6 +25,7 @@ export default class CustomerController {
 
     return customers;
   }
+
   public async indicators({ auth, request }: HttpContextContract) {
     const { filter } = request.qs();
     const customers = await Customer.query()
@@ -42,11 +43,11 @@ export default class CustomerController {
   }
 
   public async index({ paginate, request, auth }: HttpContextContract) {
-    await request.validate(CustomerIndexValidator);
+    // await request.validate(CustomerIndexValidator);
     const { page, per_page } = paginate;
-    const { filter } = request.qs();
+    const { filter, phone, indicated_id } = request.qs();
 
-    const customers = await Customer.query()
+    const query = Customer.query()
       // .debug(true)
       .preload("indicator", (sq) => sq.select("id", "name", "document", "natural"))
       .where("tenant_id", auth.user!.tenant_id)
@@ -55,10 +56,17 @@ export default class CustomerController {
           .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
           .orWhere("email", "iLike", `%${filter}%`)
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
-          .orWhere("phone", "iLike", `%${filter}%`)
-      )
-      .orderBy("name", "asc")
-      .paginate(page, per_page);
+      );
+
+    if (phone) {
+      query.andWhere("phone", "iLIKE", `%${phone?.replace(/\D]/g, "")}%`);
+    }
+
+    if (indicated_id) {
+      query.andWhere("indicated_id", indicated_id);
+    }
+
+    const customers = await query.orderBy("name", "asc").paginate(page, per_page);
 
     return customers.serialize({
       fields: { omit: ["tenant_id", "user_id"] },

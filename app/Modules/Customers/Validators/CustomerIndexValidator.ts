@@ -6,6 +6,8 @@ export class CustomerIndexValidator {
 
   public schema = schema.create({
     filter: schema.string.optional(),
+    phone: schema.string.optional(),
+    indicated_id: schema.string.optional(),
     page: schema.number(),
     per_page: schema.number(),
   });
