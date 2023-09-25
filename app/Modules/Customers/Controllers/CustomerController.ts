@@ -1,6 +1,6 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Customer from "../Models/Customer";
-import { CustomerValidator, CustomerIndexValidator } from "../Validators";
+import { CustomerValidator } from "../Validators";
 import { CustomerService } from "../Services/CustomerService";
 
 export default class CustomerController {
