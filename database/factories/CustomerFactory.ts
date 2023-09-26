@@ -14,6 +14,7 @@ export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
     document: faker.helpers.unique(() => faker.finance.account(11)),
     document_secondary: faker.helpers.unique(() => faker.finance.account(11)),
     issuing_agency: faker.helpers.arrayElement(["SSP", "DETRAN", "IFP"]),
+    nationality: "Brasileiro",
     natural: true,
     birthday: DateTime.fromJSDate(faker.date.birthdate({ min: 18, max: 65, mode: "age" })),
     gender: faker.helpers.arrayElement(["Masculino", "Feminino"]),

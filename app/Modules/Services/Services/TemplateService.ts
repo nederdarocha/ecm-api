@@ -15,6 +15,7 @@ export class TemplateService {
       c."natural" as cliente_natural,
       c."name" as cliente_nome,
       c.gender as cliente_genero,
+      c.nationality as cliente_nacionalidade,
       c.email as cliente_email,
       c.phone as cliente_celular,
       to_char(timezone('EAT',c.birthday), 'DD/MM/YYYY') as cliente_nascimento,
@@ -65,6 +66,7 @@ export class TemplateService {
 
     const res = {
       ...data,
+      CLIENTE_NOME: data.cliente_nome.toUpperCase(),
       cliente_cpf: helpers.document(data.cliente_cpf, data.cliente_natural),
       cliente_celular: helpers.phone(data.cliente_celular),
       cliente_endereco,
@@ -76,7 +78,7 @@ export class TemplateService {
       valor_causa: this.formatCurrency(data.service_amount),
       ...extra_data,
     };
-    console.log(res);
+    // console.log(res);
     return res;
   }
 

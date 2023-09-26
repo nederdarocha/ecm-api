@@ -16,6 +16,7 @@ export class CustomerValidator {
     name: schema.string({ trim: true }, [rules.required()]),
     indicated_id: schema.string.nullableAndOptional({ trim: true }, [rules.uuid()]),
     gender: schema.string.nullableAndOptional({ trim: true }),
+    nationality: schema.string({ trim: true }),
     email: schema.string({ trim: true }, [rules.email()]),
     phone: schema.string({ trim: true }),
     birthday: schema.date.nullableAndOptional({ format: "yyyy-MM-dd" }),

@@ -37,6 +37,9 @@ export default class Customer extends BaseModel {
   public natural: boolean;
 
   @column()
+  public nationality: string;
+
+  @column()
   public is_indicator: boolean;
 
   @column()
