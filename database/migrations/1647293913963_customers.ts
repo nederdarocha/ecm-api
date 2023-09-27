@@ -16,6 +16,7 @@ export default class People extends BaseSchema {
       table.string("document_secondary", 50);
       table.string("issuing_agency");
       table.boolean("natural").defaultTo(true);
+      table.string("nationality");
       table.boolean("is_indicator").defaultTo(false);
       table.integer("commission").defaultTo(0);
       table.string("previdencia_id");

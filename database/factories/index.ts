@@ -5,3 +5,4 @@ export * from "./AddressFactory";
 export * from "./CustomerFactory";
 export * from "./CategoryFactory";
 export * from "./ServiceFactory";
+export * from "./CourtFactory";
