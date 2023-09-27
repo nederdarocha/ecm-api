@@ -24,23 +24,19 @@ export default class CourtController {
     return courts;
   }
 
-  public async index({ paginate, request, auth }: HttpContextContract) {
+  public async index({ auth }: HttpContextContract) {
     // await request.validate(CourtIndexValidator);
-    const { page, per_page } = paginate;
-    const { filter } = request.qs();
 
     const courts = await Court.query()
       // .debug(true)
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere((sq) =>
-        sq.orWhere("name", "iLike", `%${filter}%`).orWhere("initials", "iLike", `%${filter}%`)
-      )
-      .orderBy("name", "asc")
-      .paginate(page, per_page);
+      .orderBy("initials", "asc");
 
-    return courts.serialize({
-      fields: { omit: ["tenant_id", "user_id"] },
-    });
+    return courts.map((court) =>
+      court.serialize({
+        fields: { omit: ["tenant_id", "user_id"] },
+      })
+    );
   }
 
   public async store({ auth, request, response }: HttpContextContract) {
