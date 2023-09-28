@@ -123,8 +123,6 @@ export default class OrderController {
       };
     });
 
-    console.log({ res });
-
     return res;
   }
 
