@@ -2,6 +2,7 @@ import { DateTime } from "luxon";
 import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
 import Service from "App/Modules/Services/Models/Service";
 import CustomerOrder from "./CustomerOrder";
+import Court from "App/Modules/Courts/Models/Courts";
 
 export default class CustomerServiceService extends BaseModel {
   public static table = "customer_order_service";
@@ -17,6 +18,12 @@ export default class CustomerServiceService extends BaseModel {
 
   @column()
   public service_id: string;
+
+  @column()
+  public court_id: string;
+
+  @column()
+  public court_number: string;
 
   @column()
   public service_amount: number | null;
@@ -41,6 +48,12 @@ export default class CustomerServiceService extends BaseModel {
     localKey: "id",
   })
   public service: BelongsTo<typeof Service>;
+
+  @belongsTo(() => Court, {
+    foreignKey: "court_id",
+    localKey: "id",
+  })
+  public court: BelongsTo<typeof Court>;
 
   @belongsTo(() => CustomerOrder, {
     foreignKey: "customer_order_id",

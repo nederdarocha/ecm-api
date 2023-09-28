@@ -8,6 +8,7 @@ import CustomerOrder from "../Models/CustomerOrder";
 import CustomerOrderServiceModel from "../Models/CustomerOrderService";
 import ExtraData from "App/Modules/Services/Models/ExtraData";
 import MetaData from "App/Modules/Services/Models/MetaData";
+import { da, sq } from "date-fns/locale";
 
 export default class OrderController {
   private service: OrderService;
@@ -101,21 +102,30 @@ export default class OrderController {
   // SERVICES
   public async getServices({ auth, params: { customer_order_id } }: HttpContextContract) {
     const customerOrderService = await CustomerOrderServiceModel.query()
+      .preload("court", (sq) => sq.select(["id", "initials", "name"]))
       .preload("service", (sq) => sq.select("*").preload("category"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("customer_order_id", customer_order_id);
 
-    return customerOrderService.map(
-      ({ id, service, honorary_type, honorary_value, service_amount }) => ({
+    const res = customerOrderService.map((item) => {
+      const { id, service, court, ...data } = item.toJSON();
+      return {
         customer_order_service_id: id,
         id: service.id,
         name: service.name,
-        honorary_type,
-        honorary_value,
-        service_amount,
+        honorary_type: data.honorary_type,
+        honorary_value: data.honorary_value,
+        service_amount: data.service_amount,
+        court_id: data.court_id,
+        court_number: data.court_number,
+        court: { id: court?.id, initials: court?.initials, name: court?.name },
         category: { id: service?.category?.id, name: service?.category?.name },
-      })
-    );
+      };
+    });
+
+    console.log({ res });
+
+    return res;
   }
 
   public async updateCustomerOrderService({
