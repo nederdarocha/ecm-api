@@ -6,3 +6,4 @@ export * from "./CustomerFactory";
 export * from "./CategoryFactory";
 export * from "./ServiceFactory";
 export * from "./CourtFactory";
+export * from "./StatusFactory";

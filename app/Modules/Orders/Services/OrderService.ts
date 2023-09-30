@@ -8,7 +8,7 @@ export class OrderService {
     const order = await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("user_id", auth.user!.id)
-      .andWhere("status", "draft")
+      .andWhereNull("status_id")
       .first();
 
     return order;

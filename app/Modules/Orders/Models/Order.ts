@@ -1,7 +1,16 @@
 import { DateTime } from "luxon";
-import { column, BaseModel, manyToMany, ManyToMany } from "@ioc:Adonis/Lucid/Orm";
+import {
+  column,
+  BaseModel,
+  manyToMany,
+  ManyToMany,
+  belongsTo,
+  BelongsTo,
+} from "@ioc:Adonis/Lucid/Orm";
 import Customer from "App/Modules/Customers/Models/Customer";
 import Service from "App/Modules/Services/Models/Service";
+import { be } from "date-fns/locale";
+import Status from "./Status";
 
 export default class Order extends BaseModel {
   public static table = "orders";
@@ -36,7 +45,7 @@ export default class Order extends BaseModel {
   public notes: string;
 
   @column()
-  public status: string;
+  public status_id: string | null;
 
   @column()
   public user_id?: string;
@@ -46,6 +55,12 @@ export default class Order extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: null })
   public updatedAt: DateTime;
+
+  @belongsTo(() => Status, {
+    foreignKey: "status_id",
+    localKey: "id",
+  })
+  public status: BelongsTo<typeof Status>;
 
   @manyToMany(() => Customer, {
     pivotTable: "case_customer",

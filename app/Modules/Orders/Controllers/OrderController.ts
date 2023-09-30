@@ -8,7 +8,6 @@ import CustomerOrder from "../Models/CustomerOrder";
 import CustomerOrderServiceModel from "../Models/CustomerOrderService";
 import ExtraData from "App/Modules/Services/Models/ExtraData";
 import MetaData from "App/Modules/Services/Models/MetaData";
-import { da, sq } from "date-fns/locale";
 
 export default class OrderController {
   private service: OrderService;
@@ -58,7 +57,7 @@ export default class OrderController {
       started_at: DateTime.now(),
       tenant_id: auth.user?.tenant_id,
       user_id: auth.user?.id,
-      status: "draft",
+      status_id: null,
     });
 
     return order.serialize({
@@ -68,34 +67,43 @@ export default class OrderController {
 
   public async show({ auth, params: { id } }: HttpContextContract) {
     return await Order.query()
+      .preload("status", (sq) => sq.select(["id", "name"]))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
   }
 
   public async update({ auth, request, params: { id } }: HttpContextContract) {
-    let { ...data } = await request.validate(OrderValidator);
+    let { notes, ...data } = await request.validate(OrderValidator);
 
     const order = await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await order.merge({ ...data, user_id: auth.user?.id }).save();
+    await order.merge({ ...data, notes: notes || "", user_id: auth.user?.id }).save();
+    await order.load("status", (sq) => sq.select(["id", "name"]));
+
     return order;
   }
 
   public async updateNotes({ auth, request, params: { id } }: HttpContextContract) {
-    let { notes } = await request.validate({
-      schema: schema.create({ notes: schema.string.optional({ trim: true }) }),
+    let { notes, status_id } = await request.validate({
+      schema: schema.create({
+        status_id: schema.string({ trim: true }),
+        notes: schema.string.optional({ trim: true }),
+      }),
     });
 
     const order = await Order.query()
+
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await order.merge({ notes: notes || "", user_id: auth.user?.id }).save();
+    await order.merge({ status_id, notes: notes || "", user_id: auth.user?.id }).save();
+    await order.load("status", (sq) => sq.select(["id", "name"]));
+
     return order;
   }
 
@@ -114,8 +122,8 @@ export default class OrderController {
         id: service.id,
         name: service.name,
         honorary_type: data.honorary_type,
-        honorary_value: data.honorary_value,
-        service_amount: data.service_amount,
+        honorary_cents_value: data.honorary_cents_value,
+        service_cents_amount: data.service_cents_amount,
         court_id: data.court_id,
         court_number: data.court_number,
         court: { id: court?.id, initials: court?.initials, name: court?.name },
@@ -135,15 +143,16 @@ export default class OrderController {
       customer_order_service_id
     );
 
-    const { honorary_value, honorary_type, service_amount } = await request.validate(
-      CustomerOrderServiceValidator
-    );
+    const { honorary_cents_value, honorary_type, service_cents_amount, court_id, court_number } =
+      await request.validate(CustomerOrderServiceValidator);
 
     await customerOrderService
       .merge({
         honorary_type,
-        honorary_value: honorary_value || null,
-        service_amount: service_amount || null,
+        honorary_cents_value: honorary_cents_value || null,
+        service_cents_amount: service_cents_amount || null,
+        court_id: court_id || null,
+        court_number: court_number || null,
         user_id: auth.user!.id,
       })
       .save();
@@ -277,11 +286,6 @@ export default class OrderController {
       customer_id,
       user_id: auth.user!.id,
     });
-
-    // alterar o status de rascunho para aberto
-    if (order.status === "draft") {
-      await order.merge({ status: "opened" }).save();
-    }
 
     await orderCustomer.load("customer");
     const customer = orderCustomer.customer;

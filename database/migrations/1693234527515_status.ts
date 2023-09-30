@@ -1,7 +1,7 @@
 import BaseSchema from "@ioc:Adonis/Lucid/Schema";
 
 export default class extends BaseSchema {
-  protected tableName = "orders";
+  protected tableName = "status";
 
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
@@ -13,12 +13,10 @@ export default class extends BaseSchema {
         .notNullable()
         .index()
         .onDelete("CASCADE");
-      table.integer("order"); // sequencia para ordenar de forma correta
-      table.string("number");
-      table.date("started_at");
-      table.date("ended_at");
-      table.text("notes");
-      table.uuid("status_id").references("id").inTable("status").onDelete("SET NULL");
+
+      table.string("name").index();
+
+      table.unique(["name", "tenant_id"]);
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL

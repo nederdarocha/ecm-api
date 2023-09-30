@@ -1,4 +1,4 @@
-import { schema } from "@ioc:Adonis/Core/Validator";
+import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 
 import { commonMessages } from "../../../Common";
@@ -8,8 +8,10 @@ export class CustomerOrderServiceValidator {
 
   public schema = schema.create({
     honorary_type: schema.string({ trim: true }),
-    honorary_value: schema.number.optional(),
-    service_amount: schema.number.nullableAndOptional(),
+    honorary_cents_value: schema.number.optional(),
+    service_cents_amount: schema.number.nullableAndOptional(),
+    court_id: schema.string.optional({ trim: true }, [rules.uuid()]),
+    court_number: schema.string.optional({ trim: true }),
   });
 
   public messages = { ...commonMessages };
