@@ -15,8 +15,8 @@ export default class OrderController {
     this.service = new OrderService();
   }
 
-  public async index({ auth, paginate }: HttpContextContract) {
-    const customer_id = null;
+  public async index({ auth, request, paginate }: HttpContextContract) {
+    const { customer_id } = request.qs();
 
     const query = Order.query()
       .select(["id", "order", "number", "started_at", "ended_at", "status_id"])
