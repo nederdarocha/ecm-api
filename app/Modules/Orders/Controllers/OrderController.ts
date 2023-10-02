@@ -16,12 +16,33 @@ export default class OrderController {
   }
 
   public async index({ auth, paginate }: HttpContextContract) {
-    const orders = await Order.query()
-      .where("tenant_id", auth.user!.tenant_id)
+    const customer_id = null;
+
+    const query = Order.query()
+      .select(["id", "order", "number", "started_at", "ended_at", "status_id"])
+      .preload("status", (sq) => sq.select(["id", "name"]))
+      .preload("customerOrderService", (sq) =>
+        sq
+          .select("*")
+          .preload("service", (sq) => sq.select(["id", "name"]))
+          .preload("court", (sq) => sq.select(["id", "initials", "name"]))
+          .preload("customer", (sq) => sq.select(["id", "name", "document", "natural"]))
+      )
+      .where("tenant_id", auth.user!.tenant_id);
+
+    if (customer_id) {
+      query.andWhereHas("customerOrderService", (query) =>
+        query.whereIn("customer_id", [customer_id])
+      );
+    }
+
+    const orders = await query
+      .whereHas("customerOrderService", (sq) => {})
       .paginate(paginate.page, paginate.per_page);
 
     return orders.serialize({
       fields: { omit: ["tenant_id", "user_id"] },
+      relations: { customerOrderService: { fields: { omit: ["tenant_id", "user_id"] } } },
     });
   }
 
@@ -218,8 +239,12 @@ export default class OrderController {
       schema: schema.create({ service_id: schema.string() }),
     });
 
+    const customerOrder = await CustomerOrder.findOrFail(customer_order_id);
+
     const customerOrderServiceModel = await CustomerOrderServiceModel.create({
       tenant_id: auth.user!.tenant_id,
+      order_id: customerOrder.order_id,
+      customer_id: customerOrder.customer_id,
       service_id,
       customer_order_id,
       user_id: auth.user!.id,

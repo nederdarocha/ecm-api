@@ -6,11 +6,12 @@ import {
   ManyToMany,
   belongsTo,
   BelongsTo,
+  hasMany,
+  HasMany,
 } from "@ioc:Adonis/Lucid/Orm";
 import Customer from "App/Modules/Customers/Models/Customer";
-import Service from "App/Modules/Services/Models/Service";
-import { be } from "date-fns/locale";
 import Status from "./Status";
+import CustomerOrderService from "./CustomerOrderService";
 
 export default class Order extends BaseModel {
   public static table = "orders";
@@ -63,16 +64,15 @@ export default class Order extends BaseModel {
   public status: BelongsTo<typeof Status>;
 
   @manyToMany(() => Customer, {
-    pivotTable: "case_customer",
-    pivotForeignKey: "customer_id",
+    pivotTable: "customer_order",
+    pivotForeignKey: "order_id",
     localKey: "id",
   })
   public customers: ManyToMany<typeof Customer>;
 
-  @manyToMany(() => Service, {
-    pivotTable: "case_service",
-    pivotForeignKey: "service_id",
+  @hasMany(() => CustomerOrderService, {
+    foreignKey: "order_id",
     localKey: "id",
   })
-  public services: ManyToMany<typeof Service>;
+  public customerOrderService: HasMany<typeof CustomerOrderService>;
 }

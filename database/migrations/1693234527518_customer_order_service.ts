@@ -18,6 +18,10 @@ export default class extends BaseSchema {
         .references("id")
         .inTable("customer_order")
         .onDelete("CASCADE");
+
+      table.uuid("order_id").references("id").inTable("orders").onDelete("CASCADE");
+      table.uuid("customer_id").references("id").inTable("customers").onDelete("CASCADE");
+
       table.uuid("service_id").references("id").inTable("services").onDelete("CASCADE");
       table.uuid("court_id").references("id").inTable("courts").onDelete("SET NULL");
       table.string("honorary_type");
