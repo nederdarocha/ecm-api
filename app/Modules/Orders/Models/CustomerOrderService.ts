@@ -4,6 +4,7 @@ import Service from "App/Modules/Services/Models/Service";
 import CustomerOrder from "./CustomerOrder";
 import Court from "App/Modules/Courts/Models/Courts";
 import Customer from "App/Modules/Customers/Models/Customer";
+import Order from "./Order";
 
 export default class CustomerServiceService extends BaseModel {
   public static table = "customer_order_service";
@@ -49,6 +50,12 @@ export default class CustomerServiceService extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: null })
   public updatedAt: DateTime;
+
+  @belongsTo(() => Order, {
+    foreignKey: "order_id",
+    localKey: "id",
+  })
+  public order: BelongsTo<typeof Order>;
 
   @belongsTo(() => Service, {
     foreignKey: "service_id",

@@ -8,6 +8,7 @@ import CustomerOrder from "../Models/CustomerOrder";
 import CustomerOrderServiceModel from "../Models/CustomerOrderService";
 import ExtraData from "App/Modules/Services/Models/ExtraData";
 import MetaData from "App/Modules/Services/Models/MetaData";
+import CustomerOrderService from "../Models/CustomerOrderService";
 
 export default class OrderController {
   private service: OrderService;
@@ -18,29 +19,22 @@ export default class OrderController {
   public async index({ auth, request, paginate }: HttpContextContract) {
     const { customer_id } = request.qs();
 
-    const query = Order.query()
-      .select(["id", "order", "number", "started_at", "ended_at", "status_id"])
-      .preload("status", (sq) => sq.select(["id", "name"]))
-      .preload("customerOrderService", (sq) =>
-        sq
-          .select("*")
-          .preload("service", (sq) => sq.select(["id", "name"]))
-          .preload("court", (sq) => sq.select(["id", "initials", "name"]))
-          .preload("customer", (sq) => sq.select(["id", "name", "document", "natural"]))
-      )
+    const query = CustomerOrderService.query()
+      .preload("order", (sq) => sq.select("*").preload("status", (sq) => sq.select(["id", "name"])))
+      .preload("customer", (sq) => sq.select(["id", "name", "document", "natural"]))
+      .preload("court", (sq) => sq.select(["id", "initials", "name"]))
+      .preload("service", (sq) => sq.select(["id", "name"]))
       .where("tenant_id", auth.user!.tenant_id);
 
     if (customer_id) {
-      query.andWhereHas("customerOrderService", (query) =>
-        query.whereIn("customer_id", [customer_id])
-      );
+      query.andWhereHas("customer", (query) => query.whereIn("customer_id", [customer_id]));
     }
 
     const orders = await query.paginate(paginate.page, paginate.per_page);
 
     return orders.serialize({
       fields: { omit: ["tenant_id", "user_id"] },
-      relations: { customerOrderService: { fields: { omit: ["tenant_id", "user_id"] } } },
+      relations: { order: { fields: { omit: ["tenant_id", "user_id", "status_id"] } } },
     });
   }
 
