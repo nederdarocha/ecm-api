@@ -36,9 +36,7 @@ export default class OrderController {
       );
     }
 
-    const orders = await query
-      .whereHas("customerOrderService", (sq) => {})
-      .paginate(paginate.page, paginate.per_page);
+    const orders = await query.paginate(paginate.page, paginate.per_page);
 
     return orders.serialize({
       fields: { omit: ["tenant_id", "user_id"] },
