@@ -7,7 +7,7 @@ import { DateTime } from "luxon";
 
 export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
   return {
-    tenant_id: TENANTS[faker.helpers.arrayElement(["alfa", "bravo", "charlie"])].id,
+    tenant_id: TENANTS[faker.helpers.arrayElement(["alfa"])].id,
     name: faker.name.fullName(),
     email: faker.helpers.unique(() => faker.internet.email()),
     phone: faker.helpers.unique(() => faker.phone.number("###########")),

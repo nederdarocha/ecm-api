@@ -31,11 +31,7 @@ export default class CustomerController {
     const customers = await Customer.query()
       .select("id", "name", "document")
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere((sq) =>
-        sq
-          .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
-          .orWhere("email", "iLike", `%${filter}%`)
-      )
+      .andWhereRaw("unaccent(name) iLike unaccent(?)", [`%${filter}%`])
       .orderBy("name", "asc")
       .limit(20);
 

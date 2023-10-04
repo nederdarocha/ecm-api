@@ -17,7 +17,7 @@ export default class OrderController {
   }
 
   public async index({ auth, request, paginate }: HttpContextContract) {
-    const { customer_id } = request.qs();
+    const { number, status_id, service_id, court_number, customer_id, indicated_id } = request.qs();
 
     const query = CustomerOrderService.query()
       .preload("order", (sq) => sq.select("*").preload("status", (sq) => sq.select(["id", "name"])))
@@ -26,8 +26,28 @@ export default class OrderController {
       .preload("service", (sq) => sq.select(["id", "name"]))
       .where("tenant_id", auth.user!.tenant_id);
 
+    if (number) {
+      query.andWhereHas("order", (query) => query.where("number", "iLike", `%${number}%`));
+    }
+
+    if (status_id) {
+      query.andWhereHas("order", (query) => query.whereIn("status_id", [status_id]));
+    }
+
+    if (service_id) {
+      query.andWhere("service_id", service_id);
+    }
+
+    if (court_number) {
+      query.andWhereRaw(`REGEXP_REPLACE(court_number ,'\D','','g') iLike ?`, [`%${court_number}%`]);
+    }
+
     if (customer_id) {
       query.andWhereHas("customer", (query) => query.whereIn("customer_id", [customer_id]));
+    }
+
+    if (indicated_id) {
+      query.andWhereHas("customer", (query) => query.whereIn("indicated_id", [indicated_id]));
     }
 
     const orders = await query.paginate(paginate.page, paginate.per_page);
@@ -39,17 +59,23 @@ export default class OrderController {
   }
 
   public async getByCustomer({ auth, params: { customer_id } }: HttpContextContract) {
-    const orders = await CustomerOrder.query()
+    const orders = await CustomerOrderService.query()
       .preload("order", (sq) =>
-        sq.select(["id", "order", "number", "started_at", "ended_at", "status"])
+        sq
+          .select(["id", "order", "number", "started_at", "ended_at", "status_id"])
+          .preload("status", (sq) => sq.select(["id", "name"]))
       )
-      .preload("customerOrderServices", (sq) =>
-        sq.select("*").preload("service", (sq) => sq.select(["id", "name"]))
-      )
+      .preload("service", (sq) => sq.select(["id", "name"]))
+      .preload("court", (sq) => sq.select(["id", "initials", "name"]))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("customer_id", customer_id);
 
-    return orders.map((order) => order.serialize({ fields: { omit: ["tenant_id", "user_id"] } }));
+    return orders.map((order) =>
+      order.serialize({
+        fields: { omit: ["tenant_id", "user_id"] },
+        relations: { customerOrderServices: { fields: { omit: ["tenant_id", "user_id"] } } },
+      })
+    );
   }
 
   public async store({ auth, response }: HttpContextContract) {
