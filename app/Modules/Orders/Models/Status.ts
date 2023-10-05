@@ -24,8 +24,8 @@ export default class Court extends BaseModel {
   public updatedAt: DateTime;
 
   @hasMany(() => Order, {
-    foreignKey: "status",
-    localKey: "name",
+    foreignKey: "status_id",
+    localKey: "id",
   })
   public customerOrderService: HasMany<typeof Order>;
 }

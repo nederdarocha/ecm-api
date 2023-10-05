@@ -51,11 +51,18 @@ export default class OrderController {
     }
 
     const orders = await query.paginate(paginate.page, paginate.per_page);
-
-    return orders.serialize({
+    const _orders = orders.serialize({
       fields: { omit: ["tenant_id", "user_id"] },
       relations: { order: { fields: { omit: ["tenant_id", "user_id", "status_id"] } } },
     });
+
+    const drafts = await this.service.getOrdersDrafts(auth);
+
+    if (drafts.length > 0) {
+      _orders.data = [...drafts, ..._orders.data];
+    }
+
+    return _orders;
   }
 
   public async getByCustomer({ auth, params: { customer_id } }: HttpContextContract) {

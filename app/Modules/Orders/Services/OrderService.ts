@@ -14,6 +14,52 @@ export class OrderService {
     return order;
   }
 
+  public async getOrdersDrafts(auth: AuthContract): Promise<Order[]> {
+    const { rows } = await Database.rawQuery(
+      `
+      select
+      o.id as order_id,
+      o."number" as order_number,
+      c.id as customer_id,
+      c."name" as customer_name,
+      c."document" as customer_document,
+      c."natural" as customer_natural,
+      s."name" as status
+      from orders o
+      left join customer_order_service cs on o.id = cs.order_id
+      left join customer_order co on o.id = co.order_id
+      left join customers c on co.customer_id = c.id
+      left join status s on o.status_id = s.id
+      where cs.order_id is null
+      and o.tenant_id = :tenant_id
+      order by o."number";
+  `,
+      { tenant_id: auth.user!.tenant_id }
+    );
+
+    return rows.map((row) => ({
+      id: row.order_id,
+      order_id: row.order_id,
+      court: {},
+      order: {
+        id: row.order_id,
+        number: row.order_number,
+        started_at: null,
+        status: {
+          id: null,
+          name: row.status,
+        },
+      },
+      service: {},
+      customer: {
+        id: null,
+        name: row.customer_name,
+        document: row.customer_document,
+        natural: row.customer_natural,
+      },
+    }));
+  }
+
   public async getNextNumber(auth: AuthContract): Promise<string> {
     const currentYear = DateTime.now().toFormat("yyyy");
 
