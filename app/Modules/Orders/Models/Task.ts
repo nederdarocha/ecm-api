@@ -3,7 +3,7 @@ import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
 import Order from "App/Modules/Orders/Models/Order";
 import User from "App/Modules/Users/Models/User";
 
-export default class Court extends BaseModel {
+export default class Task extends BaseModel {
   public static table = "tasks";
 
   @column({ isPrimary: true })

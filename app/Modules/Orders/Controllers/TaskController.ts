@@ -1,6 +1,6 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import Status from "../Models/Status";
-import { StatusValidator } from "../Validators";
+import Task from "../Models/Task";
+import { TaskValidator } from "../Validators";
 import { StatusService } from "../Services/StatusService";
 
 export default class TaskController {
@@ -10,11 +10,12 @@ export default class TaskController {
     this.service = new StatusService();
   }
 
-  public async index({ auth }: HttpContextContract) {
-    const courts = await Status.query()
-      // .debug(true)
+  public async getByOrder({ auth, params: { order_id } }: HttpContextContract) {
+    const courts = await Task.query()
       .where("tenant_id", auth.user!.tenant_id)
-      .orderBy("name", "asc");
+      .andWhere("order_id", order_id)
+      .orderBy("made_at", "asc")
+      .orderBy("created_at", "asc");
 
     return courts.map((court) =>
       court.serialize({
@@ -23,16 +24,23 @@ export default class TaskController {
     );
   }
 
-  public async store({ auth, request, response }: HttpContextContract) {
-    const { ...data } = await request.validate(StatusValidator);
+  public async index({ auth }: HttpContextContract) {
+    const courts = await Task.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .orderBy("made_at", "asc");
+
+    return courts.map((court) =>
+      court.serialize({
+        fields: { omit: ["tenant_id", "user_id"] },
+      })
+    );
+  }
+
+  public async store({ auth, request }: HttpContextContract) {
+    const { ...data } = await request.validate(TaskValidator);
     const { tenant_id } = auth.user!;
 
-    const isSigleCourt = await this.service.isSigle({ auth, request });
-    if (isSigleCourt instanceof Error) {
-      return response.badRequest({ message: isSigleCourt.message });
-    }
-
-    const court = await Status.create({
+    const court = await Task.create({
       ...data,
       tenant_id,
       user_id: auth.user!.id,
@@ -46,7 +54,7 @@ export default class TaskController {
   }
 
   public async show({ params, auth }: HttpContextContract) {
-    const court = await Status.query()
+    const court = await Task.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", params.id)
       .firstOrFail();
@@ -54,20 +62,26 @@ export default class TaskController {
     return court;
   }
 
-  public async update({ auth, request, response, params }: HttpContextContract) {
-    const { ...data } = await request.validate(StatusValidator);
-    const court = await Status.query()
+  public async update({ auth, request, params: { id } }: HttpContextContract) {
+    const { ...data } = await request.validate(TaskValidator);
+    const court = await Task.query()
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("id", params.id)
+      .andWhere("id", id)
       .firstOrFail();
-
-    const isSigleCourt = await this.service.isSigle({ auth, request, id: params.id });
-    if (isSigleCourt instanceof Error) {
-      return response.badRequest({ message: isSigleCourt.message });
-    }
 
     await court.merge(data).save();
 
     return court;
+  }
+
+  public async destroy({ auth, response, params: { id } }: HttpContextContract) {
+    const task = await Task.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await task.delete();
+
+    return response.status(204);
   }
 }

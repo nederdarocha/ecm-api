@@ -3,7 +3,10 @@ import Route from "@ioc:Adonis/Core/Route";
 Route.where("id", Route.matchers.uuid());
 
 Route.group(() => {
-  Route.resource("orders/tasks", "TasksController").apiOnly().middleware({
+  Route.get("orders/tasks/:order_id/by-order", "TaskController.getByOrder").middleware([
+    "acl:r-tasks",
+  ]);
+  Route.resource("orders/tasks", "TaskController").apiOnly().middleware({
     store: "acl:c-tasks",
     index: "acl:r-tasks",
     show: "acl:r-tasks",

@@ -17,8 +17,6 @@ export default class AddressesController {
       .andWhere("id", id)
       .firstOrFail();
 
-    console.log(address.owner_id);
-
     await Database.rawQuery(
       `
       UPDATE addresses SET favorite = false
