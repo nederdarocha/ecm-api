@@ -4,14 +4,14 @@ Route.where("id", Route.matchers.uuid());
 
 Route.group(() => {
   Route.get("orders/tasks/:order_id/by-order", "TaskController.getByOrder").middleware([
-    "acl:r-tasks",
+    "acl:r-task",
   ]);
   Route.resource("orders/tasks", "TaskController").apiOnly().middleware({
-    store: "acl:c-tasks",
-    index: "acl:r-tasks",
-    show: "acl:r-tasks",
-    update: "acl:u-tasks",
-    destroy: "acl:d-tasks",
+    store: "acl:c-task",
+    index: "acl:r-task",
+    show: "acl:r-task",
+    update: "acl:u-task",
+    destroy: "acl:d-task",
   });
 })
   .middleware(["auth", "sleep:1000"])
