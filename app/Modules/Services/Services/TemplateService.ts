@@ -10,8 +10,8 @@ export class TemplateService {
       `
       select
       cos.honorary_type,
-      cos.honorary_value,
-      cos.service_amount,
+      cos.honorary_cents_value,
+      cos.service_cents_amount,
       c."natural" as cliente_natural,
       c."name" as cliente_nome,
       c.gender as cliente_genero,
@@ -74,8 +74,8 @@ export class TemplateService {
       feminino: data.cliente_genero === "Feminino",
       a_o: data.cliente_genero === "Feminino" ? "a" : "o",
       genero_a_o: data.cliente_genero === "Feminino" ? "a" : "o",
-      valor_honorario: this.formatHonorary(data.honorary_value, data.honorary_type),
-      valor_causa: this.formatCurrency(data.service_amount),
+      valor_honorario: this.formatHonorary(data.honorary_cents_value, data.honorary_type),
+      valor_causa: this.formatCurrency(data.service_cents_amount),
       ...extra_data,
     };
     // console.log(res);
