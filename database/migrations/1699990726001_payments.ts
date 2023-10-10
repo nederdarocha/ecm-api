@@ -16,9 +16,9 @@ export default class Payments extends BaseSchema {
       table.uuid("customer_id").references("id").inTable("customers").onDelete("SET NULL");
       table.string("type", 50);
       table.string("description");
-      table.integer("value_cents");
+      table.integer("pay_cents_value");
       table.date("due_date");
-      table.integer("paid_value_cents");
+      table.integer("paid_cents_value");
       table.date("paid_date");
       table.text("notes");
       table.string("status", 50);
