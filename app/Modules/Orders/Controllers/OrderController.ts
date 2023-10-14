@@ -175,6 +175,7 @@ export default class OrderController {
         honorary_type: data.honorary_type,
         honorary_cents_value: data.honorary_cents_value,
         service_cents_amount: data.service_cents_amount,
+        customer_id: data.customer_id,
         court_id: data.court_id,
         court_number: data.court_number,
         court: { id: court?.id, initials: court?.initials, name: court?.name },
