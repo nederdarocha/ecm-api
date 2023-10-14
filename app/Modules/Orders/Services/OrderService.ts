@@ -2,6 +2,7 @@ import { AuthContract } from "@ioc:Adonis/Addons/Auth";
 import Database from "@ioc:Adonis/Lucid/Database";
 import { DateTime } from "luxon";
 import Order from "../Models/Order";
+import Status from "../Models/Status";
 
 export class OrderService {
   public async getOrderDraft(auth: AuthContract): Promise<Order | null> {
@@ -90,5 +91,13 @@ export class OrderService {
     );
 
     return sequence[0].order + 1;
+  }
+
+  public async getInitialStatus(): Promise<string | null> {
+    const initialStatus = await Status.query().select("id").where("initial", true).first();
+    if (initialStatus) {
+      return initialStatus.id;
+    }
+    return null;
   }
 }

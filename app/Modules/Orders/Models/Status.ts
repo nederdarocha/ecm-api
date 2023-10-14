@@ -17,6 +17,9 @@ export default class Status extends BaseModel {
   @column()
   public user_id: string;
 
+  @column()
+  public initial: boolean;
+
   @column.dateTime({ autoCreate: true, serializeAs: null })
   public createdAt: DateTime;
 

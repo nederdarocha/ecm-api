@@ -9,6 +9,8 @@ export class TemplateService {
     } = await Database.rawQuery(
       `
       select
+      ct.initials as competencia_silga,
+      ct.name as competencia_nome,
       cos.honorary_type,
       cos.honorary_cents_value,
       cos.service_cents_amount,
@@ -36,6 +38,7 @@ export class TemplateService {
       join customer_order co on cos.customer_order_id = co.id
       join customers c on co.customer_id = c.id
       left join addresses a on c.id = a.owner_id
+      left join courts ct on cos.court_id = ct.id
       where cos.id = :customer_order_service_id
       and a.favorite = true
       limit 1
@@ -83,8 +86,6 @@ export class TemplateService {
   }
 
   private formatHonorary(value: number, type: string) {
-    console.log({ value, type });
-
     const decimalValue = value / 100;
     const formatValue = new Intl.NumberFormat("pt-BR", {
       currency: "BRL",

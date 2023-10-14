@@ -15,6 +15,7 @@ export default class extends BaseSchema {
         .onDelete("CASCADE");
 
       table.string("name").index();
+      table.boolean("initial").defaultTo(false);
 
       table.unique(["name", "tenant_id"]);
 

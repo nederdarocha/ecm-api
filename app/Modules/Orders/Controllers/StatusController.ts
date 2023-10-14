@@ -2,6 +2,7 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Status from "../Models/Status";
 import { StatusValidator } from "../Validators";
 import { StatusService } from "../Services/StatusService";
+import Database from "@ioc:Adonis/Lucid/Database";
 
 export default class StatusController {
   private service: StatusService;
@@ -24,8 +25,14 @@ export default class StatusController {
   }
 
   public async store({ auth, request, response }: HttpContextContract) {
-    const { ...data } = await request.validate(StatusValidator);
+    const { initial, ...data } = await request.validate(StatusValidator);
     const { tenant_id } = auth.user!;
+
+    if (initial) {
+      await Database.rawQuery(`UPDATE status SET initial=false WHERE tenant_id = :tenant_id`, {
+        tenant_id,
+      });
+    }
 
     const isSigleCourt = await this.service.isSigle({ auth, request });
     if (isSigleCourt instanceof Error) {
@@ -34,6 +41,7 @@ export default class StatusController {
 
     const court = await Status.create({
       ...data,
+      initial,
       tenant_id,
       user_id: auth.user!.id,
     });
@@ -55,7 +63,14 @@ export default class StatusController {
   }
 
   public async update({ auth, request, response, params }: HttpContextContract) {
-    const { ...data } = await request.validate(StatusValidator);
+    const { initial, ...data } = await request.validate(StatusValidator);
+
+    if (initial) {
+      await Database.rawQuery(`UPDATE status SET initial=false WHERE tenant_id= :tenant_id`, {
+        tenant_id: auth.user!.tenant_id,
+      });
+    }
+
     const court = await Status.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", params.id)
@@ -66,7 +81,7 @@ export default class StatusController {
       return response.badRequest({ message: isSigleCourt.message });
     }
 
-    await court.merge(data).save();
+    await court.merge({ ...data, initial }).save();
 
     return court;
   }

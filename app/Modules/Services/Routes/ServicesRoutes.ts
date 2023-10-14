@@ -8,11 +8,11 @@ Route.group(() => {
   Route.get("services/:id/templates", "ServiceController.getTemplates");
 
   Route.resource("services", "ServiceController").apiOnly().middleware({
-    store: "acl:c-category",
-    index: "acl:r-category",
-    show: "acl:r-category",
-    update: "acl:u-category",
-    destroy: "acl:d-category",
+    store: "acl:c-service",
+    index: "acl:r-service",
+    show: "acl:r-service",
+    update: "acl:u-service",
+    destroy: "acl:d-service",
   });
 })
   .middleware(["auth"])

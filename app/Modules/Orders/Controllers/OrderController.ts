@@ -17,7 +17,8 @@ export default class OrderController {
   }
 
   public async index({ auth, request, paginate }: HttpContextContract) {
-    const { number, status_id, service_id, court_number, customer_id, indicated_id } = request.qs();
+    const { number, status_id, service_id, court_id, court_number, customer_id, indicated_id } =
+      request.qs();
 
     const query = CustomerOrderService.query()
       .preload("order", (sq) => sq.select("*").preload("status", (sq) => sq.select(["id", "name"])))
@@ -36,6 +37,10 @@ export default class OrderController {
 
     if (service_id) {
       query.andWhere("service_id", service_id);
+    }
+
+    if (court_id) {
+      query.andWhere("court_id", court_id);
     }
 
     if (court_number) {
@@ -96,14 +101,14 @@ export default class OrderController {
 
     const nextOrder = await this.service.getNextSequence(auth);
     const number = await this.service.getNextNumber(auth);
-
+    const status_id = await this.service.getInitialStatus();
     const order = await Order.create({
       order: nextOrder,
       number,
       started_at: DateTime.now(),
       tenant_id: auth.user?.tenant_id,
       user_id: auth.user?.id,
-      status_id: null,
+      status_id,
     });
 
     return order.serialize({

@@ -8,6 +8,7 @@ export class StatusValidator {
 
   public schema = schema.create({
     name: schema.string({ trim: true }),
+    initial: schema.boolean.optional(),
   });
 
   public messages = { ...commonMessages };
