@@ -14,6 +14,8 @@ export class PaymentValidator {
     notes: schema.string.optional({ trim: true }),
     due_date: schema.date({ format: "yyyy-MM-dd" }),
     paid_date: schema.date.optional({ format: "yyyy-MM-dd" }),
+    pay_cents_value: schema.number.optional(),
+    paid_cents_value: schema.number.optional(),
   });
 
   public messages = { ...commonMessages };

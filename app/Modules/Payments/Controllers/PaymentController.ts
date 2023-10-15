@@ -32,7 +32,7 @@ export default class PaymentController {
     );
   }
 
-  public async store({ auth, request, response }: HttpContextContract) {
+  public async store({ auth, request }: HttpContextContract) {
     const { ...data } = await request.validate(PaymentValidator);
     const { tenant_id } = auth.user!;
 
@@ -66,7 +66,7 @@ export default class PaymentController {
     return payment;
   }
 
-  public async update({ auth, request, response, params }: HttpContextContract) {
+  public async update({ auth, request, params }: HttpContextContract) {
     const { ...data } = await request.validate(PaymentValidator);
     const payment = await Payment.query()
       .where("tenant_id", auth.user!.tenant_id)
@@ -76,5 +76,15 @@ export default class PaymentController {
     await payment.merge(data).save();
 
     return payment;
+  }
+
+  public async destroy({ response, params: { id }, auth }: HttpContextContract) {
+    const payment = await Payment.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await payment.delete();
+    return response.status(204);
   }
 }

@@ -12,6 +12,27 @@ export default class FilesController {
     this.service = new FileService();
   }
 
+  public async trashIndex({ auth }: HttpContextContract) {
+    const files = await File.query()
+      .select(
+        "id",
+        "name",
+        "type",
+        "content_type",
+        "is_public",
+        "size",
+        "created_at",
+        "updated_at",
+        "user_id"
+      )
+      .preload("user", (q) => q.select("id", "first_name", "last_name"))
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhereNull("owner_id")
+      .orderBy("name", "asc");
+
+    return files;
+  }
+
   public async ownerIndex({ auth, params: { id } }: HttpContextContract) {
     const files = await File.query()
       .select("id", "name", "type", "content_type", "is_public", "size", "created_at", "user_id")
@@ -111,6 +132,21 @@ export default class FilesController {
   }
 
   public async destroy({ auth, params: { id }, response }: HttpContextContract) {
+    const file = await File.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .where("id", id)
+      .firstOrFail();
+
+    try {
+      // await Drive.delete(file.key);
+      await file.merge({ owner_id: null, user_id: auth.user?.id }).save();
+      response.status(204);
+    } catch (error) {
+      return response.status(500).json({ error: error.message });
+    }
+  }
+
+  public async trashDestroy({ auth, params: { id }, response }: HttpContextContract) {
     const file = await File.query()
       .where("tenant_id", auth.user!.tenant_id)
       .where("id", id)

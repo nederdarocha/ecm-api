@@ -11,7 +11,7 @@ export default class File extends BaseModel {
   public tenant_id: string;
 
   @column()
-  public owner_id: string;
+  public owner_id: string | null;
 
   @column()
   public name: string;
@@ -51,7 +51,13 @@ export default class File extends BaseModel {
   })
   public createdAt: DateTime;
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  @column.dateTime({
+    autoCreate: true,
+    autoUpdate: true,
+    serialize: (value?: DateTime) => {
+      return value ? value.toFormat("dd/MM/yyyy hh:mm") : null;
+    },
+  })
   public updatedAt: DateTime;
 
   @computed()
