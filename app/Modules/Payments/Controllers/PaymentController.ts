@@ -3,27 +3,28 @@ import Payment from "../Models/Payment";
 import { PaymentValidator } from "../Validators";
 
 export default class PaymentController {
-  public async filter({ auth, request }: HttpContextContract) {
-    const { filter } = request.qs();
-    const courts = await Payment.query()
-      .select("id", "name", "initials")
-      .where("tenant_id", auth.user!.tenant_id)
-      .andWhere((sq) =>
-        sq.orWhere("name", "iLike", `%${filter}%`).orWhere("initials", "iLike", `%${filter}%`)
+  public async index({ auth, request, paginate }: HttpContextContract) {
+    const { customer_id, status } = request.qs();
+
+    const query = Payment.query()
+      .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
+      .preload("order", (sq) => sq.select("id", "number"))
+      .preload("customerOrderService", (sq) =>
+        sq.select("*").preload("service", (sq) => sq.select("id", "name"))
       )
-      .orderBy("initials", "asc")
-      .limit(20);
+      .where("tenant_id", auth.user!.tenant_id);
 
-    return courts;
-  }
+    if (status) {
+      query.andWhere("status", status);
+    }
 
-  public async index({ auth }: HttpContextContract) {
-    // await request.validate(CourtIndexValidator);
+    if (customer_id) {
+      query.andWhere("customer_id", customer_id);
+    }
 
-    const courts = await Payment.query()
-      // .debug(true)
-      .where("tenant_id", auth.user!.tenant_id)
-      .orderBy("initials", "asc");
+    const courts = await query
+      .orderBy("due_date", "asc")
+      .paginate(paginate.page, paginate.per_page);
 
     return courts.map((payment) =>
       payment.serialize({
