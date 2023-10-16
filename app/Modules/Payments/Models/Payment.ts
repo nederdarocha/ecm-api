@@ -3,6 +3,7 @@ import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
 import Customer from "App/Modules/Customers/Models/Customer";
 import Order from "App/Modules/Orders/Models/Order";
 import CustomerOrderService from "App/Modules/Orders/Models/CustomerOrderService";
+import User from "App/Modules/Users/Models/User";
 
 export default class Court extends BaseModel {
   public static table = "payments";
@@ -21,6 +22,9 @@ export default class Court extends BaseModel {
 
   @column()
   public customer_id: string;
+
+  @column()
+  public paid_by: string;
 
   @column()
   public type: string;
@@ -68,6 +72,12 @@ export default class Court extends BaseModel {
     localKey: "id",
   })
   public customer: BelongsTo<typeof Customer>;
+
+  @belongsTo(() => User, {
+    foreignKey: "paid_by",
+    localKey: "id",
+  })
+  public paidBy: BelongsTo<typeof User>;
 
   @belongsTo(() => Order, {
     foreignKey: "order_id",

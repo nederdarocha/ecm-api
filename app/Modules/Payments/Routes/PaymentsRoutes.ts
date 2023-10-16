@@ -8,6 +8,10 @@ Route.group(() => {
     "PaymentController.getByCustomerOrderService"
   ).middleware("acl:r-payment");
 
+  Route.post("payments/:id/made-payment", "PaymentController.madePayment").middleware(
+    "acl:u-payment"
+  );
+
   Route.resource("payments", "PaymentController").apiOnly().middleware({
     store: "acl:c-payment",
     index: "acl:r-payment",

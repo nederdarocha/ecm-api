@@ -288,6 +288,8 @@ export default class OrderController {
       customer_order_service_id: customerOrderServiceModel.id,
       id: service.id,
       name: service.name,
+      customer_id: customerOrderServiceModel.customer_id,
+      order_id: customerOrderServiceModel.order_id,
       category: { id: service?.category?.id, name: service?.category?.name },
     });
   }

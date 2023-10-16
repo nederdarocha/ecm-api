@@ -1,12 +1,13 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Payment from "../Models/Payment";
-import { PaymentValidator } from "../Validators";
+import { PaymentValidator, MadePaymentValidator } from "../Validators";
 
 export default class PaymentController {
   public async index({ auth, request, paginate }: HttpContextContract) {
     const { customer_id, status } = request.qs();
 
     const query = Payment.query()
+      .preload("paidBy", (sq) => sq.select("id", "first_name"))
       .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
       .preload("order", (sq) => sq.select("id", "number"))
       .preload("customerOrderService", (sq) =>
@@ -63,6 +64,25 @@ export default class PaymentController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", params.id)
       .firstOrFail();
+
+    return payment;
+  }
+
+  public async madePayment({ auth, request, params: { id } }: HttpContextContract) {
+    const { paid_cents_value, paid_date } = await request.validate(MadePaymentValidator);
+    const payment = await Payment.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await payment
+      .merge({
+        paid_cents_value,
+        paid_date,
+        status: "made",
+        paid_by: auth.user!.id,
+      })
+      .save();
 
     return payment;
   }

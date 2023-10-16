@@ -34,7 +34,7 @@ export class FileService {
   public async isFileNameExist({ auth, file, name }: IsFileNameExistProps): Promise<Error | void> {
     const existFile = await File.query()
       .where("name", name)
-      .andWhere("owner_id", file.owner_id)
+      .andWhere("owner_id", file.owner_id!)
       .andWhere("tenant_id", auth.user!.tenant_id)
       .andWhereNot("id", file.id)
       .first();

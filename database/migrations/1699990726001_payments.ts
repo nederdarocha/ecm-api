@@ -20,6 +20,7 @@ export default class Payments extends BaseSchema {
       table.date("due_date");
       table.integer("paid_cents_value");
       table.date("paid_date");
+      table.uuid("paid_by").references("id").inTable("users").onDelete("SET NULL");
       table.text("notes");
       table.string("status", 50);
 
