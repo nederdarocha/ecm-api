@@ -22,15 +22,13 @@ export default class PaymentController {
       query.andWhere("customer_id", customer_id);
     }
 
-    const courts = await query
+    const payments = await query
       .orderBy("due_date", "asc")
       .paginate(paginate.page, paginate.per_page);
 
-    return courts.map((payment) =>
-      payment.serialize({
-        fields: { omit: ["tenant_id", "user_id"] },
-      })
-    );
+    return payments.serialize({
+      fields: { omit: ["tenant_id", "user_id"] },
+    });
   }
 
   public async store({ auth, request }: HttpContextContract) {
@@ -41,6 +39,8 @@ export default class PaymentController {
       ...data,
       tenant_id,
       user_id: auth.user!.id,
+      status: "pending", // made
+      type: "receivable", // payable
     });
 
     return payment.serialize({
