@@ -5,7 +5,7 @@ import { TENANTS } from "Database/constants";
 export const AddressFactory = Factory.define(Address, ({ faker }) => {
   return {
     tenant_id: TENANTS.alfa.id,
-    name: "Casa",
+    name: "Residencial",
     zip: faker.helpers.unique(() => faker.address.zipCode("#####-###")),
     favorite: true,
     street: faker.address.street(),

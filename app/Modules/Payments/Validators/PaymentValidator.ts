@@ -11,12 +11,13 @@ export class PaymentValidator {
     customer_order_service_id: schema.string({ trim: true }, [rules.uuid()]),
     customer_id: schema.string({ trim: true }, [rules.uuid()]),
     description: schema.string.optional({ trim: true }),
-    notes: schema.string.optional({ trim: true }),
     due_date: schema.date({ format: "yyyy-MM-dd" }),
-    paid_date: schema.date.optional({ format: "yyyy-MM-dd" }),
-    pay_cents_value: schema.number.optional(),
-    paid_cents_value: schema.number.optional(),
+    pay_cents_value: schema.number([rules.range(1, 99999999999)]),
+    type: schema.enum(["payable", "receivable"] as const),
   });
 
-  public messages = { ...commonMessages };
+  public messages = {
+    ...commonMessages,
+    "pay_cents_value.range": "informe um valor válido",
+  };
 }

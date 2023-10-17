@@ -11,7 +11,7 @@ export default class UserSeeder extends BaseSeeder {
       },
       { ...USERS.admin },
       { ...USERS.supp },
-    ]).createMany(99);
+    ]).createMany(4);
 
     const [roleSupAdmin, roleAdmin, roleSupp] = await Role.query()
       .whereIn("slug", ["sup_admin", "admin", "supp"])

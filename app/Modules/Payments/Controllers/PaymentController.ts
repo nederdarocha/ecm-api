@@ -41,7 +41,7 @@ export default class PaymentController {
       tenant_id,
       user_id: auth.user!.id,
       status: "pending", // made
-      type: "receivable", // payable
+      // type: "receivable", // payable
     });
 
     return payment.serialize({
