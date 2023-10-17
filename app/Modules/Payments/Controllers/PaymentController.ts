@@ -105,6 +105,12 @@ export default class PaymentController {
       .andWhere("id", id)
       .firstOrFail();
 
+    if (payment.status === "made") {
+      return response
+        .status(400)
+        .json({ message: "Não é possível excluir um pagamento confirmado." });
+    }
+
     await payment.delete();
     return response.status(204);
   }
