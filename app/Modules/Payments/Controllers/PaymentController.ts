@@ -12,7 +12,8 @@ export default class PaymentController {
   }
 
   public async index({ auth, request, paginate }: HttpContextContract) {
-    const { customer_id, status } = request.qs();
+    const { number, status, service_id, customer_id, due_date_begin, due_date_end, type } =
+      request.qs();
 
     const query = Payment.query()
       .preload("file", (sq) => sq.select("id", "name", "type", "key", "content_type", "size"))
@@ -24,12 +25,36 @@ export default class PaymentController {
       )
       .where("tenant_id", auth.user!.tenant_id);
 
+    if (number) {
+      query.andWhereHas("order", (query) => query.where("number", "iLike", `%${number}%`));
+    }
+
     if (status) {
       query.andWhere("status", status);
     }
 
+    if (service_id) {
+      query.andWhereHas("customerOrderService", (query) => query.where("service_id", service_id));
+    }
+
     if (customer_id) {
       query.andWhere("customer_id", customer_id);
+    }
+
+    if (due_date_begin && due_date_end) {
+      query.andWhereBetween("due_date", [`${due_date_begin} 00:00:00`, `${due_date_end} 23:59:59`]);
+    }
+
+    if (due_date_begin && !due_date_end) {
+      query.andWhere("due_date", ">=", `${due_date_begin} 00:00:00`);
+    }
+
+    if (!due_date_begin && due_date_end) {
+      query.andWhere("due_date", "<=", `${due_date_end} 23:59:59`);
+    }
+
+    if (type) {
+      query.andWhere("type", type);
     }
 
     const payments = await query

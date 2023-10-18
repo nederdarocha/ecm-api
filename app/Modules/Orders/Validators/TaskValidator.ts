@@ -10,7 +10,7 @@ export class TaskValidator {
     order_id: schema.string({ trim: true }, [rules.uuid()]),
     notes: schema.string({ trim: true }),
     made_at: schema.date({ format: "yyyy-MM-dd" }),
-    make_id: schema.date.optional({ format: "yyyy-MM-dd" }),
+    make_in: schema.date.optional({ format: "yyyy-MM-dd" }),
     confirmed_by: schema.string.optional({ trim: true }, [rules.uuid()]),
     status: schema.string.optional({ trim: true }),
   });
