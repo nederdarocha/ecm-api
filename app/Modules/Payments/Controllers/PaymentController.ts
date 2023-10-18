@@ -15,6 +15,7 @@ export default class PaymentController {
     const { customer_id, status } = request.qs();
 
     const query = Payment.query()
+      .preload("file", (sq) => sq.select("id", "name", "type", "key", "content_type", "size"))
       .preload("paidBy", (sq) => sq.select("id", "first_name"))
       .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
       .preload("order", (sq) => sq.select("id", "number"))
@@ -131,6 +132,11 @@ export default class PaymentController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
+
+    const file = await this.service.checkIfFileExists({ auth, payment_id: id });
+    if (file) {
+      await file.merge({ owner_id: null, user_id: auth.user?.id }).save();
+    }
 
     await payment
       .merge({

@@ -8,6 +8,11 @@ interface GenerateNameProps {
   payment_id: string;
 }
 
+interface CheckIfFileExistsProps {
+  auth: AuthContract;
+  payment_id: string;
+}
+
 export class PaymentService {
   public async findById(): Promise<null> {
     return null;
@@ -24,5 +29,20 @@ export class PaymentService {
       return file.clientName?.replace(regex, `_${Date.now()}$1`);
     }
     return file.clientName;
+  }
+  public async checkIfFileExists({
+    payment_id,
+    auth,
+  }: CheckIfFileExistsProps): Promise<File | null> {
+    const existFile = await File.query()
+      .where("owner_id", payment_id)
+      .andWhere("tenant_id", auth.user!.tenant_id)
+      .first();
+
+    if (existFile) {
+      return existFile;
+    }
+
+    return null;
   }
 }

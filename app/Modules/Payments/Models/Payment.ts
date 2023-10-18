@@ -4,6 +4,7 @@ import Customer from "App/Modules/Customers/Models/Customer";
 import Order from "App/Modules/Orders/Models/Order";
 import CustomerOrderService from "App/Modules/Orders/Models/CustomerOrderService";
 import User from "App/Modules/Users/Models/User";
+import File from "App/Modules/Files/Models/File";
 
 export default class Court extends BaseModel {
   public static table = "payments";
@@ -72,6 +73,12 @@ export default class Court extends BaseModel {
     localKey: "id",
   })
   public customer: BelongsTo<typeof Customer>;
+
+  @belongsTo(() => File, {
+    foreignKey: "id",
+    localKey: "owner_id",
+  })
+  public file: BelongsTo<typeof File>;
 
   @belongsTo(() => User, {
     foreignKey: "paid_by",
