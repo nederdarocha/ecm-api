@@ -24,7 +24,7 @@ export default class Court extends BaseModel {
   public customer_id: string;
 
   @column()
-  public paid_by: string;
+  public paid_by: string | null;
 
   @column()
   public type: string;
@@ -43,14 +43,14 @@ export default class Court extends BaseModel {
   public due_date: DateTime;
 
   @column()
-  public paid_cents_value: number;
+  public paid_cents_value: number | null;
 
   @column.date({
     serialize: (value: DateTime) => {
       return value ? value.toFormat("dd/MM/yyyy") : null;
     },
   })
-  public paid_date: DateTime;
+  public paid_date: DateTime | null;
 
   @column()
   public notes: string;

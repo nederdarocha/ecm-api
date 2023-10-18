@@ -10,7 +10,15 @@ export class MadePaymentValidator {
     notes: schema.string.optional({ trim: true }),
     paid_date: schema.date({ format: "yyyy-MM-dd" }),
     paid_cents_value: schema.number(),
+    file: schema.file.optional({
+      size: "10mb",
+      extnames: ["jpg", "jpeg", "png", "pdf"],
+    }),
   });
 
-  public messages = { ...commonMessages };
+  public messages = {
+    ...commonMessages,
+    "file.size": "A imagem não pode ser maior que 10MB",
+    "file.extnames": "O arquivo não possui uma extensão permitida",
+  };
 }

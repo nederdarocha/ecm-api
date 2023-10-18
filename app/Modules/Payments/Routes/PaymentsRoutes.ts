@@ -12,6 +12,8 @@ Route.group(() => {
     "acl:u-payment"
   );
 
+  Route.post("payments/:id/undo-payment", "PaymentController.undoPayment").middleware("acl:admin");
+
   Route.resource("payments", "PaymentController").apiOnly().middleware({
     store: "acl:c-payment",
     index: "acl:r-payment",

@@ -1,8 +1,16 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Payment from "../Models/Payment";
 import { PaymentValidator, MadePaymentValidator } from "../Validators";
+import File from "App/Modules/Files/Models/File";
+import { PaymentService } from "../Services/PaymentService";
 
 export default class PaymentController {
+  private service: PaymentService;
+
+  constructor() {
+    this.service = new PaymentService();
+  }
+
   public async index({ auth, request, paginate }: HttpContextContract) {
     const { customer_id, status } = request.qs();
 
@@ -68,12 +76,43 @@ export default class PaymentController {
     return payment;
   }
 
-  public async madePayment({ auth, request, params: { id } }: HttpContextContract) {
-    const { paid_cents_value, paid_date } = await request.validate(MadePaymentValidator);
+  public async madePayment({ auth, request, response, params: { id } }: HttpContextContract) {
+    const { file, paid_cents_value, paid_date } = await request.validate(MadePaymentValidator);
     const payment = await Payment.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
+
+    if (file) {
+      const name = await this.service.generateName({ auth, file, payment_id: id });
+      console.log("aqui");
+
+      const _file = await File.create({
+        owner_id: payment.id,
+        tenant_id: auth.user!.tenant_id,
+        name: name,
+        type: file.extname,
+        user_id: auth.user?.id,
+        content_type: file.headers["content-type"],
+        is_public: false,
+        size: file.size,
+      });
+      try {
+        await file.moveToDisk(
+          "payments",
+          {
+            name: `${_file.id}.${file.extname}`,
+            visibility: "private",
+            cacheControl: "public,max-age=290304000",
+          },
+          "s3"
+        );
+
+        await _file.merge({ key: `payments/${_file.id}.${file.extname}` }).save();
+      } catch (error) {
+        return response.status(500).json({ error: error.message });
+      }
+    }
 
     await payment
       .merge({
@@ -81,6 +120,24 @@ export default class PaymentController {
         paid_date,
         status: "made",
         paid_by: auth.user!.id,
+      })
+      .save();
+
+    return payment;
+  }
+
+  public async undoPayment({ auth, params: { id } }: HttpContextContract) {
+    const payment = await Payment.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await payment
+      .merge({
+        paid_cents_value: null,
+        paid_date: null,
+        status: "pending",
+        paid_by: null,
       })
       .save();
 
