@@ -3,6 +3,32 @@ import { helpers } from "App/Common/utils/helper";
 import extenso from "extenso";
 
 export class TemplateService {
+  public async checkAddress(customer_order_service_id: string): Promise<string | Error> {
+    const {
+      rows: [data],
+    } = await Database.rawQuery(
+      `
+      select
+      a.id as end_id
+      from customer_order_service cos
+      join customer_order co on cos.customer_order_id = co.id
+      join customers c on co.customer_id = c.id
+      left join addresses a on c.id = a.owner_id
+      left join courts ct on cos.court_id = ct.id
+      where cos.id = :customer_order_service_id
+      and a.favorite = true
+      limit 1
+      `,
+      { customer_order_service_id }
+    );
+
+    if (!data?.end_id) {
+      return new Error("Endereço do cliente não encontrado.");
+    }
+
+    return data.end_id;
+  }
+
   public async getData(customer_order_service_id: string): Promise<any> {
     const {
       rows: [data],

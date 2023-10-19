@@ -26,6 +26,12 @@ export default class TemplateController {
       .where("id", id)
       .firstOrFail();
 
+    // check customer address
+    const checkAddress = await this.service.checkAddress(customer_order_service_id);
+    if (checkAddress instanceof Error) {
+      return "<h3>Para gerar o documento é preciso cadastrar um endereço para o cliente.</h3>";
+    }
+
     const data = await this.service.getData(customer_order_service_id);
     const file_name = slugify(file.name.replace(/\.|docx|-/gi, " ") + "_" + data.cliente_nome, "_");
 
