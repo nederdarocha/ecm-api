@@ -62,23 +62,23 @@ export class TemplateService {
     }
 
     const cliente_endereco = `${String(
-      `${data.end_rua}, ${data.end_numero}, ${data.end_bairro}, ${data.end_cidade}, ${data.end_uf} - CEP ${data.end_cep}`
+      `${data?.end_rua}, ${data?.end_numero}, ${data?.end_bairro}, ${data?.end_cidade}, ${data?.end_uf} - CEP ${data?.end_cep}`
     )
       .replace(/null/g, "")
       .replace(/,\s,/g, "")}`;
 
     const res = {
       ...data,
-      CLIENTE_NOME: data.cliente_nome.toUpperCase(),
-      cliente_cpf: helpers.document(data.cliente_cpf, data.cliente_natural),
-      cliente_celular: helpers.phone(data.cliente_celular),
+      CLIENTE_NOME: data?.cliente_nome.toUpperCase(),
+      cliente_cpf: helpers.document(data?.cliente_cpf, data?.cliente_natural),
+      cliente_celular: helpers.phone(data?.cliente_celular),
       cliente_endereco,
-      masculino: data.cliente_genero === "Masculino",
-      feminino: data.cliente_genero === "Feminino",
-      a_o: data.cliente_genero === "Feminino" ? "a" : "o",
-      genero_a_o: data.cliente_genero === "Feminino" ? "a" : "o",
-      valor_honorario: this.formatHonorary(data.honorary_cents_value, data.honorary_type),
-      valor_causa: this.formatCurrency(data.service_cents_amount),
+      masculino: data?.cliente_genero === "Masculino",
+      feminino: data?.cliente_genero === "Feminino",
+      a_o: data?.cliente_genero === "Feminino" ? "a" : "o",
+      genero_a_o: data?.cliente_genero === "Feminino" ? "a" : "o",
+      valor_honorario: this.formatHonorary(data?.honorary_cents_value, data?.honorary_type),
+      valor_causa: this.formatCurrency(data?.service_cents_amount),
       ...extra_data,
     };
     // console.log(res);

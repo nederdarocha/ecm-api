@@ -9,7 +9,7 @@ import Docxtemplater from "docxtemplater";
 import slugify from "slugify";
 
 export default class TemplateController {
-  private service;
+  private service: TemplateService;
 
   constructor() {
     this.service = new TemplateService();

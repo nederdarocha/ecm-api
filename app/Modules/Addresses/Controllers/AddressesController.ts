@@ -48,23 +48,31 @@ export default class AddressesController {
   }
 
   public async store({ auth, request }: HttpContextContract) {
-    const { ...data } = await request.validate(AddressValidator);
-    if (data.favorite) {
-      const isAddressFavorite = await Address.query()
-        .where("tenant_id", auth.user!.tenant_id)
-        .andWhere("favorite", true)
-        .first();
+    let { favorite, ...data } = await request.validate(AddressValidator);
 
+    const isAddressFavorite = await Address.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("owner_id", data.owner_id)
+      .andWhere("favorite", true)
+      .first();
+
+    if (favorite && isAddressFavorite) {
       if (isAddressFavorite) {
         await Address.query()
           .where("tenant_id", auth.user!.tenant_id)
+          .andWhere("owner_id", data.owner_id)
           .andWhere("favorite", true)
           .update({ favorite: false });
       }
     }
 
+    if (!favorite && !isAddressFavorite) {
+      favorite = true;
+    }
+
     const address = await Address.create({
       ...data,
+      favorite,
       tenant_id: auth.user?.tenant_id,
       user_id: auth.user?.id,
     });
@@ -82,14 +90,30 @@ export default class AddressesController {
   }
 
   public async update({ auth, request, params: { id } }: HttpContextContract) {
-    let { ...data } = await request.validate(AddressValidator);
+    let { favorite, ...data } = await request.validate(AddressValidator);
+
+    const isAddressFavorite = await Address.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("owner_id", data.owner_id)
+      .andWhere("favorite", true)
+      .first();
+
+    if (favorite && isAddressFavorite) {
+      if (isAddressFavorite) {
+        await Address.query()
+          .where("tenant_id", auth.user!.tenant_id)
+          .andWhere("owner_id", data.owner_id)
+          .andWhere("favorite", true)
+          .update({ favorite: false });
+      }
+    }
 
     const address = await Address.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await address.merge({ ...data, user_id: auth.user?.id }).save();
+    await address.merge({ ...data, favorite, user_id: auth.user?.id }).save();
     return address;
   }
 
