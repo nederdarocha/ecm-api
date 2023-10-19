@@ -49,9 +49,8 @@ export default class AuthController {
     try {
       const { id, salt } = await User.query()
         .select("id", "salt")
-        .where("email", user)
-        .orWhere("phone", user)
-        .andWhere("tenant_id", tenant_id)
+        .where("tenant_id", tenant_id)
+        .andWhere((sq) => sq.orWhere("email", user).orWhere("phone", user))
         .firstOrFail();
 
       return this.service.login({

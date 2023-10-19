@@ -49,7 +49,7 @@ export class AuthService {
       const access_token = uuid();
       const { accessToken, refreshToken, expiresAt } = await auth
         .use("jwt")
-        .attempt(user.email, password, {
+        .attempt(user.id, password, {
           payload: { access_token },
         });
 
