@@ -28,13 +28,30 @@ export default class AuthController {
 
   public async signIn(ctx: HttpContextContract) {
     const { request } = ctx;
-
     const { user, password } = await request.validate(LoginValidator);
+    let tenant_id: string;
+
+    try {
+      const { request } = ctx;
+      const tenant = await Tenant.query()
+        .select("id")
+        .where("url", request.headers()["origin"] || "")
+        .firstOrFail();
+
+      tenant_id = tenant.id;
+    } catch (error) {
+      if (Env.get("NODE_ENV") === "development") {
+        console.log("#ERROR ao encontrar o tenant =>", error);
+      }
+      throw new BadRequest("Usuário e/ou Senha inválidos", 400);
+    }
+
     try {
       const { id, salt } = await User.query()
         .select("id", "salt")
         .where("email", user)
         .orWhere("phone", user)
+        .andWhere("tenant_id", tenant_id)
         .firstOrFail();
 
       return this.service.login({

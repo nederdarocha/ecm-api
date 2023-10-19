@@ -35,7 +35,7 @@ export class TemplateService {
     } = await Database.rawQuery(
       `
       select
-      ct.initials as competencia_silga,
+      ct.initials as competencia_sigla,
       ct.name as competencia_nome,
       cos.honorary_type,
       cos.honorary_cents_value,
@@ -101,6 +101,7 @@ export class TemplateService {
       cliente_endereco,
       masculino: data?.cliente_genero === "Masculino",
       feminino: data?.cliente_genero === "Feminino",
+      _a: data?.cliente_genero === "Feminino" ? "a" : "",
       a_o: data?.cliente_genero === "Feminino" ? "a" : "o",
       genero_a_o: data?.cliente_genero === "Feminino" ? "a" : "o",
       valor_honorario: this.formatHonorary(data?.honorary_cents_value, data?.honorary_type),

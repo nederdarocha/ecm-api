@@ -25,10 +25,11 @@ export class AuthService {
     const { auth, request } = ctx;
     let user: User;
 
-    console.log("ips", request.ips());
+    console.log("ips", request.ips().join(", "));
+    console.log("protocol", request.protocol());
     console.log("hostname", request.hostname());
-    console.log("user-agent", request["user-agent"]);
-    console.log("request", request.request.rawHeaders.join("; "));
+    console.log("origin", request.headers()["origin"]);
+    console.log("user-agent", request.headers()["user-agent"]);
 
     try {
       user = await this.findUserById(id);
@@ -48,7 +49,7 @@ export class AuthService {
       const access_token = uuid();
       const { accessToken, refreshToken, expiresAt } = await auth
         .use("jwt")
-        .attempt(user.phone, password, {
+        .attempt(user.email, password, {
           payload: { access_token },
         });
 

@@ -53,13 +53,7 @@ export default class TemplateController {
       linebreaks: true,
     });
 
-    // doc.render({
-    //   name: data.name,
-    //   document: data.document,
-    //   phone: data.phone,
-    // });
-
-    doc.render(data);
+    doc.render({ ...data });
 
     const bufferRender = doc.getZip().generate({
       type: "nodebuffer",
