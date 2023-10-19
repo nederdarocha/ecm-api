@@ -26,7 +26,9 @@ export default class AuthController {
     this.service = new AuthService();
   }
 
-  public async signIn({ auth, request }: HttpContextContract) {
+  public async signIn(ctx: HttpContextContract) {
+    const { request } = ctx;
+
     const { user, password } = await request.validate(LoginValidator);
     try {
       const { id, salt } = await User.query()
@@ -35,7 +37,11 @@ export default class AuthController {
         .orWhere("phone", user)
         .firstOrFail();
 
-      return this.service.login(id, `${password}${salt}`, auth);
+      return this.service.login({
+        id,
+        password: `${password}${salt}`,
+        ctx,
+      });
     } catch (error) {
       if (Env.get("NODE_ENV") === "development") {
         console.log("#ERROR ao encontrar o usuário =>", error);

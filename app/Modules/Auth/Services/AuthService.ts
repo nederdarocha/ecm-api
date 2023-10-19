@@ -1,4 +1,5 @@
-import { AuthContract } from "@ioc:Adonis/Addons/Auth";
+import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+
 import Database from "@ioc:Adonis/Lucid/Database";
 import Env from "@ioc:Adonis/Core/Env";
 import { DateTime } from "luxon";
@@ -7,19 +8,27 @@ import { BadRequest } from "App/Exceptions";
 
 import User from "../../Users/Models/User";
 
-type LoginProps = {
+type LoginData = {
   token: string;
   refreshToken: string;
   expires_at: DateTime | undefined;
 };
 
+interface LoginProps {
+  id: string;
+  password: string;
+  ctx: HttpContextContract;
+}
+
 export class AuthService {
-  public async login(
-    id: string,
-    password: string,
-    auth: AuthContract
-  ): Promise<LoginProps | Error> {
+  public async login({ id, password, ctx }: LoginProps): Promise<LoginData | Error> {
+    const { auth, request } = ctx;
     let user: User;
+
+    console.log("ips", request.ips());
+    console.log("hostname", request.hostname());
+    console.log("user-agent", request["user-agent"]);
+    console.log("request", request.request.rawHeaders.join("; "));
 
     try {
       user = await this.findUserById(id);
