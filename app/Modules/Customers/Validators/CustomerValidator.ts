@@ -24,6 +24,7 @@ export class CustomerValidator {
     document_secondary: schema.string.nullableAndOptional({ trim: true }),
     issuing_agency: schema.string.nullableAndOptional({ trim: true }),
     profession: schema.string.nullableAndOptional({ trim: true }),
+    workplace: schema.string.nullableAndOptional({ trim: true }),
     proderj_id: schema.string.nullableAndOptional({ trim: true }),
     proderj_password: schema.string.nullableAndOptional({ trim: true }),
     previdencia_id: schema.string.nullableAndOptional({ trim: true }),

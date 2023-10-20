@@ -18,6 +18,9 @@ export default class Court extends BaseModel {
   public initials: string;
 
   @column()
+  public district: string;
+
+  @column()
   public user_id: string;
 
   @column.dateTime({ autoCreate: true, serializeAs: null })

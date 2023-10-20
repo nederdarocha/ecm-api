@@ -37,6 +37,8 @@ export class TemplateService {
       select
       ct.initials as competencia_sigla,
       ct.name as competencia_nome,
+      ct.district as competencia_comarca,
+      cos.court_number as numero_processo,
       cos.honorary_type,
       cos.honorary_cents_value,
       cos.service_cents_amount,
@@ -51,6 +53,7 @@ export class TemplateService {
       c.document_secondary as cliente_rg,
       c.issuing_agency as cliente_o_expedidor,
       c.profession as cliente_profissao,
+      c.workplace as cliente_lotacao,
       c.proderj_id as cliente_proderj_id,
       c.previdencia_id as cliente_previdencia_id,
       a.zip as end_cep,

@@ -16,7 +16,7 @@ export default class extends BaseSchema {
 
       table.string("name").index();
       table.string("initials").index();
-
+      table.string("district");
       table.unique(["initials", "tenant_id"]);
 
       /**

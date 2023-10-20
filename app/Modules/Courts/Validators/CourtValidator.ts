@@ -14,6 +14,7 @@ export class CourtValidator {
   public schema = schema.create({
     name: schema.string({ trim: true }),
     initials: schema.string({ trim: true }, [rules.required()]),
+    district: schema.string({ trim: true }, [rules.required()]),
   });
 
   public messages = { ...commonMessages };

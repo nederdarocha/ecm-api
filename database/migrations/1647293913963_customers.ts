@@ -26,6 +26,7 @@ export default class People extends BaseSchema {
       table.date("birthday");
       table.string("gender");
       table.string("profession");
+      table.string("workplace");
       table.string("bank");
       table.string("branch", 50);
       table.string("account_number", 50);

@@ -34,6 +34,9 @@ export default class Customer extends BaseModel {
   public profession?: string | null;
 
   @column()
+  public workplace?: string | null;
+
+  @column()
   public natural: boolean;
 
   @column()

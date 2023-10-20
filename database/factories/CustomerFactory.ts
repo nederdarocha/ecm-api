@@ -19,6 +19,7 @@ export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
     birthday: DateTime.fromJSDate(faker.date.birthdate({ min: 18, max: 65, mode: "age" })),
     gender: faker.helpers.arrayElement(["Masculino", "Feminino"]),
     profession: faker.name.jobTitle(),
+    workplace: faker.name.jobTitle(),
     is_indicator: faker.helpers.arrayElement([true, false]),
     commission: faker.helpers.arrayElement([1000, 2000]),
     previdencia_id: faker.finance.account(8),
