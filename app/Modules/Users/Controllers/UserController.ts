@@ -154,7 +154,7 @@ export default class UsersController {
   }
 
   public async update({ auth, request, response, params, bouncer }: HttpContextContract) {
-    const { role_ids, ...data } = await request.validate(UserValidator);
+    let { role_ids, ...data } = await request.validate(UserValidator);
     const user = await User.findOrFail(params.id);
 
     //policy
@@ -166,6 +166,13 @@ export default class UsersController {
     }
 
     await user.merge(data).save();
+
+    const user_roles = await user.related("roles").query();
+    const isSuperAdmin = user_roles.find((role) => role.slug === "sup_admin");
+    if (isSuperAdmin) {
+      role_ids.push(isSuperAdmin.id);
+    }
+
     await user.related("roles").sync(role_ids);
 
     return user;
