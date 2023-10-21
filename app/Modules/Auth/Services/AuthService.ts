@@ -25,6 +25,7 @@ export class AuthService {
     const { auth, request } = ctx;
     let user: User;
 
+    //TODO verificar o proxy reverso para encaminhar o IP de origem
     console.log("ips", request.ips().join(", "));
     console.log("protocol", request.protocol());
     console.log("hostname", request.hostname());
