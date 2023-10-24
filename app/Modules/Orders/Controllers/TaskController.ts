@@ -10,8 +10,8 @@ export default class TaskController {
       .orderBy("made_at", "asc")
       .orderBy("created_at", "asc");
 
-    return tasks.map((court) =>
-      court.serialize({
+    return tasks.map((task) =>
+      task.serialize({
         fields: { omit: ["tenant_id", "user_id"] },
       })
     );
@@ -22,24 +22,30 @@ export default class TaskController {
       .where("tenant_id", auth.user!.tenant_id)
       .orderBy("made_at", "asc");
 
-    return tasks.map((court) =>
-      court.serialize({
+    return tasks.map((task) =>
+      task.serialize({
         fields: { omit: ["tenant_id", "user_id"] },
       })
     );
   }
 
   public async store({ auth, request }: HttpContextContract) {
-    const { ...data } = await request.validate(TaskValidator);
+    const { make_in, ...data } = await request.validate(TaskValidator);
     const { tenant_id } = auth.user!;
+    let status: "pending" | "confirmed" | "done" | "canceled" = "pending";
+    if (make_in) {
+      status = "pending";
+    }
 
-    const court = await Task.create({
+    const task = await Task.create({
       ...data,
+      make_in,
+      status,
       tenant_id,
       user_id: auth.user!.id,
     });
 
-    return court.serialize({
+    return task.serialize({
       fields: {
         omit: ["tenant_id", "user_id", "createdAt", "updatedAt"],
       },
@@ -47,24 +53,28 @@ export default class TaskController {
   }
 
   public async show({ params, auth }: HttpContextContract) {
-    const court = await Task.query()
+    const task = await Task.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", params.id)
       .firstOrFail();
 
-    return court;
+    return task;
   }
 
   public async update({ auth, request, params: { id } }: HttpContextContract) {
-    const { ...data } = await request.validate(TaskValidator);
-    const court = await Task.query()
+    const { make_in, ...data } = await request.validate(TaskValidator);
+    let status: "pending" | "confirmed" | "done" | "canceled" = "pending";
+    if (make_in) {
+      status = "pending";
+    }
+    const task = await Task.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await court.merge(data).save();
+    await task.merge({ ...data, make_in, status }).save();
 
-    return court;
+    return task;
   }
 
   public async destroy({ auth, response, params: { id } }: HttpContextContract) {
