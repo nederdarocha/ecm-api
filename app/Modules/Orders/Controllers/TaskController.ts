@@ -17,16 +17,44 @@ export default class TaskController {
     );
   }
 
-  public async index({ auth }: HttpContextContract) {
-    const tasks = await Task.query()
-      .where("tenant_id", auth.user!.tenant_id)
-      .orderBy("made_at", "asc");
+  public async index({ auth, request, paginate }: HttpContextContract) {
+    const { number, status, customer_id, make_in_begin, make_in_end } = request.qs();
 
-    return tasks.map((task) =>
-      task.serialize({
-        fields: { omit: ["tenant_id", "user_id"] },
-      })
-    );
+    const query = Task.query()
+      .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
+      .preload("order", (sq) => sq.select("id", "number"))
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhereNotNull("make_in");
+
+    if (number) {
+      query.andWhereHas("order", (query) => query.where("number", "iLike", `%${number}%`));
+    }
+
+    if (status) {
+      query.andWhere("status", status);
+    }
+
+    if (customer_id) {
+      query.andWhere("customer_id", customer_id);
+    }
+
+    if (make_in_begin && make_in_end) {
+      query.andWhereBetween("make_in", [`${make_in_begin} 00:00:00`, `${make_in_end} 23:59:59`]);
+    }
+
+    if (make_in_begin && !make_in_end) {
+      query.andWhere("make_in", ">=", `${make_in_begin} 00:00:00`);
+    }
+
+    if (!make_in_begin && make_in_end) {
+      query.andWhere("make_in", "<=", `${make_in_end} 23:59:59`);
+    }
+
+    const tasks = await query.orderBy("make_in", "asc").paginate(paginate.page, paginate.per_page);
+
+    return tasks.serialize({
+      fields: { omit: ["tenant_id", "user_id"] },
+    });
   }
 
   public async store({ auth, request }: HttpContextContract) {
