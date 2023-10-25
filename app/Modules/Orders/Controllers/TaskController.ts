@@ -17,12 +17,29 @@ export default class TaskController {
     );
   }
 
+  public async getByCustomerOrderService({ auth, params: { id } }: HttpContextContract) {
+    const tasks = await Task.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("customer_order_service_id", id)
+      .orderBy("made_at", "asc")
+      .orderBy("created_at", "asc");
+
+    return tasks.map((task) =>
+      task.serialize({
+        fields: { omit: ["tenant_id", "user_id"] },
+      })
+    );
+  }
+
   public async index({ auth, request, paginate }: HttpContextContract) {
     const { number, status, customer_id, make_in_begin, make_in_end } = request.qs();
 
     const query = Task.query()
       .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
       .preload("order", (sq) => sq.select("id", "number"))
+      .preload("customerOrderService", (sq) =>
+        sq.select("*").preload("service", (sq) => sq.select("id", "name"))
+      )
       .where("tenant_id", auth.user!.tenant_id)
       .andWhereNotNull("make_in");
 

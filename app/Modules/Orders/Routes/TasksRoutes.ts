@@ -6,6 +6,12 @@ Route.group(() => {
   Route.get("orders/tasks/:order_id/by-order", "TaskController.getByOrder").middleware([
     "acl:r-task",
   ]);
+
+  Route.get(
+    "orders/tasks/:id/by-customer-order-service",
+    "TaskController.getByCustomerOrderService"
+  ).middleware("acl:r-task");
+
   Route.resource("orders/tasks", "TaskController").apiOnly().middleware({
     store: "acl:c-task",
     index: "acl:r-task",
