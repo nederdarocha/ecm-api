@@ -23,20 +23,20 @@ export default class Task extends BaseModel {
   public description: string;
 
   @column()
-  public notes: string;
+  public notes?: string | null;
 
   @column()
   public status: string;
 
   @column()
-  public confirmed_by: string;
+  public confirmed_by?: string | null;
 
   @column.date({
     serialize: (value: DateTime) => {
       return value ? value.toFormat("dd/MM/yyyy hh:mm:ss") : null;
     },
   })
-  public confirmed_at: DateTime;
+  public confirmed_at?: DateTime | null;
 
   @column.date({
     serialize: (value: DateTime) => {

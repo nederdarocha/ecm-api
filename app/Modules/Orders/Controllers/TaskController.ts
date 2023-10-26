@@ -1,6 +1,6 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Task from "../Models/Task";
-import { TaskValidator } from "../Validators";
+import { TaskValidator, TaskMadeValidator } from "../Validators";
 
 export default class TaskController {
   public async getByOrder({ auth, params: { order_id } }: HttpContextContract) {
@@ -131,5 +131,42 @@ export default class TaskController {
     await task.delete();
 
     return response.status(204);
+  }
+
+  public async confirmTask({ auth, request, params: { id } }: HttpContextContract) {
+    const { notes, confirmed_at } = await request.validate(TaskMadeValidator);
+    const task = await Task.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await task
+      .merge({
+        notes,
+        confirmed_at,
+        status: "confirmed",
+        confirmed_by: auth.user!.id,
+      })
+      .save();
+
+    return task;
+  }
+
+  public async undoConfirmTask({ auth, params: { id } }: HttpContextContract) {
+    const task = await Task.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await task
+      .merge({
+        notes: null,
+        confirmed_at: null,
+        confirmed_by: null,
+        status: "pending",
+      })
+      .save();
+
+    return task;
   }
 }
