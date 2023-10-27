@@ -26,11 +26,16 @@ export class AuthService {
     let user: User;
 
     //TODO verificar o proxy reverso para encaminhar o IP de origem
-    console.log("ips", request.ips().join(", "));
-    console.log("protocol", request.protocol());
-    console.log("hostname", request.hostname());
-    console.log("origin", request.headers()["origin"]);
-    console.log("user-agent", request.headers()["user-agent"]);
+    // ip cloudflare proxy
+    const ip = request.headers()["cf-connecting-ip"] || request.ip();
+    console.log({ ip });
+    // console.log("ip", request.ip());
+    // console.log("ips", request.ips().join(", "));
+    // console.log(request.headers());
+    // console.log("protocol", request.protocol());
+    // console.log("hostname", request.hostname());
+    // console.log("origin", request.headers()["origin"]);
+    // console.log("user-agent", request.headers()["user-agent"]);
 
     try {
       user = await this.findUserById(id);
