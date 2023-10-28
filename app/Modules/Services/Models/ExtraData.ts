@@ -36,6 +36,9 @@ export default class ExtraData extends BaseModel {
   public style: string;
 
   @column()
+  public placeholder: string;
+
+  @column()
   public status: boolean;
 
   @column()

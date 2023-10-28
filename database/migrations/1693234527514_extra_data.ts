@@ -15,6 +15,7 @@ export default class extends BaseSchema {
       table.string("options");
       table.integer("decimal_places").defaultTo(0);
       table.string("style");
+      table.string("placeholder");
       table.boolean("status").defaultTo(true);
 
       table.unique(["name", "service_id"]);

@@ -12,6 +12,7 @@ export class ExtraDataValidator {
     name: schema.string({ trim: true }),
     type: schema.string({ trim: true }),
     options: schema.string.optional({ trim: true }),
+    placeholder: schema.string.optional({ trim: true }),
     decimal_places: schema.number.optional(),
     style: schema.string({ trim: true }),
     status: schema.boolean.optional(),
