@@ -96,26 +96,36 @@ export class TemplateService {
       .replace(/null/g, "")
       .replace(/,\s,/g, "")}`;
 
-    const res = {
-      ...data,
-      CLIENTE_NOME: data?.cliente_nome.toUpperCase(),
-      cliente_cpf: helpers.document(data?.cliente_cpf, data?.cliente_natural),
-      cliente_celular: helpers.phone(data?.cliente_celular),
-      cliente_endereco,
-      masculino: data?.cliente_genero === "Masculino",
-      feminino: data?.cliente_genero === "Feminino",
-      _a: data?.cliente_genero === "Feminino" ? "a" : "",
-      a_o: data?.cliente_genero === "Feminino" ? "a" : "o",
-      genero_a_o: data?.cliente_genero === "Feminino" ? "a" : "o",
-      valor_honorario: this.formatHonorary(data?.honorary_cents_value, data?.honorary_type),
-      valor_causa: this.formatCurrency(data?.service_cents_amount),
-      ...extra_data,
-    };
-    // console.log(res);
-    return res;
+    try {
+      const res = {
+        ...data,
+        CLIENTE_NOME: data?.cliente_nome.toUpperCase(),
+        cliente_cpf: helpers.document(data?.cliente_cpf, data?.cliente_natural),
+        cliente_celular: helpers.phone(data?.cliente_celular),
+        cliente_endereco,
+        masculino: data?.cliente_genero === "Masculino",
+        feminino: data?.cliente_genero === "Feminino",
+        _a: data?.cliente_genero === "Feminino" ? "a" : "",
+        a_o: data?.cliente_genero === "Feminino" ? "a" : "o",
+        genero_a_o: data?.cliente_genero === "Feminino" ? "a" : "o",
+        valor_honorario: this.formatHonorary(data?.honorary_cents_value, data?.honorary_type),
+        valor_causa: this.formatCurrency(data?.service_cents_amount),
+        ...extra_data,
+      };
+
+      return res;
+    } catch (error) {
+      console.log(
+        "=============== erro template ===============",
+        error,
+        "=============== erro template ==============="
+      );
+    }
   }
 
   private formatHonorary(value: number, type: string) {
+    if (!value) return "";
+
     const decimalValue = value / 100;
     const formatValue = new Intl.NumberFormat("pt-BR", {
       currency: "BRL",
@@ -124,17 +134,17 @@ export class TemplateService {
     if (type === "percent") {
       return `${decimalValue}%`;
     }
-    return `${formatValue}% (${extenso(decimalValue, { mode: "number" })} por cento)`;
+    return `${formatValue}% (${extenso(formatValue, { mode: "number" })} por cento)`;
   }
 
   private formatCurrency(value: number | null) {
     if (!value) return "";
+
     const decimalValue = value / 100;
     const formatValue = new Intl.NumberFormat("pt-BR", {
-      style: "currency",
       currency: "BRL",
     }).format(decimalValue);
 
-    return `${formatValue} (${extenso(decimalValue, { mode: "currency" })})`;
+    return `R$ ${formatValue} (${extenso(formatValue, { mode: "currency" })})`;
   }
 }

@@ -16,10 +16,10 @@ export default class Customer extends BaseModel {
   public name: string;
 
   @column()
-  public email: string;
+  public email?: string | null;
 
   @column()
-  public phone: string;
+  public phone?: string | null;
 
   @column()
   public document: string;

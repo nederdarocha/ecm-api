@@ -10,7 +10,7 @@ export class MetaDataValidator {
     data: schema.array().members(
       schema.object().members({
         meta_data_id: schema.string(),
-        value: schema.string(),
+        value: schema.string.optional(),
       })
     ),
   });
