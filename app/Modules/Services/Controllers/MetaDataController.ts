@@ -7,7 +7,8 @@ export default class MetaDataController {
     const { data } = await request.validate(MetaDataValidator);
     let query = "";
     for (const item of data) {
-      query += `UPDATE meta_data SET value='${item.value}', updated_at=now(), user_id='${auth.user?.id}' WHERE id='${item.meta_data_id}';`;
+      const value = item.value ? `'${item.value}'` : null;
+      query += `UPDATE meta_data SET value=${value}, updated_at=now(), user_id='${auth.user?.id}' WHERE id='${item.meta_data_id}';`;
     }
     await Database.rawQuery(query);
     return response.status(200);

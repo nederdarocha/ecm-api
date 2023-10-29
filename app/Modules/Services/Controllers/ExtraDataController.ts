@@ -46,14 +46,21 @@ export default class ExtraDataController {
   }
 
   public async update({ auth, request, params: { id } }: HttpContextContract) {
-    let { ...data } = await request.validate(ExtraDataValidator);
+    let { placeholder, options, ...data } = await request.validate(ExtraDataValidator);
 
     const service = await ExtraData.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await service.merge({ ...data, user_id: auth.user?.id }).save();
+    await service
+      .merge({
+        ...data,
+        placeholder: placeholder || null,
+        options: options || null,
+        user_id: auth.user?.id,
+      })
+      .save();
     return service;
   }
 

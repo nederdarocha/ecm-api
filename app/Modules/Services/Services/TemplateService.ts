@@ -115,36 +115,39 @@ export class TemplateService {
 
       return res;
     } catch (error) {
-      console.log(
-        "=============== erro template ===============",
-        error,
-        "=============== erro template ==============="
-      );
+      console.log(error);
     }
   }
 
   private formatHonorary(value: number, type: string) {
-    if (!value) return "";
+    try {
+      if (!value) return "";
+      const decimalValue = value / 100;
+      const formatValue = new Intl.NumberFormat("pt-BR", {
+        currency: "BRL",
+      }).format(decimalValue);
 
-    const decimalValue = value / 100;
-    const formatValue = new Intl.NumberFormat("pt-BR", {
-      currency: "BRL",
-    }).format(decimalValue);
-
-    if (type === "percent") {
-      return `${decimalValue}%`;
+      if (type === "percent") {
+        return `${decimalValue}%`;
+      }
+      return `${formatValue}% (${extenso(formatValue, { mode: "number" })} por cento)`;
+    } catch (error) {
+      return "error ao formatar honorário";
     }
-    return `${formatValue}% (${extenso(formatValue, { mode: "number" })} por cento)`;
   }
 
   private formatCurrency(value: number | null) {
-    if (!value) return "";
+    try {
+      if (!value) return "";
 
-    const decimalValue = value / 100;
-    const formatValue = new Intl.NumberFormat("pt-BR", {
-      currency: "BRL",
-    }).format(decimalValue);
+      const decimalValue = value / 100;
+      const formatValue = new Intl.NumberFormat("pt-BR", {
+        currency: "BRL",
+      }).format(decimalValue);
 
-    return `R$ ${formatValue} (${extenso(formatValue, { mode: "currency" })})`;
+      return `R$ ${formatValue} (${extenso(formatValue, { mode: "currency" })})`;
+    } catch (error) {
+      return "error ao formatar valor";
+    }
   }
 }

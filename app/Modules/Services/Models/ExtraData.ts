@@ -27,7 +27,7 @@ export default class ExtraData extends BaseModel {
   public type: string;
 
   @column()
-  public options: string;
+  public options: string | null;
 
   @column()
   public decimal_place: number;
@@ -36,7 +36,7 @@ export default class ExtraData extends BaseModel {
   public style: string;
 
   @column()
-  public placeholder: string;
+  public placeholder: string | null;
 
   @column()
   public status: boolean;
