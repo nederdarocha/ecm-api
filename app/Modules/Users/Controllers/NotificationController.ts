@@ -12,6 +12,15 @@ export default class NotificationController {
       .limit(5);
   }
 
+  public async latestUnread({ auth: { user } }: HttpContextContract) {
+    if (!user) return;
+    return Notification.query()
+      .where("to_id", user.id)
+      .orderBy("status", "asc")
+      .orderBy("created_at", "desc")
+      .limit(5);
+  }
+
   public async checkAllRead({ auth: { user } }: HttpContextContract) {
     if (!user) return;
     await Database.rawQuery("UPDATE notifications set status = 'read' WHERE to_id = :id;", {
