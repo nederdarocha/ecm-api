@@ -24,6 +24,9 @@ export default Env.rules({
   APP_NAME: Env.schema.string(),
   USER_PASSWORD: Env.schema.string.optional(),
   NODE_ENV: Env.schema.enum(["development", "production", "testing", "test"] as const),
+  // app
+  INTERVAL_ALERT_DUE_TASKS: Env.schema.string.optional(),
+
   // jwt
   JWT_PRIVATE_KEY: Env.schema.string(),
   JWT_PUBLIC_KEY: Env.schema.string(),

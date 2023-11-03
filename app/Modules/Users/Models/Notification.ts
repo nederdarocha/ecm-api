@@ -14,6 +14,9 @@ export default class Notification extends BaseModel {
   public tenant_id: string;
 
   @column()
+  public tag: string | null;
+
+  @column()
   public subject: string;
 
   @column()
@@ -23,10 +26,10 @@ export default class Notification extends BaseModel {
   public status: string;
 
   @column()
-  public user_id: string;
+  public user_id: string | null;
 
   @column()
-  public from_id: string;
+  public from_id: string | null;
 
   @column()
   public to_id: string;
@@ -36,9 +39,9 @@ export default class Notification extends BaseModel {
 
   @column.dateTime({
     autoCreate: true,
-    serialize: (value: DateTime) => {
-      return value ? value.toFormat("dd/MM/yyyy HH:MM") : null;
-    },
+    // serialize: (value: DateTime) => {
+    //   return value ? value.toFormat("dd/MM/yyyy HH:MM") : null;
+    // },
   })
   public created_at: DateTime;
 
@@ -58,10 +61,10 @@ export default class Notification extends BaseModel {
   public to: BelongsTo<typeof User>;
 
   @afterSave()
-  public static async hashPassword(notification: Notification) {
+  public static async cacheCount(notification: Notification) {
     const pendingNotifications = await Database.from("notifications")
       .where("to_id", notification.to_id)
-      .andWhere("status", "pending")
+      .andWhere("status", "unread")
       .count("* as total");
 
     await Cache.firstOrCreate(

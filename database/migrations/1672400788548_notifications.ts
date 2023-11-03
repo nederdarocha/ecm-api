@@ -10,6 +10,7 @@ export default class Notifications extends BaseSchema {
       table.uuid("from_id").references("id").inTable("users").onDelete("SET NULL");
       table.uuid("to_id").references("id").inTable("users").onDelete("SET NULL");
       table.uuid("user_id").references("id").inTable("users").onDelete("SET NULL");
+      table.string("tag");
       table.string("go_to");
       table.string("subject");
       table.text("message");

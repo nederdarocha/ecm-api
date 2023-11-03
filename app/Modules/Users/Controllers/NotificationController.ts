@@ -1,31 +1,44 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Database from "@ioc:Adonis/Lucid/Database";
 import Notification from "../Models/Notification";
+import { NotificationService } from "../Services/NotificationService";
+import { DateTime } from "luxon";
 
 export default class NotificationController {
-  public async me({ auth: { user } }: HttpContextContract) {
-    if (!user) return;
-    return Notification.query()
-      .where("to_id", user.id)
-      .orderBy("status", "asc")
-      .orderBy("created_at", "desc")
-      .limit(5);
+  private service: NotificationService;
+  constructor() {
+    this.service = new NotificationService();
   }
 
-  public async latestUnread({ auth: { user } }: HttpContextContract) {
+  public async latestUnread({ auth }: HttpContextContract) {
+    const { user } = auth;
     if (!user) return;
-    return Notification.query()
-      .where("to_id", user.id)
-      .orderBy("status", "asc")
+
+    await this.service.createNotifyExpiringTask({ auth });
+
+    const notifications = await Notification.query()
+      .where("tenant_id", auth.user?.tenant_id!)
+      .andWhere("to_id", user.id)
+      .orderBy("status", "desc")
       .orderBy("created_at", "desc")
       .limit(5);
+
+    return notifications.map((notification) =>
+      notification.serialize({
+        fields: { omit: ["from_id", "to_id", "tenant_id", "user_id", "updated_at"] },
+      })
+    );
   }
 
-  public async checkAllRead({ auth: { user } }: HttpContextContract) {
+  public async markAllRead({ auth: { user } }: HttpContextContract) {
     if (!user) return;
-    await Database.rawQuery("UPDATE notifications set status = 'read' WHERE to_id = :id;", {
-      id: user.id,
-    });
+    await Database.rawQuery(
+      "UPDATE notifications set status = 'read' WHERE tenant_id = :tenant_id AND to_id = :id;",
+      {
+        tenant_id: user.tenant_id,
+        id: user.id,
+      }
+    );
 
     return;
   }
@@ -34,11 +47,42 @@ export default class NotificationController {
     const { page, per_page } = paginate;
     const { filter } = request.qs();
 
-    return Notification.query()
-      .whereRaw("unaccent(subject) iLike unaccent(?) ", [`%${filter}%`])
-      .orWhereRaw("unaccent(message) iLike unaccent(?) ", [`%${filter}%`])
+    const notifications = await Notification.query()
+      .where("tenant_id", user?.tenant_id!)
       .andWhere("to_id", user?.id!)
+      .andWhere((sq) => {
+        sq.orWhereRaw("unaccent(subject) iLike unaccent(?) ", [`%${filter}%`]);
+        sq.orWhereRaw("unaccent(message) iLike unaccent(?) ", [`%${filter}%`]);
+      })
+      .orderBy("created_at", "desc")
       .orderBy("subject", "asc")
       .paginate(page, per_page);
+
+    // return notifications;
+    return notifications.serialize({
+      fields: { omit: ["from_id", "to_id", "tenant_id", "user_id", "updated_at"] },
+    });
+  }
+
+  public async show({ auth: { user }, params: { id } }: HttpContextContract) {
+    const notification = await Notification.query()
+      .preload("from", (sq) => sq.select("id", "first_name", "last_name"))
+      .where("tenant_id", user?.tenant_id!)
+      .andWhere("to_id", user?.id!)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    if (notification.status === "unread") {
+      await notification
+        .merge({
+          status: "read",
+          updated_at: DateTime.now(),
+        })
+        .save();
+    }
+
+    return notification.serialize({
+      fields: { omit: ["from_id", "to_id", "tenant_id", "user_id", "updated_at"] },
+    });
   }
 }
