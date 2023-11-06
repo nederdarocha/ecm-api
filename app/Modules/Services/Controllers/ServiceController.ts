@@ -4,7 +4,7 @@ import Service from "../Models/Service";
 import { ServiceService } from "../Services/ServiceService";
 import ExtraData from "../Models/ExtraData";
 import File from "App/Modules/Files/Models/File";
-import CaseCustomerService from "App/Modules/Orders/Models/CustomerOrderService";
+import CustomerOrderService from "App/Modules/Orders/Models/CustomerOrderService";
 
 export default class ServiceController {
   private service: ServiceService;
@@ -77,10 +77,10 @@ export default class ServiceController {
 
   public async destroy({ auth, params: { id }, response }: HttpContextContract) {
     // check if service has extra data
-    const hasServices = await CaseCustomerService.query().where("service_id", id).first();
+    const hasServices = await CustomerOrderService.query().where("service_id", id).first();
     if (hasServices) {
       return response.status(400).send({
-        message: "Este serviço não pode ser excluído, pois está sendo utilizado em um caso.",
+        message: "Este serviço não pode ser excluído, pois está sendo utilizado em um contrato.",
       });
     }
 

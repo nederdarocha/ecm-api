@@ -40,7 +40,7 @@ export default class Notification extends BaseModel {
   @column.dateTime({
     autoCreate: true,
     // serialize: (value: DateTime) => {
-    //   return value ? value.toFormat("dd/MM/yyyy HH:MM") : null;
+    //   return value ? value.toFormat("dd/MM/yyyy HH:mm") : null;
     // },
   })
   public created_at: DateTime;

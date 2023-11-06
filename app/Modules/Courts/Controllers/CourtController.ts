@@ -2,6 +2,7 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Court from "../Models/Courts";
 import { CourtValidator } from "../Validators";
 import { CourtService } from "../Services/CourtService";
+import CustomerOrderService from "App/Modules/Orders/Models/CustomerOrderService";
 
 export default class CourtController {
   private service: CourtService;
@@ -85,5 +86,24 @@ export default class CourtController {
     await court.merge(data).save();
 
     return court;
+  }
+
+  public async destroy({ auth, params: { id }, response }: HttpContextContract) {
+    // check if service has extra data
+    const hasServices = await CustomerOrderService.query().where("court_id", id).first();
+    if (hasServices) {
+      return response.status(400).send({
+        message: "Esta competência não pode ser excluída, pois está sendo utilizado em um serviço.",
+      });
+    }
+
+    const address = await Court.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await address.delete();
+
+    return response.status(204);
   }
 }

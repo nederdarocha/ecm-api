@@ -33,7 +33,7 @@ export default class Task extends BaseModel {
 
   @column.date({
     serialize: (value: DateTime) => {
-      return value ? value.toFormat("dd/MM/yyyy hh:mm:ss") : null;
+      return value ? value.toFormat("dd/MM/yyyy HH:mm:ss") : null;
     },
   })
   public confirmed_at?: DateTime | null;

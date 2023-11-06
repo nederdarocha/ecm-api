@@ -46,7 +46,7 @@ export default class File extends BaseModel {
   @column.dateTime({
     autoCreate: true,
     serialize: (value?: DateTime) => {
-      return value ? value.toFormat("dd/MM/yyyy hh:mm") : null;
+      return value ? value.toFormat("dd/MM/yyyy HH:mm") : null;
     },
   })
   public createdAt: DateTime;
@@ -55,7 +55,7 @@ export default class File extends BaseModel {
     autoCreate: true,
     autoUpdate: true,
     serialize: (value?: DateTime) => {
-      return value ? value.toFormat("dd/MM/yyyy hh:mm") : null;
+      return value ? value.toFormat("dd/MM/yyyy HH:mm") : null;
     },
   })
   public updatedAt: DateTime;

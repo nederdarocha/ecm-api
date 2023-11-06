@@ -3,6 +3,7 @@ import Status from "../Models/Status";
 import { StatusValidator } from "../Validators";
 import { StatusService } from "../Services/StatusService";
 import Database from "@ioc:Adonis/Lucid/Database";
+import Order from "../Models/Order";
 
 export default class StatusController {
   private service: StatusService;
@@ -84,5 +85,24 @@ export default class StatusController {
     await court.merge({ ...data, initial }).save();
 
     return court;
+  }
+
+  public async destroy({ auth, params: { id }, response }: HttpContextContract) {
+    // check if service has extra data
+    const hasServices = await Order.query().where("status_id", id).first();
+    if (hasServices) {
+      return response.status(400).send({
+        message: "Este Status não pode ser excluído, pois está sendo utilizado em um contrato.",
+      });
+    }
+
+    const address = await Status.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+
+    await address.delete();
+
+    return response.status(204);
   }
 }
