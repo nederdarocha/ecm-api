@@ -104,6 +104,8 @@ export default class PaymentController {
 
   public async madePayment({ auth, request, response, params: { id } }: HttpContextContract) {
     const { file, paid_cents_value, paid_date } = await request.validate(MadePaymentValidator);
+    const { tenant_id } = auth.user!;
+
     const payment = await Payment.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
@@ -111,11 +113,10 @@ export default class PaymentController {
 
     if (file) {
       const name = await this.service.generateName({ auth, file, payment_id: id });
-      console.log("aqui");
 
       const _file = await File.create({
         owner_id: payment.id,
-        tenant_id: auth.user!.tenant_id,
+        tenant_id,
         name: name,
         type: file.extname,
         user_id: auth.user?.id,
@@ -125,7 +126,7 @@ export default class PaymentController {
       });
       try {
         await file.moveToDisk(
-          "payments",
+          `${tenant_id}/payments`,
           {
             name: `${_file.id}.${file.extname}`,
             visibility: "private",
@@ -134,7 +135,7 @@ export default class PaymentController {
           "s3"
         );
 
-        await _file.merge({ key: `payments/${_file.id}.${file.extname}` }).save();
+        await _file.merge({ key: `${tenant_id}/payments/${_file.id}.${file.extname}` }).save();
       } catch (error) {
         return response.status(500).json({ error: error.message });
       }

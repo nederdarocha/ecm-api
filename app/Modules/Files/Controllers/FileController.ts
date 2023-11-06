@@ -81,12 +81,13 @@ export default class FilesController {
   }
 
   public async store({ auth, request, response }: HttpContextContract) {
-    const { file, owner_id } = await request.validate(FileStoreValidator);
+    const { file, owner_id, folder_name } = await request.validate(FileStoreValidator);
+    const { tenant_id } = auth.user!;
     const name = await this.service.generateName({ auth, request });
 
     const _file = await File.create({
       owner_id,
-      tenant_id: auth.user!.tenant_id,
+      tenant_id,
       name,
       type: file.extname,
       user_id: auth.user?.id,
@@ -97,7 +98,7 @@ export default class FilesController {
 
     try {
       await file.moveToDisk(
-        "customers",
+        `${tenant_id}/${folder_name}`,
         {
           name: `${_file.id}.${file.extname}`,
           visibility: "private",
@@ -106,7 +107,7 @@ export default class FilesController {
         "s3"
       );
 
-      await _file.merge({ key: `customers/${_file.id}.${file.extname}` }).save();
+      await _file.merge({ key: `${tenant_id}/${folder_name}/${_file.id}.${file.extname}` }).save();
     } catch (error) {
       return response.status(500).json({ error: error.message });
     }

@@ -102,6 +102,14 @@ export default class TaskController {
 
   public async show({ params, auth }: HttpContextContract) {
     const task = await Task.query()
+      .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
+      .preload("order", (sq) => sq.select("id", "number"))
+      .preload("customerOrderService", (sq) =>
+        sq
+          .select("*")
+          .preload("customer", (sq) => sq.select("id", "name"))
+          .preload("service", (sq) => sq.select("id", "name"))
+      )
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", params.id)
       .firstOrFail();

@@ -29,7 +29,7 @@ export default class ServiceController {
   }
 
   public async store({ auth, request, response }: HttpContextContract) {
-    const { ...data } = await request.validate(ServiceValidator);
+    const { description, ...data } = await request.validate(ServiceValidator);
 
     const isExiteNameCategory = await this.service.isExiteNameCategory({ auth, request });
     if (isExiteNameCategory instanceof Error) {
@@ -38,6 +38,7 @@ export default class ServiceController {
 
     const service = await Service.create({
       ...data,
+      description: description || null,
       tenant_id: auth.user?.tenant_id,
       user_id: auth.user?.id,
     });
@@ -56,7 +57,7 @@ export default class ServiceController {
   }
 
   public async update({ auth, request, response, params: { id } }: HttpContextContract) {
-    let { ...data } = await request.validate(ServiceValidator);
+    let { description, ...data } = await request.validate(ServiceValidator);
 
     const isExiteNameCategory = await this.service.isExiteNameCategory({ auth, request, id });
     if (isExiteNameCategory instanceof Error) {
@@ -68,7 +69,9 @@ export default class ServiceController {
       .andWhere("id", id)
       .firstOrFail();
 
-    await service.merge({ ...data, user_id: auth.user?.id }).save();
+    await service
+      .merge({ ...data, description: description || null, user_id: auth.user?.id })
+      .save();
     return service;
   }
 
