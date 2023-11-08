@@ -11,6 +11,7 @@ export default class DownloadController {
   }
 
   public async customers({ userID, response }: HttpContextContract) {
+    //TODO validar privilégio do usuário
     const _items = await this.service.getAllCustomers(userID!);
 
     if (_items instanceof Error)
