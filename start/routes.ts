@@ -13,3 +13,4 @@ import "App/Modules/Services/Routes";
 import "App/Modules/Orders/Routes";
 import "App/Modules/Courts/Routes";
 import "App/Modules/Payments/Routes";
+import "App/Modules/Downloads/Routes";

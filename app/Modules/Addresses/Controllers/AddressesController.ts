@@ -5,10 +5,16 @@ import Database from "@ioc:Adonis/Lucid/Database";
 
 export default class AddressesController {
   public async addressesOwner({ auth, params: { id } }: HttpContextContract) {
-    return Address.query()
+    const address = await Address.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("owner_id", id)
       .orderBy("favorite", "desc");
+
+    return address.map((address) =>
+      address.serialize({
+        fields: { omit: ["tenant_id", "user_id"] },
+      })
+    );
   }
 
   public async addressesFavorite({ auth, response, params: { id } }: HttpContextContract) {

@@ -63,6 +63,7 @@
     "sharp": "^0.32.6",
     "slugify": "^1.6.6",
     "source-map-support": "^0.5.21",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz"
   }
 }
