@@ -28,16 +28,17 @@ export default class AuthController {
 
   public async signIn(ctx: HttpContextContract) {
     const { request } = ctx;
-    const { user, password } = await request.validate(LoginValidator);
+    const { user, password, origin } = await request.validate(LoginValidator);
     let tenant_id: string;
+    let TENANT_URL = request.headers()["origin"] || "";
+
+    //permite no ambiente de teste passar a url de origem do tenant por parâmetro
+    if (process.env.NODE_ENV === "test") {
+      TENANT_URL = origin || "http://localhost:3000";
+    }
 
     try {
-      const { request } = ctx;
-      const tenant = await Tenant.query()
-        .select("id")
-        .where("url", request.headers()["origin"] || "")
-        .firstOrFail();
-
+      const tenant = await Tenant.query().select("id").where("url", TENANT_URL).firstOrFail();
       tenant_id = tenant.id;
     } catch (error) {
       if (Env.get("NODE_ENV") === "development") {

@@ -57,6 +57,8 @@ test.group("customers", async (group) => {
     const user = await CustomerFactory.merge({ tenant_id: TENANTS.alfa.id }).make();
 
     const response = await client.post("customers").json(user.toJSON()).bearerToken(token);
+    // console.log(response.body());
+
     response.assertStatus(200);
 
     const { tenant_id, ..._user } = user.toJSON();
@@ -88,7 +90,7 @@ test.group("customers", async (group) => {
     response.assertStatus(403);
   });
 
-  test("falhar ao editar usuário de tenant diferente", async ({ client }) => {
+  test("falhar ao editar cliente de tenant diferente", async ({ client }) => {
     const token = await getToken();
 
     const customer = await CustomerFactory.merge({ tenant_id: TENANTS.bravo.id }).create();

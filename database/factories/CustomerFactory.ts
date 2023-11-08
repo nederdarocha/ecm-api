@@ -3,7 +3,7 @@ import { TENANTS } from "Database/constants";
 import Customer from "App/Modules/Customers/Models/Customer";
 import { AddressFactory } from "./AddressFactory";
 import { UserFactory } from "./UserFactory";
-import { DateTime } from "luxon";
+// import { DateTime } from "luxon";
 import { UniqueEnforcer } from "enforce-unique";
 const uniqueEnforcer = new UniqueEnforcer();
 
@@ -18,7 +18,7 @@ export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
     issuing_agency: faker.helpers.arrayElement(["SSP", "DETRAN", "IFP"]),
     nationality: "Brasileiro",
     natural: true,
-    birthday: DateTime.fromJSDate(faker.date.birthdate({ min: 18, max: 65, mode: "age" })),
+    // birthday: DateTime.fromJSDate(faker.date.birthdate({ min: 18, max: 65, mode: "age" })),
     gender: faker.helpers.arrayElement(["Masculino", "Feminino"]),
     profession: faker.person.jobTitle(),
     workplace: faker.person.jobTitle(),

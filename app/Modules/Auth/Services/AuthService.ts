@@ -28,7 +28,11 @@ export class AuthService {
     //TODO verificar o proxy reverso para encaminhar o IP de origem
     // ip cloudflare proxy
     const ip = request.headers()["cf-connecting-ip"] || request.ip();
-    console.log({ ip });
+
+    if (process.env.NODE_ENV === "development") {
+      console.log({ ip });
+    }
+
     // console.log("ip", request.ip());
     // console.log("ips", request.ips().join(", "));
     // console.log(request.headers());

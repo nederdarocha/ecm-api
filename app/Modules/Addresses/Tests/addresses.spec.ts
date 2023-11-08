@@ -12,7 +12,10 @@ test.group("addresses", async (group) => {
   });
 
   test("falhar se usuário sem privilégio tentar acessar os recursos.", async ({ client }) => {
-    const user = await UserFactory.merge({ password: "password" }).create();
+    const user = await UserFactory.merge({
+      password: "password",
+      tenant_id: TENANTS.alfa.id,
+    }).create();
     const token = await getToken(user.email, "password");
 
     const resp_store = await client.post("/addresses").json({}).bearerToken(token);
