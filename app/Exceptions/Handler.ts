@@ -12,7 +12,7 @@ export default class ExceptionHandler extends HttpExceptionHandler {
   public async handle(error: Exception, ctx: HttpContextContract) {
     switch (error.code) {
       case "ERR_JWS_INVALID":
-        return ctx.response.status(400).send({
+        return ctx.response.status(401).send({
           code: "ERR_JWS_INVALID",
           message: "Token inválido",
           status: 401,
