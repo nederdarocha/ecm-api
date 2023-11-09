@@ -12,10 +12,15 @@ test.group("customers", async (group) => {
   });
 
   test("falhar se usuário sem privilégio tentar acessar os recursos.", async ({ client }) => {
-    const user = await UserFactory.merge({ password: "password" }).create();
+    const user = await UserFactory.merge({
+      password: "password",
+      tenant_id: TENANTS.alfa.id,
+    }).create();
     const token = await getToken(user.email, "password");
 
     const resp_store = await client.post("/customers").json({}).bearerToken(token);
+    console.log(resp_store.body());
+
     resp_store.assertStatus(403);
 
     const resp_list = await client.get("customers").bearerToken(token);
@@ -54,15 +59,12 @@ test.group("customers", async (group) => {
 
   test("conseguir criar cliente", async ({ client }) => {
     const token = await getToken();
-    const user = await CustomerFactory.merge({ tenant_id: TENANTS.alfa.id }).make();
-
-    const response = await client.post("customers").json(user.toJSON()).bearerToken(token);
-    // console.log(response.body());
-
+    const customer = (await CustomerFactory.merge({ tenant_id: TENANTS.alfa.id }).make()).toJSON();
+    customer.birthday = "1982-02-01";
+    const response = await client.post("customers").json(customer).bearerToken(token);
     response.assertStatus(200);
-
-    const { tenant_id, ..._user } = user.toJSON();
-    response.assertBodyContains(_user);
+    const { tenant_id, ..._customer } = customer;
+    response.assertBodyContains({ ..._customer, birthday: "01/02/1982" });
   });
 
   test("conseguir editar cliente", async ({ client }) => {
@@ -70,7 +72,7 @@ test.group("customers", async (group) => {
 
     const customer = await CustomerFactory.merge({ tenant_id: TENANTS.alfa.id }).create();
     const customer2 = await CustomerFactory.merge({ tenant_id: TENANTS.alfa.id }).make();
-    const { tenant_id, ..._customer } = customer2.toJSON();
+    const { tenant_id, birthday, ..._customer } = customer2.toJSON();
 
     const response = await client
       .put(`customers/${customer.id}`)
@@ -93,11 +95,13 @@ test.group("customers", async (group) => {
   test("falhar ao editar cliente de tenant diferente", async ({ client }) => {
     const token = await getToken();
 
-    const customer = await CustomerFactory.merge({ tenant_id: TENANTS.bravo.id }).create();
+    const customer = (
+      await CustomerFactory.merge({ tenant_id: TENANTS.bravo.id }).create()
+    ).toJSON();
 
     const response = await client
       .put(`customers/${customer.id}`)
-      .json(customer.toJSON())
+      .json({ ...customer, birthday: "1982-02-01" })
       .bearerToken(token);
 
     response.assertStatus(403);

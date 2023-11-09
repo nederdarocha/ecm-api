@@ -28,13 +28,13 @@ export default class AuthController {
 
   public async signIn(ctx: HttpContextContract) {
     const { request } = ctx;
-    const { user, password, origin } = await request.validate(LoginValidator);
+    const { user, password, tenant_url } = await request.validate(LoginValidator);
     let tenant_id: string;
     let TENANT_URL = request.headers()["origin"] || "";
 
     //permite no ambiente de teste passar a url de origem do tenant por parâmetro
     if (process.env.NODE_ENV === "test") {
-      TENANT_URL = origin || "http://localhost:3000";
+      TENANT_URL = tenant_url || "http://localhost:3000";
     }
 
     try {

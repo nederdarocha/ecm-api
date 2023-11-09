@@ -7,7 +7,7 @@ export class LoginValidator {
   public schema = schema.create({
     user: schema.string({ trim: true }, [rules.required()]),
     password: schema.string({ trim: true }, [rules.required()]),
-    origin: schema.string.optional({ trim: true }),
+    tenant_url: schema.string.optional({ trim: true }),
   });
 
   public messages = {

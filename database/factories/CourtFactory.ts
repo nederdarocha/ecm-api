@@ -9,5 +9,6 @@ export const CourtFactory = Factory.define(Court, async ({ faker }) => {
     tenant_id: TENANTS["alfa"].id,
     name: uniqueEnforcer.enforce(() => faker.person.firstName()),
     initials: uniqueEnforcer.enforce(() => faker.person.lastName()),
+    district: faker.location.city(),
   };
 }).build();

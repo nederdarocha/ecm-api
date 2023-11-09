@@ -85,7 +85,7 @@ export default class CourtController {
 
     await court.merge(data).save();
 
-    return court;
+    return court.serialize({ fields: { omit: ["tenant_id", "user_id"] } });
   }
 
   public async destroy({ auth, params: { id }, response }: HttpContextContract) {

@@ -15,7 +15,11 @@ export async function getToken(
 
   const response = await api
     .post("auth/sign-in")
-    .json({ user, password: password, origin: tenant_url });
+    .json({ user, password: password, tenant_url: tenant_url });
   const { token } = response.body();
   return token;
+}
+
+export async function getAdminToken(): Promise<string> {
+  return getToken(USERS.admin.email, USERS.admin.password, TENANTS.alfa.url);
 }
