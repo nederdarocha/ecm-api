@@ -26,9 +26,9 @@ export default class UsersController {
   public async index({ paginate, request, auth }: HttpContextContract) {
     await request.validate(UserIndexValidator);
     const { page, per_page } = paginate;
-    const { filter } = request.qs();
+    const { filter, status, role_id } = request.qs();
 
-    const users = await User.query()
+    const query = User.query()
       // .debug(true)
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
@@ -39,7 +39,17 @@ export default class UsersController {
           .orWhere("email", "iLike", `%${filter}%`)
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
           .orWhere("phone", "iLike", `%${filter}%`)
-      )
+      );
+
+    if (status) {
+      query.andWhere("status", status === "true" ? true : false);
+    }
+
+    if (role_id) {
+      query.andWhereHas("roles", (query) => query.whereIn("role_id", [role_id]));
+    }
+
+    const users = await query
       .preload("roles", (sq) => sq.select("id", "name").orderBy("name", "asc"))
       .orderBy("first_name", "asc")
       .paginate(page, per_page);
