@@ -153,4 +153,18 @@ export default class OrderController {
 
     return order;
   }
+
+  public async destroy({ auth, params: { id } }: HttpContextContract) {
+    console.log("aqui");
+    //TODO: implementar soft delete
+    // verificar se é a mais recente para apagar
+    // verificar se há clientes
+    // verificar se há possíveis notificações relacionadas
+    // verificar se há tarefas relacionadas
+    return await Order.query()
+      .preload("status", (sq) => sq.select(["id", "name"]))
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .firstOrFail();
+  }
 }

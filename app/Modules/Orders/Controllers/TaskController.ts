@@ -14,6 +14,7 @@ export default class TaskController {
           .select("*")
           .preload("customer", (sq) => sq.select("id", "name"))
           .preload("service", (sq) => sq.select("id", "name"))
+          .preload("court", (sq) => sq.select("id", "initials"))
       )
       .where("tenant_id", auth.user!.tenant_id)
       .andWhereNotNull("make_in");

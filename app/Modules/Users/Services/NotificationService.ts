@@ -22,6 +22,7 @@ export type TaskType = {
   make_in: string;
   initials: string;
   court_number: string;
+  service_name: string;
   name: string;
   document: string;
   natural: boolean;
@@ -56,9 +57,9 @@ export class NotificationService {
           tenant_id: auth.user!.tenant_id,
           tag: task.id,
           subject: `Prazo a vencer em ${task.make_in}`,
-          message: `${task.initials} ${task.court_number && `- ${task.court_number}`} ${
-            task.description
-          }`,
+          message: `Cliente ${task.name}, ${task.service_name} ${
+            task.initials && `- ${task.initials}`
+          } ${task.court_number && task.court_number} ${task.description && task.description}`,
           status: "unread",
           user_id: null,
           from_id: null,
@@ -73,11 +74,12 @@ export class NotificationService {
   public async getDueTask(): Promise<TaskType[] | null> {
     const { rows: tasks } = await Database.rawQuery<{ rows: TaskType[] }>(
       `
-    SELECT t.id, t.description, to_char(timezone('EAT',t.make_in),'DD/MM/YYYY') make_in, co.initials, os.court_number, c."name", c."document", c."natural"
+    SELECT t.id, t.description, to_char(timezone('EAT',t.make_in),'DD/MM/YYYY') make_in, co.initials, os.court_number, s."name" as service_name, c."name", c."document", c."natural"
     FROM tasks t
     JOIN customer_order_service os on t.customer_order_service_id = os.id
     LEFT JOIN courts co on os.court_id = co.id
     LEFT JOIN customers c on os.customer_id = c.id
+    LEFT JOIN services s on os.service_id = s.id
     WHERE t.tenant_id = :tenant_id
     AND t.make_in - interval '${Env.get("INTERVAL_ALERT_DUE_TASKS", "2 days")}' <= now()
     AND t.confirmed_at ISNULL;
