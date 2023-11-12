@@ -6,10 +6,13 @@ import {
   ManyToMany,
   belongsTo,
   BelongsTo,
+  hasMany,
+  HasMany,
 } from "@ioc:Adonis/Lucid/Orm";
 import Customer from "App/Modules/Customers/Models/Customer";
 import Status from "./Status";
 import Service from "App/Modules/Services/Models/Service";
+import OrderService from "./OrderService";
 
 export default class Order extends BaseModel {
   public static table = "orders";
@@ -74,4 +77,10 @@ export default class Order extends BaseModel {
     localKey: "id",
   })
   public services: ManyToMany<typeof Service>;
+
+  @hasMany(() => OrderService, {
+    foreignKey: "order_id",
+    localKey: "id",
+  })
+  public orderServices: HasMany<typeof OrderService>;
 }

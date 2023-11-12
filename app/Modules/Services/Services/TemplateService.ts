@@ -3,23 +3,17 @@ import { helpers } from "App/Common/utils/helper";
 import extenso from "extenso";
 
 export class TemplateService {
-  public async checkAddress(customer_order_service_id: string): Promise<string | Error> {
+  public async checkAddress(customer_id: string): Promise<string | Error> {
     const {
       rows: [data],
     } = await Database.rawQuery(
       `
-      select
-      a.id as end_id
-      from customer_order_service cos
-      join customer_order co on cos.customer_order_id = co.id
-      join customers c on co.customer_id = c.id
+      select a.id as end_id from customers c
       left join addresses a on c.id = a.owner_id
-      left join courts ct on cos.court_id = ct.id
-      where cos.id = :customer_order_service_id
-      and a.favorite = true
-      limit 1
+      where c.id = :customer_id
+      limit 1;
       `,
-      { customer_order_service_id }
+      { customer_id }
     );
 
     if (!data?.end_id) {
@@ -29,7 +23,13 @@ export class TemplateService {
     return data.end_id;
   }
 
-  public async getData(customer_order_service_id: string): Promise<any> {
+  public async getData({
+    order_service_id,
+    customer_id,
+  }: {
+    order_service_id: string;
+    customer_id: string;
+  }): Promise<any> {
     const {
       rows: [data],
     } = await Database.rawQuery(
@@ -38,10 +38,10 @@ export class TemplateService {
       ct.initials as competencia_sigla,
       ct.name as competencia_nome,
       ct.district as competencia_comarca,
-      cos.court_number as numero_processo,
-      cos.honorary_type,
-      cos.honorary_cents_value,
-      cos.service_cents_amount,
+      co.court_number as numero_processo,
+      co.honorary_type,
+      co.honorary_cents_value,
+      co.service_cents_amount,
       c."natural" as cliente_natural,
       c."name" as cliente_nome,
       c.gender as cliente_genero,
@@ -63,16 +63,15 @@ export class TemplateService {
       a.neighborhood as end_bairro,
       a.city as end_cidade,
       a.state as end_uf
-      from customer_order_service cos
-      join customer_order co on cos.customer_order_id = co.id
-      join customers c on co.customer_id = c.id
+      from order_service co
+      join customers c on c.id = :customer_id
       left join addresses a on c.id = a.owner_id
-      left join courts ct on cos.court_id = ct.id
-      where cos.id = :customer_order_service_id
+      left join courts ct on co.court_id = ct.id
+      where co.id = :order_service_id
       and a.favorite = true
       limit 1
       `,
-      { customer_order_service_id }
+      { order_service_id, customer_id }
     );
 
     const { rows } = await Database.rawQuery(
@@ -80,9 +79,9 @@ export class TemplateService {
       select ed."name", md.value
       from meta_data md
       join extra_data ed on md.extra_data_id = ed.id
-      where md.customer_order_service_id  = :customer_order_service_id;
+      where md.order_service_id  = :order_service_id;
       `,
-      { customer_order_service_id }
+      { order_service_id }
     );
 
     const extra_data = {};

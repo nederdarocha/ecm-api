@@ -4,7 +4,6 @@ import { OrderValidator } from "../Validators";
 import Order from "../Models/Order";
 import { OrderService } from "../Services/OrderService";
 import { schema } from "@ioc:Adonis/Core/Validator";
-import CustomerOrderService from "../Models/CustomerOrderService";
 
 export default class OrderController {
   private service: OrderService;
@@ -16,27 +15,35 @@ export default class OrderController {
     const { number, status_id, service_id, court_id, court_number, customer_id, indicated_id } =
       request.qs();
 
-    const query = CustomerOrderService.query()
-      .preload("order", (sq) => sq.select("*").preload("status", (sq) => sq.select(["id", "name"])))
-      .preload("customer", (sq) => sq.select(["id", "name", "document", "natural"]))
-      .preload("court", (sq) => sq.select(["id", "initials", "name"]))
-      .preload("service", (sq) => sq.select(["id", "name"]))
+    // const _query = CustomerOrderService.query()
+    //   .preload("order", (sq) => sq.select("*").preload("status", (sq) => sq.select(["id", "name"])))
+    //   .preload("customer", (sq) => sq.select(["id", "name", "document", "natural"]))
+    //   .preload("court", (sq) => sq.select(["id", "initials", "name"]))
+    //   .preload("service", (sq) => sq.select(["id", "name"]))
+    //   .where("tenant_id", auth.user!.tenant_id);
+
+    const query = Order.query()
+      .preload("status", (sq) => sq.select(["id", "name"]))
+      .preload("orderServices", (sq) => sq.select("*").preload("court").preload("service"))
+      .preload("customers", (sq) =>
+        sq.select("*").preload("indicator").select(["id", "name", "document", "natural"])
+      )
       .where("tenant_id", auth.user!.tenant_id);
 
     if (number) {
-      query.andWhereHas("order", (query) => query.where("number", "iLike", `%${number}%`));
+      query.where("number", "iLike", `%${number}%`);
     }
 
     if (status_id) {
-      query.andWhereHas("order", (query) => query.whereIn("status_id", [status_id]));
+      query.whereIn("status_id", [status_id]);
     }
 
     if (service_id) {
-      query.andWhere("service_id", service_id);
+      query.andWhereHas("orderServices", (query) => query.where("service_id", service_id));
     }
 
     if (court_id) {
-      query.andWhere("court_id", court_id);
+      query.andWhereHas("orderServices", (query) => query.where("court_id", court_id));
     }
 
     if (court_number) {
@@ -44,14 +51,35 @@ export default class OrderController {
     }
 
     if (customer_id) {
-      query.andWhereHas("customer", (query) => query.whereIn("customer_id", [customer_id]));
+      query.andWhereHas("customers", (query) => query.where("customer_id", customer_id));
     }
 
     if (indicated_id) {
-      query.andWhereHas("customer", (query) => query.whereIn("indicated_id", [indicated_id]));
+      query.andWhereHas("customers", (query) => query.where("indicated_id", indicated_id));
     }
 
     const orders = await query.paginate(paginate.page, paginate.per_page);
+
+    return orders.serialize({
+      fields: { pick: ["id", "order", "number", "started_at", "ended_at"] },
+      relations: {
+        status: { fields: { pick: ["name"] } },
+        customers: {
+          fields: { pick: ["id", "name", "document", "natural"] },
+          relations: {
+            indicator: { fields: { pick: ["id", "name", "document", "natural"] } },
+          },
+        },
+        orderServices: {
+          fields: { pick: ["court_number"] },
+          relations: {
+            court: { fields: { pick: ["initials"] } },
+            service: { fields: { pick: ["name"] } },
+          },
+        },
+      },
+    });
+
     const _orders = orders.serialize({
       fields: { omit: ["tenant_id", "user_id"] },
       relations: { order: { fields: { omit: ["tenant_id", "user_id", "status_id"] } } },
@@ -67,21 +95,29 @@ export default class OrderController {
   }
 
   public async getByCustomer({ auth, params: { customer_id } }: HttpContextContract) {
-    const orders = await CustomerOrderService.query()
-      .preload("order", (sq) =>
-        sq
-          .select(["id", "order", "number", "started_at", "ended_at", "status_id"])
-          .preload("status", (sq) => sq.select(["id", "name"]))
-      )
-      .preload("service", (sq) => sq.select(["id", "name"]))
-      .preload("court", (sq) => sq.select(["id", "initials", "name"]))
+    const orders = await Order.query()
+      // .debug(true)
+      .select(["id", "order", "number", "started_at", "ended_at", "status_id"])
+      .preload("status", (sq) => sq.select(["id", "name"]))
+      .preload("orderServices", (sq) => sq.select("*").preload("court").preload("service"))
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("customer_id", customer_id);
+      .andWhereHas("customers", (query) => query.where("customer_id", customer_id))
+      .orderBy("order", "asc");
 
     return orders.map((order) =>
       order.serialize({
-        fields: { omit: ["tenant_id", "user_id"] },
-        relations: { customerOrderServices: { fields: { omit: ["tenant_id", "user_id"] } } },
+        fields: { pick: ["id", "order", "number", "started_at", "ended_at"] },
+
+        relations: {
+          status: { fields: { pick: ["name"] } },
+          orderServices: {
+            fields: { pick: ["court_number"] },
+            relations: {
+              court: { fields: { pick: ["initials"] } },
+              service: { fields: { pick: ["name"] } },
+            },
+          },
+        },
       })
     );
   }

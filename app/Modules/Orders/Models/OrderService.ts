@@ -4,7 +4,7 @@ import Service from "App/Modules/Services/Models/Service";
 import Court from "App/Modules/Courts/Models/Courts";
 import Order from "./Order";
 
-export default class ServiceService extends BaseModel {
+export default class OrderService extends BaseModel {
   public static table = "order_service";
 
   @column({ isPrimary: true })

@@ -15,24 +15,36 @@ export default class TemplateController {
     this.service = new TemplateService();
   }
 
+  public async getTemplatesByServiceId({ auth, params: { service_id } }: HttpContextContract) {
+    const data = await File.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("owner_id", service_id)
+      .orderBy("name", "asc");
+
+    return data.map((item) => item.serialize({ fields: { omit: ["tenant_id", "user_id"] } }));
+  }
+
   public async download({
     userID,
     response,
-    params: { customer_order_service_id, id },
+    params: { id, customer_id, order_service_id },
   }: HttpContextContract) {
     const user = await User.findOrFail(userID);
+
+    console.log({ id, customer_id, order_service_id });
+
     const file = await File.query()
       .where("tenant_id", user.tenant_id)
       .where("id", id)
       .firstOrFail();
 
     // check customer address
-    const checkAddress = await this.service.checkAddress(customer_order_service_id);
+    const checkAddress = await this.service.checkAddress(customer_id);
     if (checkAddress instanceof Error) {
       return "<h3>Para gerar o documento é preciso cadastrar um endereço para o cliente.</h3>";
     }
 
-    const data = await this.service.getData(customer_order_service_id);
+    const data = await this.service.getData({ customer_id, order_service_id });
     const file_name = slugify(file.name.replace(/\.|docx|-/gi, " ") + "_" + data.cliente_nome, "_");
 
     response.attachment(file_name + "." + file.type);

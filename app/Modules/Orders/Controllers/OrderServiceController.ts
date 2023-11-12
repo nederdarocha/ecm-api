@@ -1,9 +1,10 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import { CustomerOrderServiceValidator } from "../Validators";
+import { OrderServiceValidator, MetaDataValidator } from "../Validators";
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import OrderService from "../Models/OrderService";
 import ExtraData from "App/Modules/Services/Models/ExtraData";
 import MetaData from "App/Modules/Services/Models/MetaData";
+import Database from "@ioc:Adonis/Lucid/Database";
 
 type GetServiceExtraData = {
   label: string;
@@ -50,7 +51,7 @@ export default class OrderServiceController {
     });
   }
 
-  public async updateCustomerOrderService({
+  public async updateOrderService({
     auth,
     request,
     params: { order_service_id },
@@ -58,7 +59,7 @@ export default class OrderServiceController {
     const orderService = await OrderService.findOrFail(order_service_id);
 
     const { honorary_cents_value, honorary_type, service_cents_amount, court_id, court_number } =
-      await request.validate(CustomerOrderServiceValidator);
+      await request.validate(OrderServiceValidator);
 
     await orderService
       .merge({
@@ -72,6 +73,17 @@ export default class OrderServiceController {
       .save();
 
     return orderService;
+  }
+
+  public async updateMetaData({ auth, request, response }: HttpContextContract) {
+    const { data } = await request.validate(MetaDataValidator);
+    let query = "";
+    for (const item of data) {
+      const value = item.value ? `'${item.value}'` : null;
+      query += `UPDATE meta_data SET value=${value}, updated_at=now(), user_id='${auth.user?.id}' WHERE id='${item.meta_data_id}';`;
+    }
+    await Database.rawQuery(query);
+    return response.status(200);
   }
 
   public async getServiceExtraData({ auth, params: { order_service_id } }: HttpContextContract) {

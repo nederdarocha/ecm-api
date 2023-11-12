@@ -1,9 +1,15 @@
 import Route from "@ioc:Adonis/Core/Route";
 
-Route.where("id", Route.matchers.uuid());
-
 Route.group(() => {
-  Route.get("services/:customer_order_service_id/template/:id", "TemplateController.download");
+  Route.get("templates/:id/:order_service_id/:customer_id", "TemplateController.download");
 })
   .namespace("App/Modules/Services/Controllers")
   .middleware(["authByUrl"]);
+
+Route.group(() => {
+  Route.get("templates/:service_id", "TemplateController.getTemplatesByServiceId").middleware(
+    "acl:r-order"
+  );
+})
+  .namespace("App/Modules/Services/Controllers")
+  .middleware(["auth"]);
