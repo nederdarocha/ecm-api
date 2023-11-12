@@ -1,8 +1,7 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import { CustomerOrderServiceValidator } from "../Validators";
-import { schema } from "@ioc:Adonis/Core/Validator";
-import CustomerOrder from "../Models/CustomerOrder";
-import CustomerOrderServiceModel from "../Models/CustomerOrderService";
+import { schema, rules } from "@ioc:Adonis/Core/Validator";
+import OrderService from "../Models/OrderService";
 import ExtraData from "App/Modules/Services/Models/ExtraData";
 import MetaData from "App/Modules/Services/Models/MetaData";
 
@@ -16,48 +15,52 @@ type GetServiceExtraData = {
   meta_data_id: string | null;
 };
 
+// SERVICES
 export default class OrderServiceController {
-  // SERVICES
-  public async getServices({ auth, params: { customer_order_id } }: HttpContextContract) {
-    const customerOrderService = await CustomerOrderServiceModel.query()
+  public async getServices({ auth, params: { order_id } }: HttpContextContract) {
+    const orderServices = await OrderService.query()
       .preload("court", (sq) => sq.select(["id", "initials", "name"]))
       .preload("service", (sq) => sq.select("*").preload("category"))
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("customer_order_id", customer_order_id);
+      .andWhere("order_id", order_id);
 
-    const res = customerOrderService.map((item) => {
-      const { id, service, court, ...data } = item.toJSON();
-      return {
-        customer_order_service_id: id,
-        id: service.id,
-        name: service.name,
-        honorary_type: data.honorary_type,
-        honorary_cents_value: data.honorary_cents_value,
-        service_cents_amount: data.service_cents_amount,
-        customer_id: data.customer_id,
-        court_id: data.court_id,
-        court_number: data.court_number,
-        court: { id: court?.id, initials: court?.initials, name: court?.name },
-        category: { id: service?.category?.id, name: service?.category?.name },
-      };
+    return orderServices.map((orderService) => {
+      return orderService.serialize({
+        fields: {
+          omit: ["tenant_id", "user_id"],
+        },
+        relations: {
+          court: {
+            fields: {
+              pick: ["id", "initials", "name"],
+            },
+          },
+          service: {
+            fields: {
+              pick: ["id", "name"],
+            },
+          },
+          category: {
+            fields: {
+              pick: ["id", "name"],
+            },
+          },
+        },
+      });
     });
-
-    return res;
   }
 
   public async updateCustomerOrderService({
     auth,
     request,
-    params: { customer_order_service_id },
+    params: { order_service_id },
   }: HttpContextContract) {
-    const customerOrderService = await CustomerOrderServiceModel.findOrFail(
-      customer_order_service_id
-    );
+    const orderService = await OrderService.findOrFail(order_service_id);
 
     const { honorary_cents_value, honorary_type, service_cents_amount, court_id, court_number } =
       await request.validate(CustomerOrderServiceValidator);
 
-    await customerOrderService
+    await orderService
       .merge({
         honorary_type,
         honorary_cents_value: honorary_cents_value || null,
@@ -68,21 +71,16 @@ export default class OrderServiceController {
       })
       .save();
 
-    return customerOrderService;
+    return orderService;
   }
 
-  public async getServiceExtraData({
-    auth,
-    params: { customer_order_service_id },
-  }: HttpContextContract) {
-    const customerOrderService = await CustomerOrderServiceModel.query()
-      .where("id", customer_order_service_id)
-      .first();
-    if (!customerOrderService) {
+  public async getServiceExtraData({ auth, params: { order_service_id } }: HttpContextContract) {
+    const orderService = await OrderService.query().where("id", order_service_id).first();
+    if (!orderService) {
       return [];
     }
 
-    const extraData = await ExtraData.query().where("service_id", customerOrderService.service_id);
+    const extraData = await ExtraData.query().where("service_id", orderService.service_id);
 
     if (!extraData) {
       return [];
@@ -101,13 +99,13 @@ export default class OrderServiceController {
 
     for await (const extra of extraData) {
       let meta = await MetaData.query()
-        .where("customer_order_service_id", customer_order_service_id)
+        .where("order_service_id", order_service_id)
         .andWhere("extra_data_id", extra.id)
         .first();
 
       if (!meta) {
         meta = await MetaData.create({
-          customer_order_service_id,
+          order_service_id,
           extra_data_id: extra.id,
           user_id: auth.user!.id,
         });
@@ -120,52 +118,57 @@ export default class OrderServiceController {
     return data;
   }
 
-  public async addService({
-    auth,
-    request,
-    response,
-    params: { customer_order_id },
-  }: HttpContextContract) {
+  public async addService({ auth, request, params: { order_id } }: HttpContextContract) {
     const { service_id } = await request.validate({
-      schema: schema.create({ service_id: schema.string() }),
+      schema: schema.create({ service_id: schema.string([rules.uuid()]) }),
     });
 
-    const customerOrder = await CustomerOrder.findOrFail(customer_order_id);
-
-    const customerOrderServiceModel = await CustomerOrderServiceModel.create({
+    const orderService = await OrderService.create({
       tenant_id: auth.user!.tenant_id,
-      order_id: customerOrder.order_id,
-      customer_id: customerOrder.customer_id,
+      order_id: order_id,
       service_id,
-      customer_order_id,
       user_id: auth.user!.id,
     });
 
-    await customerOrderServiceModel.load("service", (sq) => sq.select("*").preload("category"));
-    const service = customerOrderServiceModel.service;
+    // await orderService.load("court", (sq) => sq.select(["id", "initials", "name"]));
+    await orderService.load("service", (sq) => sq.select("*").preload("category"));
 
-    response.status(200).json({
-      customer_order_service_id: customerOrderServiceModel.id,
-      id: service.id,
-      name: service.name,
-      customer_id: customerOrderServiceModel.customer_id,
-      order_id: customerOrderServiceModel.order_id,
-      category: { id: service?.category?.id, name: service?.category?.name },
+    return orderService.serialize({
+      fields: {
+        omit: ["tenant_id", "user_id"],
+      },
+      relations: {
+        court: {
+          fields: {
+            pick: ["id", "initials", "name"],
+          },
+        },
+        service: {
+          fields: {
+            pick: ["id", "name"],
+          },
+        },
+        category: {
+          fields: {
+            pick: ["id", "name"],
+          },
+        },
+      },
     });
   }
 
   public async destroyService({
     auth,
     response,
-    params: { customer_order_service_id },
+    params: { order_service_id },
   }: HttpContextContract) {
-    const customerOrderServiceModel = await CustomerOrderServiceModel.query()
+    const customerOrderServiceModel = await OrderService.query()
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("id", customer_order_service_id)
+      .andWhere("id", order_service_id)
       .firstOrFail();
 
     //TODO verificar se cliente possui pagamento ao serviço antes de remover
-
+    // verificar se há notificações lidas
     await customerOrderServiceModel.delete();
     response.status(204);
   }

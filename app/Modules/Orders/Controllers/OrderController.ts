@@ -154,17 +154,24 @@ export default class OrderController {
     return order;
   }
 
-  public async destroy({ auth, params: { id } }: HttpContextContract) {
-    console.log("aqui");
-    //TODO: implementar soft delete
-    // verificar se é a mais recente para apagar
-    // verificar se há clientes
-    // verificar se há possíveis notificações relacionadas
-    // verificar se há tarefas relacionadas
-    return await Order.query()
-      .preload("status", (sq) => sq.select(["id", "name"]))
+  public async destroy({ auth, response, params: { id } }: HttpContextContract) {
+    const order = await Order.query()
+      .preload("customers", (sq) => sq.select(["id"]))
+      .preload("services", (sq) => sq.select(["id"]))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
+
+    if (order.customers.length > 0 && order.services.length > 0) {
+      return response.status(400).json({
+        message: "Não é possível excluir um contrato com clientes e/ou serviços.",
+      });
+    }
+
+    //TODO: implementar soft delete
+    // verificar se há possíveis notificações relacionadas
+
+    await order.delete();
+    return response.status(204);
   }
 }
