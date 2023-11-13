@@ -76,9 +76,9 @@ export class NotificationService {
       `
     SELECT t.id, t.description, to_char(timezone('EAT',t.make_in),'DD/MM/YYYY') make_in, co.initials, os.court_number, s."name" as service_name, c."name", c."document", c."natural"
     FROM tasks t
-    JOIN customer_order_service os on t.customer_order_service_id = os.id
+    JOIN order_service os on t.order_service_id = os.id
     LEFT JOIN courts co on os.court_id = co.id
-    LEFT JOIN customers c on os.customer_id = c.id
+    LEFT JOIN customers c on t.customer_id = c.id
     LEFT JOIN services s on os.service_id = s.id
     WHERE t.tenant_id = :tenant_id
     AND t.make_in - interval '${Env.get("INTERVAL_ALERT_DUE_TASKS", "2 days")}' <= now()

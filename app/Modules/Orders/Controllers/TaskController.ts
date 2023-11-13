@@ -9,10 +9,10 @@ export default class TaskController {
     const query = Task.query()
       .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
       .preload("order", (sq) => sq.select("id", "number"))
-      .preload("customerOrderService", (sq) =>
+      .preload("customer", (sq) => sq.select("id", "name"))
+      .preload("orderService", (sq) =>
         sq
           .select("*")
-          .preload("customer", (sq) => sq.select("id", "name"))
           .preload("service", (sq) => sq.select("id", "name"))
           .preload("court", (sq) => sq.select("id", "initials"))
       )
@@ -46,7 +46,21 @@ export default class TaskController {
     const tasks = await query.orderBy("make_in", "asc").paginate(paginate.page, paginate.per_page);
 
     return tasks.serialize({
-      fields: { omit: ["tenant_id", "user_id"] },
+      fields: {
+        omit: ["user_id", "tenant_id", "createdAt", "updatedAt"],
+      },
+      relations: {
+        confirmedBy: { fields: { pick: ["id", "first_name"] } },
+        order: { fields: { pick: ["id", "number"] } },
+        customer: { fields: { pick: ["id", "name"] } },
+        orderService: {
+          fields: { pick: ["court_number"] },
+          relations: {
+            court: { fields: { pick: ["initials"] } },
+            service: { fields: { pick: ["name"] } },
+          },
+        },
+      },
     });
   }
 
@@ -96,7 +110,7 @@ export default class TaskController {
 
     return task.serialize({
       fields: {
-        omit: ["tenant_id", "user_id", "createdAt", "updatedAt"],
+        omit: ["user_id", "createdAt", "updatedAt"],
       },
     });
   }
@@ -105,11 +119,9 @@ export default class TaskController {
     const task = await Task.query()
       .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
       .preload("order", (sq) => sq.select("id", "number"))
-      .preload("customerOrderService", (sq) =>
-        sq
-          .select("*")
-          .preload("customer", (sq) => sq.select("id", "name"))
-          .preload("service", (sq) => sq.select("id", "name"))
+      .preload("customer", (sq) => sq.select("id", "name"))
+      .preload("orderService", (sq) =>
+        sq.select("*").preload("service", (sq) => sq.select("id", "name"))
       )
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", params.id)

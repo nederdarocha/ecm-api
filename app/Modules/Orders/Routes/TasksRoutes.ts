@@ -7,11 +7,6 @@ Route.group(() => {
     "acl:r-task",
   ]);
 
-  Route.get(
-    "orders/tasks/:id/by-customer-order-service",
-    "TaskController.getByCustomerOrderService"
-  ).middleware("acl:r-task");
-
   Route.post("orders/tasks/:id/confirm-payment", "TaskController.confirmTask").middleware(
     "acl:u-task"
   );

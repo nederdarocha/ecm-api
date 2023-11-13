@@ -8,7 +8,8 @@ export class TaskValidator {
 
   public schema = schema.create({
     order_id: schema.string({ trim: true }, [rules.uuid()]),
-    customer_order_service_id: schema.string({ trim: true }, [rules.uuid()]),
+    customer_id: schema.string.optional({ trim: true }, [rules.uuid()]),
+    order_service_id: schema.string({ trim: true }, [rules.uuid()]),
     description: schema.string({ trim: true }),
     notes: schema.string.optional({ trim: true }),
     made_at: schema.date({ format: "yyyy-MM-dd" }),

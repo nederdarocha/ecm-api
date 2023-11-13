@@ -15,13 +15,6 @@ export default class OrderController {
     const { number, status_id, service_id, court_id, court_number, customer_id, indicated_id } =
       request.qs();
 
-    // const _query = CustomerOrderService.query()
-    //   .preload("order", (sq) => sq.select("*").preload("status", (sq) => sq.select(["id", "name"])))
-    //   .preload("customer", (sq) => sq.select(["id", "name", "document", "natural"]))
-    //   .preload("court", (sq) => sq.select(["id", "initials", "name"]))
-    //   .preload("service", (sq) => sq.select(["id", "name"]))
-    //   .where("tenant_id", auth.user!.tenant_id);
-
     const query = Order.query()
       .preload("status", (sq) => sq.select(["id", "name"]))
       .preload("orderServices", (sq) => sq.select("*").preload("court").preload("service"))
