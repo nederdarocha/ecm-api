@@ -32,14 +32,18 @@ export default class MessageController {
   }
 
   public async store({ auth, request }: HttpContextContract) {
-    const { ...data } = await request.validate(MessageValidator);
+    const { customer_id, ...data } = await request.validate(MessageValidator);
     const { tenant_id } = auth.user!;
 
     const court = await Message.create({
       ...data,
+      customer_id,
       tenant_id,
       user_id: auth.user!.id,
     });
+
+    //TODO cria uma notificação para o usuário
+    //verifica se o cliente possui um usuário
 
     return court.serialize({
       fields: {

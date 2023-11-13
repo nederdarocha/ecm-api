@@ -12,7 +12,8 @@ export class UserValidator {
   constructor(protected ctx?: HttpContextContract) {}
 
   public schema = schema.create({
-    first_name: schema.string({ trim: true }, [rules.required()]),
+    first_name: schema.string.optional({ trim: true }, [rules.required()]),
+    customer_id: schema.string.optional({ trim: true }, [rules.uuid()]),
     last_name: schema.string({ trim: true }),
     role_ids: schema.array([rules.nullable()]).members(schema.string()),
     document: schema.string({ trim: true }, [rules.minLength(11), rules.maxLength(11)]),

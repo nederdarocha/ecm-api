@@ -9,10 +9,13 @@ import {
   manyToMany,
   ManyToMany,
   computed,
+  belongsTo,
+  BelongsTo,
 } from "@ioc:Adonis/Lucid/Orm";
 import Role from "App/Modules/Auth/Models/Role";
 import UserToken from "./UserToken";
 import Permission from "App/Modules/Auth/Models/Permission";
+import Customer from "App/Modules/Customers/Models/Customer";
 
 export default class User extends BaseModel {
   public static table = "users";
@@ -22,6 +25,9 @@ export default class User extends BaseModel {
 
   @column()
   public tenant_id: string;
+
+  @column()
+  public customer_id: string | null;
 
   @column()
   public first_name: string;
@@ -91,4 +97,10 @@ export default class User extends BaseModel {
     localKey: "id",
   })
   public tokens: HasMany<typeof UserToken>;
+
+  @belongsTo(() => Customer, {
+    foreignKey: "customer_id",
+    localKey: "id",
+  })
+  public customer: BelongsTo<typeof Customer>;
 }
