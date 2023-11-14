@@ -100,4 +100,17 @@ export class OrderService {
     }
     return null;
   }
+
+  public async isLastOrder(_order: Order): Promise<boolean> {
+    const { tenant_id, order } = _order;
+    const noLastOrder = await Order.query()
+      .where("tenant_id", tenant_id)
+      .andWhere("order", ">", order)
+      .first();
+
+    if (noLastOrder) {
+      return false;
+    }
+    return true;
+  }
 }

@@ -33,7 +33,8 @@ export default class NotificationController {
   public async markAllRead({ auth: { user } }: HttpContextContract) {
     if (!user) return;
     await Database.rawQuery(
-      "UPDATE notifications set status = 'read', read_at = now() WHERE tenant_id = :tenant_id AND to_id = :id;",
+      `UPDATE notifications set status = 'read', read_at = now()
+      WHERE tenant_id = :tenant_id AND to_id = :id AND status = 'unread';`,
       {
         tenant_id: user.tenant_id,
         id: user.id,
@@ -76,7 +77,7 @@ export default class NotificationController {
       await notification
         .merge({
           status: "read",
-          read_at: DateTime.now(), //TODO verificar pq não está salvando a hora
+          read_at: DateTime.now(),
         })
         .save();
     }

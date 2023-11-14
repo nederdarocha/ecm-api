@@ -191,6 +191,12 @@ export default class OrderController {
       .andWhere("id", id)
       .firstOrFail();
 
+    const isLastOrder = await this.service.isLastOrder(order);
+    if (!isLastOrder) {
+      return response.status(400).json({
+        message: "Para manter a sequência você só pode excluir o último contrato criado.",
+      });
+    }
     if (order.customers.length > 0 && order.services.length > 0) {
       return response.status(400).json({
         message: "Não é possível excluir um contrato com clientes e/ou serviços.",

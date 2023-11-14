@@ -40,7 +40,7 @@ export default class Notification extends BaseModel {
   @column()
   public go_to: string;
 
-  @column.date({
+  @column.dateTime({
     serialize: (value: DateTime) => {
       return value ? value.toFormat("dd/MM/yyyy HH:mm:ss") : null;
     },
