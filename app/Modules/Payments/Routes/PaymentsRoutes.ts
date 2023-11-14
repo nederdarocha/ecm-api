@@ -7,6 +7,11 @@ Route.group(() => {
     "acl:r-payment"
   );
 
+  Route.get(
+    "payments/:customer_id/:order_id/by-customer-order",
+    "PaymentController.getByCustomerOrder"
+  ).middleware("acl:r-payment");
+
   Route.post("payments/:id/made-payment", "PaymentController.madePayment").middleware(
     "acl:u-payment"
   );

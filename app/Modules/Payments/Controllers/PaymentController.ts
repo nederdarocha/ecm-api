@@ -93,6 +93,36 @@ export default class PaymentController {
     return payments;
   }
 
+  public async getByCustomerOrder({
+    params: { customer_id, order_id },
+    auth,
+  }: HttpContextContract) {
+    const payments = await Payment.query()
+      .preload("orderService", (sq) =>
+        sq.select("*").preload("service", (sq) => sq.select("id", "name"))
+      )
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("customer_id", customer_id)
+      .andWhere("order_id", order_id)
+      .orderBy("due_date", "asc");
+
+    return payments.map((payment) =>
+      payment.serialize({
+        fields: {
+          omit: ["tenant_id", "user_id", "createdAt", "updatedAt"],
+        },
+        relations: {
+          orderService: {
+            fields: { pick: ["id"] },
+            relations: {
+              service: { fields: { pick: ["name"] } },
+            },
+          },
+        },
+      })
+    );
+  }
+
   public async show({ params, auth }: HttpContextContract) {
     const payment = await Payment.query()
       .where("tenant_id", auth.user!.tenant_id)
