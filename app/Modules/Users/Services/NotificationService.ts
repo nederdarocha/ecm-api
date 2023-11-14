@@ -6,7 +6,7 @@ import _ from "lodash";
 
 interface NotificationType {
   tenant_id: string;
-  tag: string | null;
+  relation_id: string | null;
   subject: string;
   message: string;
   status: string;
@@ -55,7 +55,7 @@ export class NotificationService {
       for (const user_id of userIdsToNotify) {
         notifications.push({
           tenant_id: auth.user!.tenant_id,
-          tag: task.id,
+          relation_id: task.id,
           subject: `Prazo a vencer em ${task.make_in}`,
           message: `Cliente ${task.name}, ${task.service_name} ${
             task.initials && `- ${task.initials}`
@@ -114,15 +114,15 @@ export class NotificationService {
     return [];
   }
 
-  public async getNotifiedUsersIdsByTask(tag: string): Promise<string[]> {
+  public async getNotifiedUsersIdsByTask(relation_id: string): Promise<string[]> {
     const { rows: usersNotified } = await Database.rawQuery(
       `
-      SELECT n.to_id, n.tag
+      SELECT n.to_id, n.relation_id
       FROM notifications n
       WHERE n.tenant_id = :tenant_id
-      AND n.tag = :tag;
+      AND n.relation_id = :relation_id;
     `,
-      { tag, tenant_id: this.auth.user!.tenant_id }
+      { relation_id, tenant_id: this.auth.user!.tenant_id }
     );
 
     if (usersNotified.length > 0) {

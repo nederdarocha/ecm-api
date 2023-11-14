@@ -1,8 +1,9 @@
 import { DateTime } from "luxon";
-import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
+import { column, BaseModel, belongsTo, BelongsTo, hasOne, HasOne } from "@ioc:Adonis/Lucid/Orm";
 import Order from "App/Modules/Orders/Models/Order";
 import User from "App/Modules/Users/Models/User";
 import Customer from "App/Modules/Customers/Models/Customer";
+import Notification from "App/Modules/Users/Models/Notification";
 
 export default class Message extends BaseModel {
   public static table = "messages";
@@ -64,4 +65,10 @@ export default class Message extends BaseModel {
     localKey: "id",
   })
   public order: BelongsTo<typeof Order>;
+
+  @hasOne(() => Notification, {
+    foreignKey: "relation_id",
+    localKey: "id",
+  })
+  public notification: HasOne<typeof Notification>;
 }

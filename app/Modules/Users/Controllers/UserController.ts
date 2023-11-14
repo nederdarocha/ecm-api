@@ -108,6 +108,7 @@ export default class UsersController {
   public async show({ params, bouncer }: HttpContextContract) {
     const user = await User.query()
       .preload("roles", (sq) => sq.select("id", "name").orderBy("name"))
+      .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
       .where("id", params.id)
       .firstOrFail();
 

@@ -7,7 +7,8 @@ export default class OrderCustomerController {
   // CUSTOMERS
   public async getCustomers({ auth, params: { id } }: HttpContextContract) {
     const customerOrder = await CustomerOrder.query()
-      .preload("customer")
+      // .debug(true)
+      .preload("customer", (sq) => sq.select("*").preload("user"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("order_id", id);
 
@@ -19,6 +20,7 @@ export default class OrderCustomerController {
       phone: customer.phone,
       document: customer.document,
       natural: customer.natural,
+      user_id: customer.user?.id,
     }));
   }
 

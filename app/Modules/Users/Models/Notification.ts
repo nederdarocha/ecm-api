@@ -14,6 +14,9 @@ export default class Notification extends BaseModel {
   public tenant_id: string;
 
   @column()
+  public relation_id: string | null;
+
+  @column()
   public tag: string | null;
 
   @column()
@@ -36,6 +39,13 @@ export default class Notification extends BaseModel {
 
   @column()
   public go_to: string;
+
+  @column.date({
+    serialize: (value: DateTime) => {
+      return value ? value.toFormat("dd/MM/yyyy HH:mm:ss") : null;
+    },
+  })
+  public read_at: DateTime;
 
   @column.dateTime({
     autoCreate: true,
