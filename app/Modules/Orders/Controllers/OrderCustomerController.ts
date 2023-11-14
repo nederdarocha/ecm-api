@@ -2,9 +2,15 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Order from "../Models/Order";
 import { schema } from "@ioc:Adonis/Core/Validator";
 import CustomerOrder from "../Models/CustomerOrder";
+import { OrderCustomerService } from "../Services/OrderCustomerService";
 
+// CUSTOMERS
 export default class OrderCustomerController {
-  // CUSTOMERS
+  private service: OrderCustomerService;
+  constructor() {
+    this.service = new OrderCustomerService();
+  }
+
   public async getCustomers({ auth, params: { id } }: HttpContextContract) {
     const customerOrder = await CustomerOrder.query()
       // .debug(true)
@@ -67,7 +73,17 @@ export default class OrderCustomerController {
       .andWhere("id", customer_order_id)
       .firstOrFail();
 
-    //TODO verificar se cliente possui serviços vinculados ao caso antes de remover
+    const isMessageSent = await this.service.isMessageSent(caseCustomer);
+    if (isMessageSent) {
+      return response.status(400).json({
+        message:
+          "Não é possível remover o cliente pois já foi enviado mensagem para ele neste contrato.",
+      });
+    }
+
+    //TODO verificar se cliente possui mensagem
+    //TODO verificar se cliente possui pagamento
+
     await caseCustomer.delete();
     response.status(204);
   }

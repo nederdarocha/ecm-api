@@ -23,8 +23,4 @@ export class StatusService {
       return new Error("o Sigla informada já está em uso");
     }
   }
-
-  public async findById(): Promise<null> {
-    return null;
-  }
 }

@@ -28,8 +28,6 @@ export default class MessageController {
   }
 
   public async getByCustomer({ auth, params: { customer_id } }: HttpContextContract) {
-    //TODO trazer o status da notificação relation_id
-
     const messages = await Message.query()
       .preload("user", (sq) => sq.select("id", "first_name", "last_name"))
       .preload("order", (sq) => sq.select("id", "number"))

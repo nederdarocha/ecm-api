@@ -20,7 +20,7 @@ export default class PaymentController {
       .preload("paidBy", (sq) => sq.select("id", "first_name"))
       .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
       .preload("order", (sq) => sq.select("id", "number"))
-      .preload("customerOrderService", (sq) =>
+      .preload("orderService", (sq) =>
         sq.select("*").preload("service", (sq) => sq.select("id", "name"))
       )
       .where("tenant_id", auth.user!.tenant_id);
@@ -34,7 +34,7 @@ export default class PaymentController {
     }
 
     if (service_id) {
-      query.andWhereHas("customerOrderService", (query) => query.where("service_id", service_id));
+      query.andWhereHas("orderService", (query) => query.where("service_id", service_id));
     }
 
     if (customer_id) {
@@ -85,10 +85,10 @@ export default class PaymentController {
     });
   }
 
-  public async getByCustomerOrderService({ params: { id }, auth }: HttpContextContract) {
+  public async getByOrderService({ params: { id }, auth }: HttpContextContract) {
     const payments = await Payment.query()
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("customer_order_service_id", id)
+      .andWhere("order_service_id", id)
       .orderBy("due_date", "asc");
     return payments;
   }
