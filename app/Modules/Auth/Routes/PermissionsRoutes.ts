@@ -10,7 +10,9 @@ Route.group(() => {
   }).middleware(["acl:sup_admin"]);
 
   Route.group(() => {
-    Route.put("/partial/:id", "PermissionController.updatePartial").middleware("sleep:1000");
+    Route.put("/partial/:id/:role_id", "PermissionController.updatePartial").middleware(
+      "sleep:1000"
+    );
     Route.put(":id", "PermissionController.update");
     Route.post("", "PermissionController.store");
     Route.get("", "PermissionController.index");
