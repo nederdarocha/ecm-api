@@ -13,7 +13,7 @@ export class UserValidator {
 
   public schema = schema.create({
     first_name: schema.string.optional({ trim: true }, [rules.required()]),
-    customer_id: schema.string.optional({ trim: true }, [rules.uuid()]),
+    customer_id: schema.string.nullableAndOptional({ trim: true }, [rules.uuid()]),
     last_name: schema.string({ trim: true }),
     role_ids: schema.array([rules.nullable()]).members(schema.string()),
     document: schema.string({ trim: true }, [rules.minLength(11), rules.maxLength(11)]),

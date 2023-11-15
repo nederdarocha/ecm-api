@@ -1,7 +1,6 @@
 import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 
-import { shape } from "./RoleStoreValidator";
 import { commonMessages } from "../../../Common";
 
 export default class RoleUpdateValidator {
@@ -12,7 +11,7 @@ export default class RoleUpdateValidator {
   });
 
   public schema = schema.create({
-    ...shape,
+    permission_ids: schema.array().members(schema.string()),
     name: schema.string({ trim: true }, [
       rules.unique({
         table: "roles",

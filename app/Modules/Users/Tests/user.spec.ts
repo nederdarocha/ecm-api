@@ -145,6 +145,7 @@ test.group("users", async (group) => {
       email: "john@mail.com",
       role_ids: [roleIdSupporter.id],
       status: true,
+      customer_id: null,
     };
 
     const response = await client.post("users").json(user).bearerToken(token);
@@ -155,7 +156,7 @@ test.group("users", async (group) => {
     );
     assert.isTrue(mailer.exists({ to: [{ address: user.email }] }));
     assert.isTrue(mailer.exists({ subject: `${Env.get("MAIL_SUBJECT")} - Bem vindo` }));
-    assert.isTrue(mailer.exists((mail) => mail.html!.includes(user.first_name)));
+    assert.isTrue(mailer.exists((mail) => mail.html!.includes(user?.first_name!)));
 
     const { role_ids, ..._user } = user;
     response.assertBodyContains(_user);
