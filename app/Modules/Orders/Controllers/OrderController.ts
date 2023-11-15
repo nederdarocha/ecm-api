@@ -1,9 +1,9 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+import { schema } from "@ioc:Adonis/Core/Validator";
 import { DateTime } from "luxon";
 import { OrderValidator } from "../Validators";
 import Order from "../Models/Order";
 import { OrderService } from "../Services/OrderService";
-import { schema } from "@ioc:Adonis/Core/Validator";
 
 export default class OrderController {
   private service: OrderService;
@@ -40,7 +40,11 @@ export default class OrderController {
     }
 
     if (court_number) {
-      query.andWhereRaw(`REGEXP_REPLACE(court_number ,'\D','','g') iLike ?`, [`%${court_number}%`]);
+      query.andWhereHas("orderServices", (query) =>
+        query.andWhereRaw(`REGEXP_REPLACE(court_number ,'\D','','g') iLike ?`, [
+          `%${court_number}%`,
+        ])
+      );
     }
 
     if (customer_id) {

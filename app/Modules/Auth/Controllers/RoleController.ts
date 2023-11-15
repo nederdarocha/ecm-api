@@ -2,6 +2,7 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Role from "../Models/Role";
 import { RoleStoreValidator } from "../Validators";
 import RoleUpdateValidator from "../Validators/RoleUpdateValidator";
+import Permission from "../Models/Permission";
 
 export default class RoleController {
   public async all({}: HttpContextContract) {
@@ -13,10 +14,13 @@ export default class RoleController {
   }
 
   public async store({ request }: HttpContextContract) {
-    const { permission_ids, ...data } = await request.validate(RoleStoreValidator);
+    const { ...data } = await request.validate(RoleStoreValidator);
     const role = await Role.create(data);
-    await role.related("permissions").sync(permission_ids);
 
+    const permission = await Permission.query().select("id");
+    const permission_ids = permission.map((p) => p.id);
+
+    await role.related("permissions").sync(permission_ids);
     return role.load("permissions");
   }
 

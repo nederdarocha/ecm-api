@@ -73,16 +73,12 @@ export default class OrderCustomerController {
       .andWhere("id", customer_order_id)
       .firstOrFail();
 
-    const isMessageSent = await this.service.isMessageSent(caseCustomer);
-    if (isMessageSent) {
+    const checkCustomDelete = await this.service.checkCustomDelete(caseCustomer);
+    if (checkCustomDelete instanceof Error) {
       return response.status(400).json({
-        message:
-          "Não é possível remover o cliente pois já foi enviado mensagem para ele neste contrato.",
+        message: checkCustomDelete.message,
       });
     }
-
-    //TODO verificar se cliente possui mensagem
-    //TODO verificar se cliente possui pagamento
 
     await caseCustomer.delete();
     response.status(204);

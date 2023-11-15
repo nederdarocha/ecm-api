@@ -16,6 +16,7 @@ export default class PermissionController {
 
   public async store({ request }: HttpContextContract) {
     const { ...data } = await request.validate(PermissionStoreValidator);
+    //TODO ao criar uma permissão, a permissão deve ser relacionadas aos roles existentes
     return await Permission.create(data);
   }
 

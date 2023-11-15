@@ -4,7 +4,7 @@ import { TaskValidator, TaskMadeValidator } from "../Validators";
 
 export default class TaskController {
   public async index({ auth, request, paginate }: HttpContextContract) {
-    const { number, status, customer_id, make_in_begin, make_in_end } = request.qs();
+    const { number, status, customer_id, service_id, make_in_begin, make_in_end } = request.qs();
 
     const query = Task.query()
       .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
@@ -29,6 +29,10 @@ export default class TaskController {
 
     if (customer_id) {
       query.andWhere("customer_id", customer_id);
+    }
+
+    if (service_id) {
+      query.andWhereHas("orderService", (query) => query.where("service_id", service_id));
     }
 
     if (make_in_begin && make_in_end) {
@@ -66,6 +70,10 @@ export default class TaskController {
 
   public async getByOrder({ auth, params: { order_id } }: HttpContextContract) {
     const tasks = await Task.query()
+      .preload("orderService", (sq) =>
+        sq.select("*").preload("service", (sq) => sq.select("id", "name"))
+      )
+      .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("order_id", order_id)
       .orderBy("made_at", "asc")
@@ -74,6 +82,46 @@ export default class TaskController {
     return tasks.map((task) =>
       task.serialize({
         fields: { omit: ["tenant_id", "user_id"] },
+        relations: {
+          orderService: {
+            fields: { pick: ["court_number"] },
+            relations: {
+              court: { fields: { pick: ["initials"] } },
+              service: { fields: { pick: ["name"] } },
+            },
+          },
+        },
+      })
+    );
+  }
+
+  public async getByCustomerOrder({
+    auth,
+    params: { customer_id, order_id },
+  }: HttpContextContract) {
+    const tasks = await Task.query()
+      .preload("orderService", (sq) =>
+        sq.select("*").preload("service", (sq) => sq.select("id", "name"))
+      )
+      .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("order_id", order_id)
+      .andWhere("customer_id", customer_id)
+      .orderBy("made_at", "asc")
+      .orderBy("created_at", "asc");
+
+    return tasks.map((task) =>
+      task.serialize({
+        fields: { omit: ["tenant_id", "user_id"] },
+        relations: {
+          orderService: {
+            fields: { pick: ["court_number"] },
+            relations: {
+              court: { fields: { pick: ["initials"] } },
+              service: { fields: { pick: ["name"] } },
+            },
+          },
+        },
       })
     );
   }
@@ -81,7 +129,7 @@ export default class TaskController {
   public async getByCustomerOrderService({ auth, params: { id } }: HttpContextContract) {
     const tasks = await Task.query()
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("customer_order_service_id", id)
+      .andWhere("order_service_id", id)
       .orderBy("made_at", "asc")
       .orderBy("created_at", "asc");
 

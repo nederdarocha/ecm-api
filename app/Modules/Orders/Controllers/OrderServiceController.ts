@@ -5,6 +5,7 @@ import OrderService from "../Models/OrderService";
 import ExtraData from "App/Modules/Services/Models/ExtraData";
 import MetaData from "App/Modules/Services/Models/MetaData";
 import Database from "@ioc:Adonis/Lucid/Database";
+import { OrderServiceService } from "../Services/OrderServiceService";
 
 type GetServiceExtraData = {
   label: string;
@@ -18,6 +19,11 @@ type GetServiceExtraData = {
 
 // SERVICES
 export default class OrderServiceController {
+  private service: OrderServiceService;
+  constructor() {
+    this.service = new OrderServiceService();
+  }
+
   public async getServices({ auth, params: { order_id } }: HttpContextContract) {
     const orderServices = await OrderService.query()
       .preload("court", (sq) => sq.select(["id", "initials", "name"]))
@@ -179,8 +185,11 @@ export default class OrderServiceController {
       .andWhere("id", order_service_id)
       .firstOrFail();
 
-    //TODO verificar se cliente possui pagamento ao serviço antes de remover
-    // verificar se há notificações lidas
+    const checkServiceDelete = await this.service.checkServiceDelete(customerOrderServiceModel);
+    if (checkServiceDelete instanceof Error) {
+      return response.status(400).send({ message: checkServiceDelete.message });
+    }
+
     await customerOrderServiceModel.delete();
     response.status(204);
   }
