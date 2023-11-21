@@ -11,14 +11,16 @@ export default class CustomerController {
   }
 
   public async filter({ auth, request }: HttpContextContract) {
-    const { filter } = request.qs();
+    let { filter } = request.qs();
+    filter = filter || "";
+
     const customers = await Customer.query()
       .select("id", "name", "document")
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
           .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
-          .orWhere("email", "iLike", `%${filter}%`)
+          .orWhere("document", "iLike", `%${filter.replace(/\D/g, "")}%`)
       )
       .orderBy("name", "asc")
       .limit(20);
@@ -27,12 +29,19 @@ export default class CustomerController {
   }
 
   public async indicators({ auth, request }: HttpContextContract) {
-    const { filter } = request.qs();
+    let { filter } = request.qs();
+    filter = filter || "";
+
     const customers = await Customer.query()
+      // .debug(true)
       .select("id", "name", "document")
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("is_indicator", true)
-      .andWhereRaw("unaccent(name) iLike unaccent(?)", [`%${filter}%`])
+      .andWhere((sq) =>
+        sq
+          .orWhereRaw("unaccent(name) iLike unaccent(?)", [`%${filter}%`])
+          .orWhere("document", "iLike", `%${filter.replace(/\D/g, "")}%`)
+      )
       .orderBy("name", "asc")
       .limit(20);
 

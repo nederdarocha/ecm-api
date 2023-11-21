@@ -55,7 +55,7 @@ export default class OrderController {
       query.andWhereHas("customers", (query) => query.where("indicated_id", indicated_id));
     }
 
-    const orders = await query.paginate(paginate.page, paginate.per_page);
+    const orders = await query.orderBy("order", "asc").paginate(paginate.page, paginate.per_page);
 
     return orders.serialize({
       fields: { pick: ["id", "order", "number", "started_at", "ended_at"] },
