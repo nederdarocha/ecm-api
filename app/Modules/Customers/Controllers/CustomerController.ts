@@ -15,12 +15,13 @@ export default class CustomerController {
     filter = filter || "";
 
     const customers = await Customer.query()
+      // .debug(true)
       .select("id", "name", "document")
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
           .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
-          .orWhere("document", "iLike", `%${filter.replace(/\D/g, "")}%`)
+          .orWhere("document", "iLike", `%${filter.replace(/[.|-]/g, "")}%`)
       )
       .orderBy("name", "asc")
       .limit(20);
@@ -40,7 +41,7 @@ export default class CustomerController {
       .andWhere((sq) =>
         sq
           .orWhereRaw("unaccent(name) iLike unaccent(?)", [`%${filter}%`])
-          .orWhere("document", "iLike", `%${filter.replace(/\D/g, "")}%`)
+          .orWhere("document", "iLike", `%${filter.replace(/[.|-]/g, "")}%`)
       )
       .orderBy("name", "asc")
       .limit(20);
@@ -51,7 +52,9 @@ export default class CustomerController {
   public async index({ paginate, request, auth }: HttpContextContract) {
     // await request.validate(CustomerIndexValidator);
     const { page, per_page } = paginate;
-    const { filter, phone, indicated_id } = request.qs();
+    const { filter, phone, indicated_id, is_indicator } = request.qs();
+
+    console.log("is_indicator", is_indicator);
 
     const query = Customer.query()
       // .debug(true)
@@ -70,6 +73,10 @@ export default class CustomerController {
 
     if (indicated_id) {
       query.andWhere("indicated_id", indicated_id);
+    }
+
+    if (is_indicator === "true") {
+      query.andWhere("is_indicator", true);
     }
 
     const customers = await query.orderBy("name", "asc").paginate(page, per_page);

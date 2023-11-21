@@ -26,10 +26,11 @@ export default class UsersController {
   public async index({ paginate, request, auth }: HttpContextContract) {
     await request.validate(UserIndexValidator);
     const { page, per_page } = paginate;
-    const { filter, status, role_id } = request.qs();
+    const { filter, status, role_id, customer_id } = request.qs();
 
     const query = User.query()
       // .debug(true)
+      .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
@@ -47,6 +48,10 @@ export default class UsersController {
 
     if (role_id) {
       query.andWhereHas("roles", (query) => query.whereIn("role_id", [role_id]));
+    }
+
+    if (customer_id) {
+      query.andWhere("customer_id", customer_id);
     }
 
     const users = await query
