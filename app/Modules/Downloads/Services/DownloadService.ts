@@ -44,6 +44,7 @@ export class DownloadService {
         "Gênero": customer.gender || "",
         "Profissão": customer.profession || "",
         "Lotação": customer.workplace || "",
+        "Aposentado": customer.retired ? "Sim" : "Não",
         "ID Proderj": customer.proderj_id || "",
         "ID Rio Prividência": customer.previdencia_id || "",
         "Banco": customer.bank || "",

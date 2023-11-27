@@ -84,6 +84,9 @@ export default class Customer extends BaseModel {
   @column()
   public user_id: string;
 
+  @column()
+  public retired: boolean;
+
   @column.date({
     serialize: (value?: DateTime) => {
       return value ? value.toFormat("dd/MM/yyyy") : null;

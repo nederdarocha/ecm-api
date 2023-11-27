@@ -38,6 +38,7 @@ export class CustomerValidator {
     is_indicator: schema.boolean(),
     commission: schema.number.nullableAndOptional(),
     notes: schema.string.nullableAndOptional(),
+    retired: schema.boolean(),
   });
 
   public messages = { ...commonMessages };

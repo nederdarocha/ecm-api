@@ -32,6 +32,7 @@ export const CustomerFactory = Factory.define(Customer, async ({ faker }) => {
     branch: faker.finance.accountNumber(4),
     account_number: faker.finance.accountNumber(6),
     pix_key: faker.finance.accountNumber(11),
+    retired: faker.helpers.arrayElement([true, false]),
   };
 })
   .relation("created_by", () => UserFactory)

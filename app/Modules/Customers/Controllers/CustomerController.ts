@@ -52,9 +52,7 @@ export default class CustomerController {
   public async index({ paginate, request, auth }: HttpContextContract) {
     // await request.validate(CustomerIndexValidator);
     const { page, per_page } = paginate;
-    const { filter, phone, indicated_id, is_indicator } = request.qs();
-
-    console.log("is_indicator", is_indicator);
+    const { filter, phone, indicated_id, is_indicator, retired } = request.qs();
 
     const query = Customer.query()
       // .debug(true)
@@ -77,6 +75,10 @@ export default class CustomerController {
 
     if (is_indicator === "true") {
       query.andWhere("is_indicator", true);
+    }
+
+    if (retired === "true") {
+      query.andWhere("retired", true);
     }
 
     const customers = await query.orderBy("name", "asc").paginate(page, per_page);
