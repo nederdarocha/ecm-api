@@ -138,6 +138,7 @@ export default class OrderController {
       tenant_id: auth.user?.tenant_id,
       user_id: auth.user?.id,
       status_id,
+      draft: true,
     });
 
     return order.serialize({

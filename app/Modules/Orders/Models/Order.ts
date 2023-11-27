@@ -52,6 +52,9 @@ export default class Order extends BaseModel {
   @column()
   public user_id?: string;
 
+  @column()
+  public draft: boolean;
+
   @column.dateTime({ autoCreate: true, serializeAs: null })
   public createdAt: DateTime;
 

@@ -40,6 +40,10 @@ export default class OrderCustomerController {
       .andWhere("id", id)
       .firstOrFail();
 
+    if(order.draft){
+      await order.merge({ draft: false }).save();
+    }
+
     const orderCustomer = await CustomerOrder.create({
       tenant_id: auth.user!.tenant_id,
       order_id: order.id,
