@@ -70,7 +70,7 @@ export default class CustomerController {
     }
 
     if (indicated_id) {
-      query.andWhere("indicated_id", indicated_id);
+      query.andWhere("indicated_id", indicated_id?.value);
     }
 
     if (is_indicator === "true") {

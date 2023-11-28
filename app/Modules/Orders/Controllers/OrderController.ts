@@ -15,6 +15,8 @@ export default class OrderController {
     const { number, status_id, service_id, court_id, court_number, customer_id, indicated_id } =
       request.qs();
 
+    console.log(customer_id);
+
     const query = Order.query()
       .preload("status", (sq) => sq.select(["id", "name"]))
       .preload("orderServices", (sq) => sq.select("*").preload("court").preload("service"))
@@ -24,19 +26,19 @@ export default class OrderController {
       .where("tenant_id", auth.user!.tenant_id);
 
     if (number) {
-      query.where("number", "iLike", `%${number}%`);
+      query.andWhere("number", "iLike", `%${number}%`);
     }
 
     if (status_id) {
-      query.whereIn("status_id", [status_id]);
+      query.andWhere("status_id", status_id?.value);
     }
 
     if (service_id) {
-      query.andWhereHas("orderServices", (query) => query.where("service_id", service_id));
+      query.andWhereHas("orderServices", (query) => query.where("service_id", service_id?.value));
     }
 
     if (court_id) {
-      query.andWhereHas("orderServices", (query) => query.where("court_id", court_id));
+      query.andWhereHas("orderServices", (query) => query.where("court_id", court_id?.value));
     }
 
     if (court_number) {
@@ -48,11 +50,11 @@ export default class OrderController {
     }
 
     if (customer_id) {
-      query.andWhereHas("customers", (query) => query.where("customer_id", customer_id));
+      query.andWhereHas("customers", (query) => query.where("customer_id", customer_id?.value));
     }
 
     if (indicated_id) {
-      query.andWhereHas("customers", (query) => query.where("indicated_id", indicated_id));
+      query.andWhereHas("customers", (query) => query.where("indicated_id", indicated_id?.value));
     }
 
     const orders = await query.orderBy("order", "desc").paginate(paginate.page, paginate.per_page);
