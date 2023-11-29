@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 import { OrderValidator } from "../Validators";
 import Order from "../Models/Order";
 import { OrderService } from "../Services/OrderService";
-
+import { format } from "date-fns";
 export default class OrderController {
   private service: OrderService;
   constructor() {
@@ -12,10 +12,17 @@ export default class OrderController {
   }
 
   public async index({ auth, request, paginate }: HttpContextContract) {
-    const { number, status_id, service_id, court_id, court_number, customer_id, indicated_id } =
-      request.qs();
-
-    console.log(customer_id);
+    const {
+      number,
+      status_id,
+      service_id,
+      court_id,
+      court_number,
+      customer_id,
+      indicated_id,
+      date_start,
+      date_end,
+    } = request.qs();
 
     const query = Order.query()
       .preload("status", (sq) => sq.select(["id", "name"]))
@@ -57,7 +64,25 @@ export default class OrderController {
       query.andWhereHas("customers", (query) => query.where("indicated_id", indicated_id?.value));
     }
 
-    const orders = await query.orderBy("order", "desc").paginate(paginate.page, paginate.per_page);
+    if (date_start && date_end) {
+      query.andWhereBetween("created_at", [
+        `${format(new Date(date_start), "yyyy-MM-dd")} 00:00:00`,
+        `${format(new Date(date_end), "yyyy-MM-dd")} 23:59:59`,
+      ]);
+    }
+
+    if (date_start && !date_end) {
+      query.andWhere("created_at", ">=", `${format(new Date(date_start), "yyyy-MM-dd")} 00:00:00`);
+    }
+
+    if (!date_start && date_end) {
+      query.andWhere("created_at", "<=", `${format(new Date(date_end), "yyyy-MM-dd")} 23:59:59`);
+    }
+
+    console.log(paginate);
+
+    const order = paginate?.per_page! < 0 ? "asc" : "desc";
+    const orders = await query.orderBy("order", order).paginate(paginate.page, paginate.per_page);
 
     return orders.serialize({
       fields: { pick: ["id", "order", "number", "started_at", "ended_at"] },
@@ -78,19 +103,6 @@ export default class OrderController {
         },
       },
     });
-
-    const _orders = orders.serialize({
-      fields: { omit: ["tenant_id", "user_id"] },
-      relations: { order: { fields: { omit: ["tenant_id", "user_id", "status_id"] } } },
-    });
-
-    const drafts = await this.service.getOrdersDrafts(auth);
-
-    if (drafts.length > 0) {
-      _orders.data = [...drafts, ..._orders.data];
-    }
-
-    return _orders;
   }
 
   public async getByCustomer({ auth, params: { customer_id } }: HttpContextContract) {

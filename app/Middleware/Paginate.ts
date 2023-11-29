@@ -10,7 +10,7 @@ export default class Paginate {
 
       ctx.paginate = {
         page,
-        per_page,
+        per_page: per_page < 0 ? 999999999 : per_page,
       };
     }
 

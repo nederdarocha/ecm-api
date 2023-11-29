@@ -17,5 +17,5 @@ Route.group(() => {
     destroy: "acl:d-order",
   });
 })
-  .middleware(["auth"])
+  .middleware(["auth", "sleep:1000"])
   .namespace("App/Modules/Orders/Controllers");
