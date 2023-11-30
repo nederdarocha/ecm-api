@@ -79,8 +79,6 @@ export default class OrderController {
       query.andWhere("created_at", "<=", `${format(new Date(date_end), "yyyy-MM-dd")} 23:59:59`);
     }
 
-    console.log(paginate);
-
     const order = paginate?.per_page! < 0 ? "asc" : "desc";
     const orders = await query.orderBy("order", order).paginate(paginate.page, paginate.per_page);
 
