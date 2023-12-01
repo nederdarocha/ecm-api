@@ -1,10 +1,12 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import { schema } from "@ioc:Adonis/Core/Validator";
+import { schema, rules } from "@ioc:Adonis/Core/Validator";
 import { DateTime } from "luxon";
 import { OrderValidator } from "../Validators";
 import Order from "../Models/Order";
 import { OrderService } from "../Services/OrderService";
 import { format } from "date-fns";
+import CustomerOrder from "../Models/CustomerOrder";
+
 export default class OrderController {
   private service: OrderService;
   constructor() {
@@ -131,9 +133,26 @@ export default class OrderController {
     );
   }
 
-  public async store({ auth, response }: HttpContextContract) {
+  public async store({ auth, request, response }: HttpContextContract) {
+    const requestSchema = schema.create({
+      customer_id: schema.string.nullableAndOptional({ trim: true }, [rules.uuid()]),
+    });
+
+    const { customer_id } = await request.validate({ schema: requestSchema });
+
     const isOrderDraft = await this.service.getOrderDraft(auth);
     if (isOrderDraft) {
+      if (customer_id) {
+        await CustomerOrder.create({
+          tenant_id: auth.user?.tenant_id,
+          order_id: isOrderDraft.id,
+          customer_id,
+          user_id: auth.user!.id,
+        });
+
+        await isOrderDraft.merge({ draft: false }).save();
+      }
+
       return response.status(200).json({
         data: isOrderDraft.toJSON(),
         message: "Use este rascunho para aproveitar o número gerado.",
@@ -152,6 +171,16 @@ export default class OrderController {
       status_id,
       draft: true,
     });
+
+    if (customer_id) {
+      await CustomerOrder.create({
+        tenant_id: auth.user?.tenant_id,
+        order_id: order.id,
+        customer_id,
+        user_id: auth.user!.id,
+      });
+      await order.merge({ draft: false }).save();
+    }
 
     return order.serialize({
       fields: { omit: ["tenant_id", "user_id", "order"] },
