@@ -2,6 +2,13 @@ import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Customer from "../Models/Customer";
 import { CustomerValidator } from "../Validators";
 import { CustomerService } from "../Services/CustomerService";
+import { schema } from "@ioc:Adonis/Core/Validator";
+
+const filterSchema = schema.create({
+  filter: schema.string.optional({
+    trim: true,
+  }),
+});
 
 export default class CustomerController {
   private service: CustomerService;
@@ -11,7 +18,7 @@ export default class CustomerController {
   }
 
   public async filter({ auth, request }: HttpContextContract) {
-    let { filter } = request.qs();
+    let { filter } = await request.validate({ schema: filterSchema });
     filter = filter || "";
 
     const customers = await Customer.query()
@@ -21,7 +28,7 @@ export default class CustomerController {
       .andWhere((sq) =>
         sq
           .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
-          .orWhere("document", "iLike", `%${filter.replace(/[.|-]/g, "")}%`)
+          .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       )
       .orderBy("name", "asc")
       .limit(20);
@@ -30,7 +37,7 @@ export default class CustomerController {
   }
 
   public async indicators({ auth, request }: HttpContextContract) {
-    let { filter } = request.qs();
+    let { filter } = await request.validate({ schema: filterSchema });
     filter = filter || "";
 
     const customers = await Customer.query()
@@ -41,7 +48,7 @@ export default class CustomerController {
       .andWhere((sq) =>
         sq
           .orWhereRaw("unaccent(name) iLike unaccent(?)", [`%${filter}%`])
-          .orWhere("document", "iLike", `%${filter.replace(/[.|-]/g, "")}%`)
+          .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       )
       .orderBy("name", "asc")
       .limit(20);
@@ -90,7 +97,7 @@ export default class CustomerController {
   }
 
   public async store({ auth, request, response }: HttpContextContract) {
-    const { ...data } = await request.validate(CustomerValidator);
+    const { retired, ...data } = await request.validate(CustomerValidator);
     const { tenant_id } = auth.user!;
 
     const isSigleCustomer = await this.service.isSigleCustomer({ auth, request });
@@ -100,6 +107,7 @@ export default class CustomerController {
 
     const customer = await Customer.create({
       ...data,
+      retired: retired || false,
       tenant_id,
       user_id: auth.user!.id,
     });
@@ -123,7 +131,7 @@ export default class CustomerController {
   }
 
   public async update({ auth, request, response, params, bouncer }: HttpContextContract) {
-    const { ...data } = await request.validate(CustomerValidator);
+    const { retired, ...data } = await request.validate(CustomerValidator);
     const customer = await Customer.findOrFail(params.id);
 
     //policy
@@ -134,7 +142,7 @@ export default class CustomerController {
       return response.badRequest({ message: isSigleCustomer.message });
     }
 
-    await customer.merge(data).save();
+    await customer.merge({ ...data, retired: retired || false }).save();
 
     return customer;
   }
