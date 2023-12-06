@@ -4,3 +4,4 @@ export * from "./TemplateValidator";
 export * from "./TemplateUpdateValidator";
 export * from "./ExtraDataValidator";
 export * from "./MetaDataValidator";
+export * from "./TemplateMessageValidator";

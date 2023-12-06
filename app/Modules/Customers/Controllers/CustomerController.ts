@@ -146,4 +146,14 @@ export default class CustomerController {
 
     return customer;
   }
+
+  public async createUser({ auth, params: { id }, response }: HttpContextContract) {
+    const user = await this.service.createUser(auth, id);
+
+    if (user instanceof Error) {
+      return response.badRequest({ message: user.message });
+    }
+
+    return { user_id: user.id };
+  }
 }

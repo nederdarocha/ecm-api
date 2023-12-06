@@ -2,6 +2,11 @@ import { RequestContract } from "@ioc:Adonis/Core/Request";
 import { AuthContract } from "@ioc:Adonis/Addons/Auth";
 import Customer from "../Models/Customer";
 import { CustomerValidator } from "../Validators";
+import User from "App/Modules/Users/Models/User";
+import { string } from "@ioc:Adonis/Core/Helpers";
+import crypto from "crypto";
+import bcrypt from "bcrypt";
+import Role from "App/Modules/Auth/Models/Role";
 
 interface IsSigleUserProps {
   auth: AuthContract;
@@ -63,5 +68,75 @@ export class CustomerService {
         omit: ["tenant_id", "created_at", "updated_at"],
       },
     });
+  }
+
+  private findUserByCustomerId(auth: AuthContract, customer_id: string): Promise<User | null> {
+    return User.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("customer_id", customer_id)
+      .first();
+  }
+
+  private findUserByCustomerDocument(auth: AuthContract, document: string): Promise<User | null> {
+    return User.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("document", document)
+      .first();
+  }
+
+  public async createUser(auth: AuthContract, customer_id: string): Promise<User | Error> {
+    const customer = await Customer.query()
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", customer_id)
+      .first();
+
+    if (!customer) {
+      return new Error("Cliente não encontrado");
+    }
+
+    if (!customer.email) {
+      return new Error("Cliente não possui e-mail cadastrado");
+    }
+
+    if (!customer.phone) {
+      return new Error("Cliente não possui celular cadastrado");
+    }
+
+    let user = await this.findUserByCustomerId(auth, customer_id);
+    if (user) {
+      return user;
+    }
+
+    user = await this.findUserByCustomerDocument(auth, customer?.document!);
+    if (user) {
+      await user.merge({ customer_id }).save();
+      return user;
+    }
+
+    try {
+      const first_name = customer.name.split(" ")[0] || "";
+      const [_, ...rest_name] = customer.name.split(" ") || "";
+      const last_name = rest_name.join(" ");
+      const roleCustomer = await Role.findByOrFail("slug", "cust");
+      const salt = await bcrypt.genSalt(10);
+      user = await User.create({
+        customer_id,
+        first_name: string.capitalCase(first_name),
+        last_name: string.capitalCase(last_name),
+        document: customer.document,
+        email: customer?.email!,
+        tenant_id: auth.user!.tenant_id,
+        phone: customer.phone,
+        password: crypto.randomBytes(16).toString("hex"),
+        status: true,
+        user_id: auth.user!.id,
+        salt,
+      });
+      await user.related("roles").attach([roleCustomer.id]);
+
+      return user;
+    } catch (error) {
+      return new Error(`Erro ao criar usuário: ${error.message}`);
+    }
   }
 }
