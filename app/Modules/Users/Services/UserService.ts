@@ -50,7 +50,7 @@ export class UserService {
       .select("id")
       .where("customer_id", customer_id)
       .andWhere("tenant_id", auth.user!.tenant_id);
-    if (id) existPhone.andWhereNot("id", id);
+    if (id) existCustomer.andWhereNot("id", id);
 
     if (await existCustomer.first()) {
       return new Error("o Cliente informado já está em uso");

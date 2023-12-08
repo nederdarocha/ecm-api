@@ -1,6 +1,11 @@
 import Route from "@ioc:Adonis/Core/Route";
 
+Route.where("customer_id", Route.matchers.uuid());
+
 Route.group(() => {
+  Route.get("my-orders", "OrderController.getOrdersByUser").middleware(["acl:cust"]);
+  Route.get("my-orders/:id", "OrderController.getOrderByUser").middleware(["acl:cust"]);
+
   Route.group(() => {
     Route.put("notes", "OrderController.updateNotes").middleware(["acl:u-order"]);
   }).prefix("orders/:id");

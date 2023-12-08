@@ -6,6 +6,7 @@ import Order from "../Models/Order";
 import { OrderService } from "../Services/OrderService";
 import { format } from "date-fns";
 import CustomerOrder from "../Models/CustomerOrder";
+import User from "App/Modules/Users/Models/User";
 
 export default class OrderController {
   private service: OrderService;
@@ -105,10 +106,44 @@ export default class OrderController {
     });
   }
 
+  public async getOrdersByUser({ auth, paginate }: HttpContextContract) {
+    const user = await User.findOrFail(auth.user!.id);
+    if (!user?.customer_id) {
+      return [];
+    }
+
+    const query = Order.query()
+      .preload("orderServices", (sq) => sq.select("*").preload("court").preload("service"))
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhereHas("customers", (query) => query.where("customer_id", user?.customer_id!));
+
+    const orders = await query.orderBy("order", "desc").paginate(paginate.page, paginate.per_page);
+
+    return orders.serialize({
+      fields: { pick: ["id", "number", "started_at", "ended_at"] },
+      relations: {
+        status: { fields: { pick: ["name"] } },
+        customers: {
+          fields: { pick: ["id", "name", "document", "natural"] },
+          relations: {
+            indicator: { fields: { pick: ["id", "name", "document", "natural"] } },
+          },
+        },
+        orderServices: {
+          fields: { pick: ["court_number"] },
+          relations: {
+            court: { fields: { pick: ["initials"] } },
+            service: { fields: { pick: ["name"] } },
+          },
+        },
+      },
+    });
+  }
+
   public async getByCustomer({ auth, params: { customer_id } }: HttpContextContract) {
     const orders = await Order.query()
       // .debug(true)
-      .select(["id", "order", "number", "started_at", "ended_at", "status_id"])
+      .select(["id", "number", "started_at", "ended_at", "status_id"])
       .preload("status", (sq) => sq.select(["id", "name"]))
       .preload("orderServices", (sq) => sq.select("*").preload("court").preload("service"))
       .where("tenant_id", auth.user!.tenant_id)
@@ -131,6 +166,37 @@ export default class OrderController {
         },
       })
     );
+  }
+
+  public async getOrderByUser({ auth, params: { id } }: HttpContextContract) {
+    const user = await User.findOrFail(auth.user!.id);
+    if (!user?.customer_id) {
+      return [];
+    }
+
+    const order = await Order.query()
+      .preload("messages")
+      .preload("orderServices", (sq) => sq.select("*").preload("court").preload("service"))
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere("id", id)
+      .andWhereHas("customers", (query) => query.where("customer_id", user?.customer_id!))
+      .firstOrFail();
+
+    return order.serialize({
+      fields: { pick: ["id", "order", "number", "started_at", "ended_at"] },
+
+      relations: {
+        messages: { fields: { pick: ["id", "message", "made_at"] } },
+        status: { fields: { pick: ["name"] } },
+        orderServices: {
+          fields: { pick: ["court_number"] },
+          relations: {
+            court: { fields: { pick: ["initials"] } },
+            service: { fields: { pick: ["name"] } },
+          },
+        },
+      },
+    });
   }
 
   public async store({ auth, request, response }: HttpContextContract) {

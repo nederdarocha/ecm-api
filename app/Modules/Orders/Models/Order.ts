@@ -13,6 +13,7 @@ import Customer from "App/Modules/Customers/Models/Customer";
 import Status from "./Status";
 import Service from "App/Modules/Services/Models/Service";
 import OrderService from "./OrderService";
+import Message from "./Message";
 
 export default class Order extends BaseModel {
   public static table = "orders";
@@ -80,6 +81,12 @@ export default class Order extends BaseModel {
     localKey: "id",
   })
   public services: ManyToMany<typeof Service>;
+
+  @hasMany(() => Message, {
+    foreignKey: "order_id",
+    localKey: "id",
+  })
+  public messages: HasMany<typeof Message>;
 
   @hasMany(() => OrderService, {
     foreignKey: "order_id",
