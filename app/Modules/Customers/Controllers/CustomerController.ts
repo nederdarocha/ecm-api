@@ -20,6 +20,7 @@ export default class CustomerController {
   public async filter({ auth, request }: HttpContextContract) {
     let { filter } = await request.validate({ schema: filterSchema });
     filter = filter || "";
+    const tsquery = filter ? filter?.replace(/\s/g, "+") + ":*" : "";
 
     const customers = await Customer.query()
       // .debug(true)
@@ -27,7 +28,7 @@ export default class CustomerController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
-          .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
+          .orWhereRaw("to_tsvector(name) @@ to_tsquery(?)", [tsquery])
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       )
       .orderBy("name", "asc")
@@ -40,6 +41,8 @@ export default class CustomerController {
     let { filter } = await request.validate({ schema: filterSchema });
     filter = filter || "";
 
+    const tsquery = filter ? filter?.replace(/\s/g, "+") + ":*" : "";
+
     const customers = await Customer.query()
       // .debug(true)
       .select("id", "name", "document")
@@ -47,7 +50,7 @@ export default class CustomerController {
       .andWhere("is_indicator", true)
       .andWhere((sq) =>
         sq
-          .orWhereRaw("unaccent(name) iLike unaccent(?)", [`%${filter}%`])
+          .orWhereRaw("to_tsvector(name) @@ to_tsquery(?)", [tsquery])
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       )
       .orderBy("name", "asc")
@@ -60,6 +63,7 @@ export default class CustomerController {
     // await request.validate(CustomerIndexValidator);
     const { page, per_page } = paginate;
     const { filter, phone, indicated_id, is_indicator, retired } = request.qs();
+    const tsquery = filter ? filter?.replace(/\s/g, "+") + ":*" : "";
 
     const query = Customer.query()
       // .debug(true)
@@ -67,7 +71,7 @@ export default class CustomerController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
-          .orWhereRaw("unaccent(name) iLike unaccent(?) ", [`%${filter}%`])
+          .orWhereRaw("to_tsvector(name) @@ to_tsquery(?)", [tsquery])
           .orWhere("email", "iLike", `%${filter}%`)
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       );

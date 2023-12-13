@@ -28,15 +28,15 @@ export default class UsersController {
     const { page, per_page } = paginate;
     const { filter, status, role_id, customer_id } = request.qs();
 
+    const tsquery = filter ? filter?.replace(/\s/g, "+") + ":*" : "";
+
     const query = User.query()
       // .debug(true)
       .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
-          .orWhereRaw("unaccent(concat(first_name,' ',last_name)) iLike unaccent(?) ", [
-            `%${filter}%`,
-          ])
+          .orWhereRaw("to_tsvector(concat(first_name,' ',last_name)) @@ to_tsquery(?)", [tsquery])
           .orWhere("email", "iLike", `%${filter}%`)
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
           .orWhere("phone", "iLike", `%${filter}%`)
