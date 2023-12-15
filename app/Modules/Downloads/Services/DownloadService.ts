@@ -1,6 +1,8 @@
 import Database from "@ioc:Adonis/Lucid/Database";
 import Address from "App/Modules/Addresses/Models/Address";
 import Customer from "App/Modules/Customers/Models/Customer";
+import OrderService from "App/Modules/Orders/Models/OrderService";
+import User from "App/Modules/Users/Models/User";
 
 export type ParseAddressData = {
   Endereço: string;
@@ -15,12 +17,75 @@ export type ParseAddressData = {
   Referência: string;
 };
 
+interface GetOrderProp {
+  user_id: string;
+  date_begin: string;
+  date_end: string;
+  service_id: string;
+}
+
 export class DownloadService {
   private async getTenantIdByUserId(user_id: string): Promise<string> {
     const { rows } = await Database.rawQuery(`select tenant_id from users where id = :user_id`, {
       user_id,
     });
     return rows[0].tenant_id;
+  }
+
+  public async getOrder({
+    user_id,
+    date_begin,
+    date_end,
+    service_id,
+  }: GetOrderProp): Promise<any[] | Error> {
+    try {
+      const tenant_id = await this.getTenantIdByUserId(user_id);
+
+      const query = OrderService.query()
+        .preload("order", (sq) =>
+          sq
+            .select("*")
+            .preload("customers", (sq) => sq.select("name", "document", "natural"))
+            .preload("status", (sq) => sq.select("name"))
+            .orderBy("order", "asc")
+        )
+        .preload("service", (sq) => sq.select("name"))
+        .preload("court", (sq) => sq.select("initials"))
+        .where("tenant_id", tenant_id)
+        .whereBetween("created_at", [date_begin, date_end]);
+
+      if (service_id !== "all") {
+        query.where("service_id", service_id);
+      }
+
+      const orderServices = await query;
+
+      const orders: any = [];
+
+      for (const os of orderServices) {
+        const { order } = os;
+        const { customers } = order;
+
+        for (const customer of customers) {
+          orders.push({
+            "Contrato": order?.number,
+            "Data": order?.createdAt?.toFormat("dd/MM/yyyy"),
+            "Cliente": customer?.name || "",
+            "CPF/CNPJ": customer?.document || "",
+            "Serviço": os?.service?.name || "",
+            "Competência": os?.court?.initials || "",
+            "Processo": os?.court_number || "",
+            "Status": order?.status?.name || "",
+          });
+        }
+      }
+
+      return orders;
+    } catch (error) {
+      return Error("erro ao serializar contratos " + error.message);
+    }
+
+    return [];
   }
 
   public async getAllCustomers(user_id: string): Promise<any[] | Error> {
@@ -90,5 +155,11 @@ export class DownloadService {
       País: "",
       Referência: "",
     };
+  }
+
+  public async isAdmin(user_id: string): Promise<boolean> {
+    const user = await User.query().where("id", user_id).preload("roles").first();
+    if (!user) return false;
+    return user?.roles?.some((role) => role.slug === "admin");
   }
 }
