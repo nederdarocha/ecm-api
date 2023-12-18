@@ -15,6 +15,15 @@ import { createId } from "@paralleldrive/cuid2";
 import Tenant from "App/Modules/Tenants/Models/Tenant";
 import { DateTime } from "luxon";
 import { UserService } from "../Services/UserService";
+import LastAccess from "../Models/LastAccess";
+
+import { schema } from "@ioc:Adonis/Core/Validator";
+
+const filterSchema = schema.create({
+  filter: schema.string.optional({
+    trim: true,
+  }),
+});
 
 export default class UsersController {
   private service: UserService;
@@ -63,6 +72,26 @@ export default class UsersController {
       fields: { omit: ["tenant_id", "user_id"] },
       relations: { roles: { fields: { omit: ["id"] } } },
     });
+  }
+
+  public async filter({ auth, request }: HttpContextContract) {
+    let { filter } = await request.validate({ schema: filterSchema });
+    filter = filter || "";
+    const tsquery = filter ? filter?.replace(/\s/g, "+") + ":*" : "";
+
+    const users = await User.query()
+      // .debug(true)
+      .select("id", "first_name", "last_name", "document")
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere((sq) =>
+        sq
+          .orWhereRaw("to_tsvector(concat(first_name,' ',last_name)) @@ to_tsquery(?)", [tsquery])
+          .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
+      )
+      .orderBy("first_name", "asc")
+      .limit(20);
+
+    return users;
   }
 
   public async store({ auth, request, response }: HttpContextContract) {
@@ -122,9 +151,16 @@ export default class UsersController {
     return user;
   }
 
-  public async me({ auth: { user } }: HttpContextContract) {
+  public async me({ auth: { user }, request }: HttpContextContract) {
     if (user) {
       const acl = await getUserAcl({ user_id: user.id, short: true });
+
+      const ip = request.headers()["cf-connecting-ip"] || request.ip();
+      LastAccess.create({
+        user_id: user.id,
+        ip: Array.isArray(ip) ? ip.join(", ") : ip,
+        user_agent: request.headers()["user-agent"],
+      });
 
       return {
         id: user.id,
@@ -274,5 +310,26 @@ export default class UsersController {
     });
 
     return response.ok("success");
+  }
+
+  public async lastAccesses({ paginate, request }: HttpContextContract) {
+    await request.validate(UserIndexValidator);
+    const { page, per_page } = paginate;
+    const { user_id } = request.qs();
+
+    const query = LastAccess.query().preload("user", (sq) =>
+      sq.select("id", "first_name", "last_name", "document")
+    );
+
+    if (user_id) {
+      query.andWhere("user_id", user_id);
+    }
+
+    const users = await query.orderBy("created_at", "desc").paginate(page, per_page);
+
+    return users.serialize({
+      fields: { omit: ["tenant_id", "user_id"] },
+      relations: { user: { fields: { omit: ["id"] } } },
+    });
   }
 }
