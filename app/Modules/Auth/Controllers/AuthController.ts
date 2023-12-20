@@ -27,8 +27,8 @@ export default class AuthController {
   }
 
   public async signIn(ctx: HttpContextContract) {
-    const { request } = ctx;
-    const { user, password, tenant_url } = await request.validate(LoginValidator);
+    const { request, response } = ctx;
+    const { user, password, tenant_url, spa_version } = await request.validate(LoginValidator);
     let tenant_id: string;
     let TENANT_URL = request.headers()["origin"] || "";
 
@@ -54,11 +54,15 @@ export default class AuthController {
         .andWhere((sq) => sq.orWhere("email", user).orWhere("phone", user))
         .firstOrFail();
 
-      return this.service.login({
+      const isLogin = await this.service.login({
         id,
         password: `${password}${salt}`,
         ctx,
       });
+
+      const spa_refresh = await this.service.checkSpaOldVersion(tenant_id, spa_version);
+
+      return response.status(200).send({ ...isLogin, spa_refresh });
     } catch (error) {
       if (Env.get("NODE_ENV") === "development") {
         console.log("#ERROR ao encontrar o usuário =>", error);

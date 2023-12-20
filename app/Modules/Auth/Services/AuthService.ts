@@ -7,6 +7,7 @@ import { v4 as uuid } from "uuid";
 import { BadRequest } from "App/Exceptions";
 
 import User from "../../Users/Models/User";
+import Setting from "App/Modules/Settings/Models/Setting";
 
 type LoginData = {
   token: string;
@@ -94,5 +95,20 @@ export class AuthService {
       .where("user_id", user_id)
       .andWhereNot("token", refreshToken)
       .delete();
+  }
+
+  public async checkSpaOldVersion(
+    tenant_id: string,
+    spa_version: string | undefined
+  ): Promise<boolean> {
+    if (!spa_version) return false;
+
+    const setting = await Setting.query().where("tenant_id", tenant_id).first();
+    if (!setting) return false;
+
+    const spa_version_current = Number("1." + setting.spa_version.replace(/\D/g, ""));
+    const spa_version_old = Number("1." + spa_version.replace(/\D/g, ""));
+
+    return spa_version_old < spa_version_current;
   }
 }

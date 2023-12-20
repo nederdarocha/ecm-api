@@ -8,6 +8,7 @@ export class LoginValidator {
     user: schema.string({ trim: true }, [rules.required()]),
     password: schema.string({ trim: true }, [rules.required()]),
     tenant_url: schema.string.optional({ trim: true }),
+    spa_version: schema.string.optional({ trim: true }),
   });
 
   public messages = {
