@@ -124,6 +124,7 @@ export class TemplateService {
       const decimalValue = value / 100;
       const formatValue = new Intl.NumberFormat("pt-BR", {
         currency: "BRL",
+        minimumFractionDigits: 2
       }).format(decimalValue);
 
       if (type === "percent") {
@@ -142,6 +143,7 @@ export class TemplateService {
       const decimalValue = value / 100;
       const formatValue = new Intl.NumberFormat("pt-BR", {
         currency: "BRL",
+        minimumFractionDigits: 2
       }).format(decimalValue);
 
       return `R$ ${formatValue} (${extenso(formatValue, { mode: "currency" })})`;
