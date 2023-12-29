@@ -89,12 +89,13 @@ export default class TemplateMessageController {
   }
 
   public async destroy({ auth, params: { id }, response }: HttpContextContract) {
-    const address = await TemplateMessage.query()
+
+    const templateMessage = await TemplateMessage.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await address.delete();
+    await templateMessage.delete();
 
     return response.status(204);
   }
