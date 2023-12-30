@@ -85,6 +85,12 @@ export default class FilesController {
     const { tenant_id } = auth.user!;
     const name = await this.service.generateName({ auth, request });
 
+    // TODO: multiple files
+    // const images = request.files('files', {
+    //   size: '2mb',
+    //   extnames: ['jpg', 'png', 'gif'],
+    // })
+
     const _file = await File.create({
       owner_id,
       tenant_id,
