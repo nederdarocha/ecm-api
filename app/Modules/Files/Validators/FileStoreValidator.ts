@@ -26,13 +26,13 @@ export class FileStoreValidator {
     owner_id: schema.string({}, [rules.uuid()]),
     folder_name: schema.string({ trim: true }),
     file: schema.file({
-      size: Env.get("MAX_UPLOAD_FILE_SIZE", "15mb"),
+      size: Env.get("MAX_UPLOAD_FILE_SIZE", "10mb"),
       extnames: EXTNAMES,
     }),
   });
 
   public messages = {
-    "file.size": "o arquivo não pode ser maior que 15mb",
+    "file.size": "o arquivo não pode ser maior que 10mb",
     "file.extnames": `O arquivo não possui uma extensão permitida. Extensões permitidas:
     ${EXTNAMES.join(", ")}.`,
   };
