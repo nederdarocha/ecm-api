@@ -35,6 +35,7 @@ export default class CategoryController {
 
     const category = await Category.create({
       ...data,
+      description: data.description || "",
       tenant_id: auth.user?.tenant_id,
       user_id: auth.user?.id,
     });
@@ -64,7 +65,9 @@ export default class CategoryController {
       .andWhere("id", id)
       .firstOrFail();
 
-    await category.merge({ ...data, user_id: auth.user?.id }).save();
+    await category
+      .merge({ ...data, description: data.description || "", user_id: auth.user?.id })
+      .save();
     return category;
   }
 
