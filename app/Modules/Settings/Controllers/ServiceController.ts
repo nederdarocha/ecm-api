@@ -3,6 +3,14 @@ import { SettingValidator } from "../Validators";
 import Setting from "../Models/Setting";
 
 export default class SettingController {
+  public async log(ctx: HttpContextContract) {
+    console.log("ctx => ", ctx);
+
+    console.log("request => ", ctx.request);
+
+    return ctx;
+  }
+
   public async index({ auth }: HttpContextContract) {
     return Setting.query().where("tenant_id", auth.user!.tenant_id).orderBy("name", "asc");
   }
