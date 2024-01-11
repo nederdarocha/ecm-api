@@ -28,7 +28,7 @@ export default class CustomerController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
-          .orWhereRaw("to_tsvector(name) @@ to_tsquery(?)", [tsquery])
+          .orWhereRaw("to_tsvector(unaccent(name)) @@ to_tsquery(unaccent(?))", [tsquery])
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       )
       .orderBy("name", "asc")
@@ -50,7 +50,7 @@ export default class CustomerController {
       .andWhere("is_indicator", true)
       .andWhere((sq) =>
         sq
-          .orWhereRaw("to_tsvector(name) @@ to_tsquery(?)", [tsquery])
+          .orWhereRaw("to_tsvector(unaccent(name)) @@ to_tsquery(unaccent(?))", [tsquery])
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       )
       .orderBy("name", "asc")
@@ -71,7 +71,7 @@ export default class CustomerController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
-          .orWhereRaw("to_tsvector(name) @@ to_tsquery(?)", [tsquery])
+          .orWhereRaw("to_tsvector(unaccent(name)) @@ to_tsquery(unaccent(?))", [tsquery])
           .orWhere("email", "iLike", `%${filter}%`)
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       );
@@ -147,6 +147,7 @@ export default class CustomerController {
     }
 
     await customer.merge({ ...data, retired: retired || false }).save();
+    await this.service.updateUser(auth, customer.id);
 
     return customer;
   }

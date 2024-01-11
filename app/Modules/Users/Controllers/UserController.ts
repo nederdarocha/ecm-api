@@ -45,7 +45,10 @@ export default class UsersController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
-          .orWhereRaw("to_tsvector(concat(first_name,' ',last_name)) @@ to_tsquery(?)", [tsquery])
+          .orWhereRaw(
+            "to_tsvector(unaccent(concat(first_name,' ',last_name))) @@ to_tsquery(unaccent(?))",
+            [tsquery]
+          )
           .orWhere("email", "iLike", `%${filter}%`)
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
           .orWhere("phone", "iLike", `%${filter}%`)
@@ -85,7 +88,10 @@ export default class UsersController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
         sq
-          .orWhereRaw("to_tsvector(concat(first_name,' ',last_name)) @@ to_tsquery(?)", [tsquery])
+          .orWhereRaw(
+            "to_tsvector(unaccent(concat(first_name,' ',last_name))) @@ to_tsquery(unaccent(?))",
+            [tsquery]
+          )
           .orWhere("document", "iLike", `%${filter?.replace(/[.|-]/g, "")}%`)
       )
       .orderBy("first_name", "asc")
