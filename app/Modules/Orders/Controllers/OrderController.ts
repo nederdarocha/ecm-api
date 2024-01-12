@@ -17,6 +17,7 @@ export default class OrderController {
   public async index({ auth, request, paginate }: HttpContextContract) {
     const {
       number,
+      defendant,
       status_id,
       service_id,
       court_id,
@@ -37,6 +38,14 @@ export default class OrderController {
 
     if (number) {
       query.andWhere("number", "iLike", `%${number}%`);
+    }
+
+    if (defendant) {
+      console.log("aqui", defendant);
+
+      query.andWhereHas("orderServices", (query) =>
+        query.andWhereRaw("unaccent(defendant) iLike unaccent(?)", [`%${defendant}%`])
+      );
     }
 
     if (status_id) {
@@ -96,7 +105,7 @@ export default class OrderController {
           },
         },
         orderServices: {
-          fields: { pick: ["court_number"] },
+          fields: { pick: ["court_number", "defendant"] },
           relations: {
             court: { fields: { pick: ["initials"] } },
             service: { fields: { pick: ["name"] } },

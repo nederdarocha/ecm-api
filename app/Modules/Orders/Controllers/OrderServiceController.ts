@@ -64,11 +64,18 @@ export default class OrderServiceController {
   }: HttpContextContract) {
     const orderService = await OrderService.findOrFail(order_service_id);
 
-    const { honorary_cents_value, honorary_type, service_cents_amount, court_id, court_number } =
-      await request.validate(OrderServiceValidator);
+    const {
+      honorary_cents_value,
+      honorary_type,
+      service_cents_amount,
+      court_id,
+      court_number,
+      defendant,
+    } = await request.validate(OrderServiceValidator);
 
     await orderService
       .merge({
+        defendant: defendant || null,
         honorary_type,
         honorary_cents_value: honorary_cents_value || null,
         service_cents_amount: service_cents_amount || null,

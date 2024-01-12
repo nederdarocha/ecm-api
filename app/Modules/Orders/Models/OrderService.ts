@@ -35,6 +35,9 @@ export default class OrderService extends BaseModel {
   public service_cents_amount: number | null;
 
   @column()
+  public defendant: string | null;
+
+  @column()
   public user_id?: string;
 
   @column.dateTime({ autoCreate: true, serializeAs: null })

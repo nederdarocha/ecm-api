@@ -75,6 +75,7 @@ export class DownloadService {
             "Serviço": os?.service?.name || "",
             "Competência": os?.court?.initials || "",
             "Processo": os?.court_number || "",
+            "Réu": os?.defendant || "",
             "Status": order?.status?.name || "",
           });
         }
