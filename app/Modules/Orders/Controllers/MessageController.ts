@@ -112,6 +112,8 @@ export default class MessageController {
   }
 
   public async destroy({ auth, response, params: { id } }: HttpContextContract) {
+    await Notification.query().where("relation_id", id).delete();
+
     const task = await Message.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
