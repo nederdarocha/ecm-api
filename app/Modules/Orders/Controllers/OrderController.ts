@@ -108,7 +108,7 @@ export default class OrderController {
           fields: { pick: ["court_number", "defendant"] },
           relations: {
             court: { fields: { pick: ["initials"] } },
-            service: { fields: { pick: ["name"] } },
+            service: { fields: { pick: ["name", "defendant"] } },
           },
         },
       },
@@ -142,7 +142,7 @@ export default class OrderController {
           fields: { pick: ["court_number"] },
           relations: {
             court: { fields: { pick: ["initials"] } },
-            service: { fields: { pick: ["name"] } },
+            service: { fields: { pick: ["name", "defendant"] } },
           },
         },
       },
@@ -166,10 +166,10 @@ export default class OrderController {
         relations: {
           status: { fields: { pick: ["name"] } },
           orderServices: {
-            fields: { pick: ["court_number"] },
+            fields: { pick: ["court_number", "defendant"] },
             relations: {
               court: { fields: { pick: ["initials"] } },
-              service: { fields: { pick: ["name"] } },
+              service: { fields: { pick: ["name", "defendant"] } },
             },
           },
         },

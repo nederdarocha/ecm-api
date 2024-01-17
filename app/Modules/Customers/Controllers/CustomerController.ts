@@ -135,7 +135,7 @@ export default class CustomerController {
   }
 
   public async update({ auth, request, response, params, bouncer }: HttpContextContract) {
-    const { retired, ...data } = await request.validate(CustomerValidator);
+    const { retired, email, ...data } = await request.validate(CustomerValidator);
     const customer = await Customer.findOrFail(params.id);
 
     //policy
@@ -146,7 +146,7 @@ export default class CustomerController {
       return response.badRequest({ message: isSigleCustomer.message });
     }
 
-    await customer.merge({ ...data, retired: retired || false }).save();
+    await customer.merge({ ...data, email: email || null, retired: retired || false }).save();
     await this.service.updateUser(auth, customer.id);
 
     return customer;
