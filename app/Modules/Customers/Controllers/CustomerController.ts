@@ -62,7 +62,7 @@ export default class CustomerController {
   public async index({ paginate, request, auth }: HttpContextContract) {
     // await request.validate(CustomerIndexValidator);
     const { page, per_page } = paginate;
-    const { filter, phone, indicated_id, is_indicator, retired } = request.qs();
+    const { filter, phone, indicated_id, is_indicator, retired, notes } = request.qs();
     const tsquery = filter ? filter?.replace(/\s/g, "+") + ":*" : "";
 
     const query = Customer.query()
@@ -90,6 +90,14 @@ export default class CustomerController {
 
     if (retired === "true") {
       query.andWhere("retired", true);
+    }
+
+    if (notes) {
+      query.andWhere((sq) =>
+        sq
+          .orWhereRaw("to_tsvector(unaccent(notes)) @@ to_tsquery(unaccent(?))", [`%${notes}%`])
+          .orWhereRaw("unaccent(notes) iLike unaccent(?)", [`%${notes}%`])
+      );
     }
 
     const customers = await query.orderBy("name", "asc").paginate(page, per_page);
@@ -135,7 +143,7 @@ export default class CustomerController {
   }
 
   public async update({ auth, request, response, params, bouncer }: HttpContextContract) {
-    const { retired, email, ...data } = await request.validate(CustomerValidator);
+    const { retired, email, notes, ...data } = await request.validate(CustomerValidator);
     const customer = await Customer.findOrFail(params.id);
 
     //policy
@@ -146,7 +154,9 @@ export default class CustomerController {
       return response.badRequest({ message: isSigleCustomer.message });
     }
 
-    await customer.merge({ ...data, email: email || null, retired: retired || false }).save();
+    await customer
+      .merge({ ...data, email: email || null, retired: retired || false, notes: notes || null })
+      .save();
     await this.service.updateUser(auth, customer.id);
 
     return customer;

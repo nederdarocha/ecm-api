@@ -26,6 +26,7 @@ export default class OrderController {
       indicated_id,
       date_start,
       date_end,
+      notes,
     } = request.qs();
 
     const query = Order.query()
@@ -89,6 +90,14 @@ export default class OrderController {
 
     if (!date_start && date_end) {
       query.andWhere("created_at", "<=", `${format(new Date(date_end), "yyyy-MM-dd")} 23:59:59`);
+    }
+
+    if (notes) {
+      query.andWhere((sq) =>
+        sq
+          .orWhereRaw("to_tsvector(unaccent(notes)) @@ to_tsquery(unaccent(?))", [`%${notes}%`])
+          .orWhereRaw("unaccent(notes) iLike unaccent(?)", [`%${notes}%`])
+      );
     }
 
     const order = paginate?.per_page! < 0 ? "asc" : "desc";
