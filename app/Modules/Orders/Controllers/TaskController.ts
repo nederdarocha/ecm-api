@@ -140,12 +140,17 @@ export default class TaskController {
     );
   }
 
-  public async store({ auth, request }: HttpContextContract) {
+  public async store({ auth, request, response }: HttpContextContract) {
     const { make_in, ...data } = await request.validate(TaskValidator);
     const { tenant_id } = auth.user!;
     let status: "pending" | "confirmed" | "done" | "canceled" = "pending";
     if (make_in) {
       status = "pending";
+    }
+    console.log({ data });
+
+    if (data.is_schedule && !make_in) {
+      return response.status(400).json({ message: "Informe a data de Prazo/Agendamento" });
     }
 
     const task = await Task.create({
@@ -178,18 +183,23 @@ export default class TaskController {
     return task;
   }
 
-  public async update({ auth, request, params: { id } }: HttpContextContract) {
+  public async update({ auth, request, params: { id }, response }: HttpContextContract) {
     const { make_in, ...data } = await request.validate(TaskValidator);
     let status: "pending" | "confirmed" | "done" | "canceled" = "pending";
     if (make_in) {
       status = "pending";
     }
+
+    if (data.is_schedule && !make_in) {
+      return response.status(400).json({ message: "Informe a data de Prazo/Agendamento" });
+    }
+
     const task = await Task.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await task.merge({ ...data, make_in, status }).save();
+    await task.merge({ ...data, make_in: make_in || null, status }).save();
 
     return task;
   }

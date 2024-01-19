@@ -13,9 +13,10 @@ export default class extends BaseSchema {
       table.text("description");
       table.text("notes");
       table.date("made_at");
-      table.date("make_in");
+      table.timestamp("make_in", { useTz: true });
       table.uuid("confirmed_by").references("id").inTable("users").onDelete("SET NULL");
       table.timestamp("confirmed_at", { useTz: true });
+      table.boolean("is_schedule").defaultTo(false);
       table.string("status");
 
       /**

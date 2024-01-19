@@ -49,12 +49,11 @@ export default class Task extends BaseModel {
   })
   public made_at: DateTime;
 
-  @column.date({
-    serialize: (value: DateTime) => {
-      return value ? value.toFormat("dd/MM/yyyy") : null;
-    },
-  })
-  public make_in: DateTime;
+  @column.dateTime()
+  public make_in: DateTime | null;
+
+  @column()
+  public is_schedule: boolean;
 
   @column()
   public user_id: string;
