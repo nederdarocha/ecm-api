@@ -26,7 +26,11 @@ export default class Task extends BaseModel {
   @column()
   public description: string;
 
-  @column()
+  @column({
+    serialize: (value: string) => {
+      return value ? value : "";
+    },
+  })
   public notes?: string | null;
 
   @column()

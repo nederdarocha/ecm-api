@@ -4,7 +4,16 @@ import { TaskValidator, TaskMadeValidator } from "../Validators";
 
 export default class TaskController {
   public async index({ auth, request, paginate }: HttpContextContract) {
-    const { number, status, customer_id, service_id, make_in_begin, make_in_end } = request.qs();
+    const {
+      number,
+      status,
+      customer_id,
+      service_id,
+      make_in_begin,
+      make_in_end,
+      order_by,
+      is_schedule,
+    } = request.qs();
 
     const query = Task.query()
       .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
@@ -27,6 +36,10 @@ export default class TaskController {
       query.andWhere("status", status);
     }
 
+    if (is_schedule && is_schedule === "true") {
+      query.andWhere("is_schedule", true);
+    }
+
     if (customer_id) {
       query.andWhere("customer_id", customer_id);
     }
@@ -47,7 +60,9 @@ export default class TaskController {
       query.andWhere("make_in", "<=", `${make_in_end} 23:59:59`);
     }
 
-    const tasks = await query.orderBy("make_in", "asc").paginate(paginate.page, paginate.per_page);
+    const tasks = await query
+      .orderBy("make_in", order_by === "asc" ? "asc" : "desc")
+      .paginate(paginate.page, paginate.per_page);
 
     return tasks.serialize({
       fields: {
