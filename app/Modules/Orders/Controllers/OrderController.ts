@@ -42,8 +42,6 @@ export default class OrderController {
     }
 
     if (defendant) {
-      console.log("aqui", defendant);
-
       query.andWhereHas("orderServices", (query) =>
         query.andWhereRaw("unaccent(defendant) iLike unaccent(?)", [`%${defendant}%`])
       );

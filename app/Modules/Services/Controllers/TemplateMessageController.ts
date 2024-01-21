@@ -38,8 +38,6 @@ export default class TemplateMessageController {
       .andWhere("customer_id", customer_id)
       .firstOrFail();
 
-    console.log(user.first_name);
-
     return {
       template: templateMessage.body
         .replace(/{usuario_nome}/g, `${user.first_name}`)

@@ -31,8 +31,6 @@ export default class TemplateController {
   }: HttpContextContract) {
     const user = await User.findOrFail(userID);
 
-    console.log({ id, customer_id, order_service_id });
-
     const file = await File.query()
       .where("tenant_id", user.tenant_id)
       .where("id", id)

@@ -162,7 +162,6 @@ export default class TaskController {
     if (make_in) {
       status = "pending";
     }
-    console.log({ data });
 
     if (data.is_schedule && !make_in) {
       return response.status(400).json({ message: "Informe a data de Prazo/Agendamento" });
