@@ -146,10 +146,10 @@ export default class OrderController {
           },
         },
         orderServices: {
-          fields: { pick: ["court_number"] },
+          fields: { pick: ["court_number", "defendant"] },
           relations: {
             court: { fields: { pick: ["initials"] } },
-            service: { fields: { pick: ["name", "defendant"] } },
+            service: { fields: { pick: ["name"] } },
           },
         },
       },
