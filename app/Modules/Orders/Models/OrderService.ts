@@ -34,7 +34,7 @@ export default class OrderService extends BaseModel {
   @column()
   public service_cents_amount: number | null;
 
-  @column()
+  @column({ serialize: (value) => (value ? value : "") })
   public defendant: string | null;
 
   @column()

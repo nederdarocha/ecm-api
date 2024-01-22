@@ -73,7 +73,7 @@ export default class TaskController {
         order: { fields: { pick: ["id", "number"] } },
         customer: { fields: { pick: ["id", "name"] } },
         orderService: {
-          fields: { pick: ["court_number"] },
+          fields: { pick: ["court_number", "defendant"] },
           relations: {
             court: { fields: { pick: ["initials"] } },
             service: { fields: { pick: ["name"] } },
