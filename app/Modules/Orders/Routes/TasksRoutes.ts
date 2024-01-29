@@ -12,10 +12,10 @@ Route.group(() => {
     "TaskController.getByCustomerOrder"
   ).middleware(["acl:r-task"]);
 
-  Route.post("orders/tasks/:id/confirm-payment", "TaskController.confirmTask").middleware(
+  Route.post("orders/tasks/:id/confirm-task", "TaskController.confirmTask").middleware(
     "acl:u-task"
   );
-  Route.post("orders/tasks/:id/undo-confirm-payment", "TaskController.undoConfirmTask").middleware(
+  Route.post("orders/tasks/:id/undo-confirm-task", "TaskController.undoConfirmTask").middleware(
     "acl:admin"
   );
   Route.resource("orders/tasks", "TaskController").apiOnly().middleware({
