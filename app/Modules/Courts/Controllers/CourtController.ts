@@ -17,7 +17,9 @@ export default class CourtController {
       .select("id", "name", "initials")
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere((sq) =>
-        sq.orWhere("name", "iLike", `%${filter}%`).orWhere("initials", "iLike", `%${filter}%`)
+        sq
+          .orWhereRaw("unaccent(name) iLike unaccent(?)", [`%${filter}%`])
+          .orWhereRaw("unaccent(initials) iLike unaccent(?)", [`%${filter}%`])
       )
       .orderBy("initials", "asc")
       .limit(20);
