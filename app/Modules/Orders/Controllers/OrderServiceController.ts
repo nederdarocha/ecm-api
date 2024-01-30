@@ -29,7 +29,8 @@ export default class OrderServiceController {
       .preload("court", (sq) => sq.select(["id", "initials", "name"]))
       .preload("service", (sq) => sq.select("*").preload("category"))
       .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("order_id", order_id);
+      .andWhere("order_id", order_id)
+      .orderBy("created_at", "asc");
 
     return orderServices.map((orderService) => {
       return orderService.serialize({
