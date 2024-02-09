@@ -6,7 +6,7 @@ export default class TaskController {
   public async index({ auth, request, paginate }: HttpContextContract) {
     const {
       number,
-      status,
+      status_all,
       customer_id,
       service_id,
       make_in_begin,
@@ -14,6 +14,8 @@ export default class TaskController {
       order_by,
       is_schedule,
     } = request.qs();
+
+    console.log({ status_all });
 
     const query = Task.query()
       .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
@@ -32,8 +34,8 @@ export default class TaskController {
       query.andWhereHas("order", (query) => query.where("number", "iLike", `%${number}%`));
     }
 
-    if (status) {
-      query.andWhere("status", status);
+    if (status_all === "false") {
+      query.andWhere("status", "pending");
     }
 
     if (is_schedule && is_schedule === "true") {
