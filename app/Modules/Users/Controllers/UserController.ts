@@ -161,7 +161,7 @@ export default class UsersController {
     if (user) {
       const acl = await getUserAcl({ user_id: user.id, short: true });
 
-      const ip = request.headers()["cf-connecting-ip"] || request.ip();
+      const ip = request.headers()["x-forwarded-for"] || request.ip();
       LastAccess.create({
         user_id: user.id,
         ip: Array.isArray(ip) ? ip.join(", ") : ip,
