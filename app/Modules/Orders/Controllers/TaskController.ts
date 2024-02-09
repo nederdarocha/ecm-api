@@ -15,8 +15,6 @@ export default class TaskController {
       is_schedule,
     } = request.qs();
 
-    console.log({ status_all });
-
     const query = Task.query()
       .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
       .preload("order", (sq) => sq.select("id", "number"))
