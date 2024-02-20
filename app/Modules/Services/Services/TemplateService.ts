@@ -90,7 +90,7 @@ export class TemplateService {
     }
 
     const cliente_endereco = `${String(
-      `${data?.end_rua}, ${data?.end_numero}, ${data?.end_bairro}, ${data?.end_cidade}, ${data?.end_uf} - CEP ${data?.end_cep}`
+      `${data?.end_rua}, ${data?.end_numero}, ${data?.end_complemento}, ${data?.end_bairro}, ${data?.end_cidade}, ${data?.end_uf} - CEP ${data?.end_cep}`
     )
       .replace(/null/g, "")
       .replace(/,\s,/g, "")}`;
@@ -124,7 +124,7 @@ export class TemplateService {
       const decimalValue = value / 100;
       const formatValue = new Intl.NumberFormat("pt-BR", {
         currency: "BRL",
-        minimumFractionDigits: 2
+        minimumFractionDigits: 2,
       }).format(decimalValue);
 
       if (type === "percent") {
@@ -143,7 +143,7 @@ export class TemplateService {
       const decimalValue = value / 100;
       const formatValue = new Intl.NumberFormat("pt-BR", {
         currency: "BRL",
-        minimumFractionDigits: 2
+        minimumFractionDigits: 2,
       }).format(decimalValue);
 
       return `R$ ${formatValue} (${extenso(formatValue, { mode: "currency" })})`;
