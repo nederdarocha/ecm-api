@@ -15,3 +15,4 @@ import "App/Modules/Courts/Routes";
 import "App/Modules/Payments/Routes";
 import "App/Modules/Downloads/Routes";
 import "App/Modules/Settings/Routes";
+import "App/Modules/Tasks/Routes";

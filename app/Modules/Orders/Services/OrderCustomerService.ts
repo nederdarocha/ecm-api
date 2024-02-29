@@ -1,7 +1,7 @@
 import Payment from "App/Modules/Payments/Models/Payment";
 import CustomerOrder from "../Models/CustomerOrder";
 import Message from "../Models/Message";
-import Task from "../Models/Task";
+import Task from "../../Tasks/Models/Task";
 
 export class OrderCustomerService {
   private async isMessageSent(customerOrder: CustomerOrder): Promise<boolean | Error> {

@@ -1,6 +1,6 @@
 import BaseSeeder from "@ioc:Adonis/Lucid/Seeder";
 import { TENANTS } from "../constants";
-import TypeTask from "App/Modules/Orders/Models/TypeTask";
+import TypeTask from "App/Modules/Tasks/Models/TypeTask";
 
 export default class TypeTasksSeeder extends BaseSeeder {
   public async run() {

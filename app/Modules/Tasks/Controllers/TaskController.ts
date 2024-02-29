@@ -1,6 +1,7 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
 import Task from "../Models/Task";
 import { TaskValidator, TaskMadeValidator } from "../Validators";
+import TypeTask from "../Models/TypeTask";
 
 export default class TaskController {
   public async index({ auth, request, paginate }: HttpContextContract) {
@@ -25,6 +26,8 @@ export default class TaskController {
           .preload("service", (sq) => sq.select("id", "name"))
           .preload("court", (sq) => sq.select("id", "initials"))
       )
+      .preload("typeTask", (sq) => sq.select("id", "name"))
+      .preload("users", (sq) => sq.select("id", "first_name", "last_name"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhereNotNull("make_in");
 
@@ -119,6 +122,8 @@ export default class TaskController {
         sq.select("*").preload("service", (sq) => sq.select("id", "name"))
       )
       .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
+      .preload("typeTask", (sq) => sq.select("id", "name"))
+      .preload("users", (sq) => sq.select("id", "first_name", "last_name"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("order_id", order_id)
       .andWhere("customer_id", customer_id)
@@ -156,14 +161,15 @@ export default class TaskController {
   }
 
   public async store({ auth, request, response }: HttpContextContract) {
-    const { make_in, ...data } = await request.validate(TaskValidator);
+    const { make_in, users, ...data } = await request.validate(TaskValidator);
     const { tenant_id } = auth.user!;
     let status: "pending" | "confirmed" | "done" | "canceled" = "pending";
     if (make_in) {
       status = "pending";
     }
 
-    if (data.is_schedule && !make_in) {
+    const typeTask = await TypeTask.findOrFail(data.type_task_id);
+    if (typeTask.name === "Audiência" && !make_in) {
       return response.status(400).json({ message: "Informe a data de Prazo/Agendamento" });
     }
 
@@ -190,6 +196,8 @@ export default class TaskController {
       .preload("orderService", (sq) =>
         sq.select("*").preload("service", (sq) => sq.select("id", "name"))
       )
+      .preload("typeTask", (sq) => sq.select("id", "name"))
+      .preload("users", (sq) => sq.select("id", "first_name", "last_name"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", params.id)
       .firstOrFail();
@@ -198,13 +206,14 @@ export default class TaskController {
   }
 
   public async update({ auth, request, params: { id }, response }: HttpContextContract) {
-    const { make_in, ...data } = await request.validate(TaskValidator);
+    const { make_in, users, ...data } = await request.validate(TaskValidator);
     let status: "pending" | "confirmed" | "done" | "canceled" = "pending";
     if (make_in) {
       status = "pending";
     }
 
-    if (data.is_schedule && !make_in) {
+    const typeTask = await TypeTask.findOrFail(data.type_task_id);
+    if (typeTask.name === "Audiência" && !make_in) {
       return response.status(400).json({ message: "Informe a data de Prazo/Agendamento" });
     }
 
@@ -212,6 +221,10 @@ export default class TaskController {
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
+
+    if (users) {
+      await task.related("users").sync(users);
+    }
 
     await task.merge({ ...data, make_in: make_in || null, status }).save();
 

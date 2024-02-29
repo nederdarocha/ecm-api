@@ -1,9 +1,17 @@
 import { DateTime } from "luxon";
-import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
+import {
+  column,
+  BaseModel,
+  belongsTo,
+  BelongsTo,
+  manyToMany,
+  ManyToMany,
+} from "@ioc:Adonis/Lucid/Orm";
 import Order from "App/Modules/Orders/Models/Order";
 import OrderService from "App/Modules/Orders/Models/OrderService";
 import User from "App/Modules/Users/Models/User";
 import Customer from "App/Modules/Customers/Models/Customer";
+import TypeTask from "./TypeTask";
 
 export default class Task extends BaseModel {
   public static table = "tasks";
@@ -13,6 +21,9 @@ export default class Task extends BaseModel {
 
   @column()
   public tenant_id: string;
+
+  @column()
+  public type_task_id: string;
 
   @column()
   public order_id: string;
@@ -91,4 +102,16 @@ export default class Task extends BaseModel {
     localKey: "id",
   })
   public orderService: BelongsTo<typeof OrderService>;
+
+  @belongsTo(() => TypeTask, {
+    foreignKey: "type_task_id",
+    localKey: "id",
+  })
+  public typeTask: BelongsTo<typeof TypeTask>;
+
+  @manyToMany(() => User, {
+    pivotTable: "task_user",
+    localKey: "id",
+  })
+  public users: ManyToMany<typeof User>;
 }

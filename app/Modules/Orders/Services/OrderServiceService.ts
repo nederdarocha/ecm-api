@@ -1,6 +1,6 @@
 import Payment from "App/Modules/Payments/Models/Payment";
 import OrderService from "../Models/OrderService";
-import Task from "../Models/Task";
+import Task from "../../Tasks/Models/Task";
 
 export class OrderServiceService {
   private async hasPaymentAttached(orderService: OrderService): Promise<boolean | Error> {
