@@ -3,12 +3,6 @@ import Route from "@ioc:Adonis/Core/Route";
 Route.where("id", Route.matchers.uuid());
 
 Route.group(() => {
-  // TypeTaskController
-  Route.get("tasks/type-tasks", "TypeTaskController.index").middleware(["acl:r-task"]);
-
-  // TaskUserController
-  Route.get("tasks/users", "TaskUserController.getAllUsers").middleware(["acl:r-task"]);
-
   // TaskController
   Route.get("tasks/:order_id/by-order", "TaskController.getByOrder").middleware(["acl:r-task"]);
   Route.get(

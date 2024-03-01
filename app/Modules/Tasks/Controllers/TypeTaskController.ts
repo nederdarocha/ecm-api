@@ -1,7 +1,7 @@
 import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
-import Task from "../Models/Task";
-import { TaskValidator, TaskMadeValidator } from "../Validators";
+import { TypeTaskValidator } from "../Validators";
 import TypeTask from "../Models/TypeTask";
+import Task from "../Models/Task";
 
 export default class TypeTaskController {
   public async index({ auth }: HttpContextContract) {
@@ -18,27 +18,12 @@ export default class TypeTaskController {
     );
   }
 
-  public async store({ auth, request, response }: HttpContextContract) {
-    const { make_in, ...data } = await request.validate(TaskValidator);
+  public async store({ auth, request }: HttpContextContract) {
+    const { ...data } = await request.validate(TypeTaskValidator);
     const { tenant_id } = auth.user!;
-    let status: "pending" | "confirmed" | "done" | "canceled" = "pending";
-    if (make_in) {
-      status = "pending";
-    }
+    const typeTask = await TypeTask.create({ ...data, tenant_id, user_id: auth.user!.id });
 
-    if (data.is_schedule && !make_in) {
-      return response.status(400).json({ message: "Informe a data de Prazo/Agendamento" });
-    }
-
-    const task = await Task.create({
-      ...data,
-      make_in,
-      status,
-      tenant_id,
-      user_id: auth.user!.id,
-    });
-
-    return task.serialize({
+    return typeTask.serialize({
       fields: {
         omit: ["user_id", "createdAt", "updatedAt"],
       },
@@ -46,90 +31,56 @@ export default class TypeTaskController {
   }
 
   public async show({ params, auth }: HttpContextContract) {
-    const task = await Task.query()
-      .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
-      .preload("order", (sq) => sq.select("id", "number"))
-      .preload("customer", (sq) => sq.select("id", "name"))
-      .preload("orderService", (sq) =>
-        sq.select("*").preload("service", (sq) => sq.select("id", "name"))
-      )
+    const typeTask = await TypeTask.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", params.id)
       .firstOrFail();
 
-    return task;
+    return typeTask.serialize({
+      fields: {
+        omit: ["user_id", "tenant_id", "createdAt", "updatedAt"],
+      },
+    });
   }
 
   public async update({ auth, request, params: { id }, response }: HttpContextContract) {
-    //TODO impedir a edição da tarefa audiência
+    const { ...data } = await request.validate(TypeTaskValidator);
 
-    const { make_in, ...data } = await request.validate(TaskValidator);
-    let status: "pending" | "confirmed" | "done" | "canceled" = "pending";
-    if (make_in) {
-      status = "pending";
-    }
-
-    if (data.is_schedule && !make_in) {
-      return response.status(400).json({ message: "Informe a data de Prazo/Agendamento" });
-    }
-
-    const task = await Task.query()
+    const typeTask = await TypeTask.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await task.merge({ ...data, make_in: make_in || null, status }).save();
+    if (typeTask.name === "Audiência") {
+      return response.status(400).send({ message: "Não é possível editar a tarefa Audiência" });
+    }
 
-    return task;
+    await typeTask.merge({ ...data, user_id: auth.user!.id }).save();
+
+    return typeTask;
   }
 
   public async destroy({ auth, response, params: { id } }: HttpContextContract) {
-    //TODO impedir a exclusão de tarefa audiência
-
-    const task = await Task.query()
+    const typeTask = await TypeTask.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("id", id)
       .firstOrFail();
 
-    await task.delete();
+    if (typeTask.name === "Audiência") {
+      return response.status(400).send({ message: "Não é possível remover a tarefa Audiência" });
+    }
+
+    //TODO validar se typo está sendo usada em alguma tarefa
+
+    const task = await Task.query().where("type_task_id", id).first();
+    if (task) {
+      return response
+        .status(400)
+        .send({ message: "Não é possível remover a tarefa, pois ela está sendo usada" });
+    }
+
+    await typeTask.delete();
 
     return response.status(204);
-  }
-
-  public async confirmTask({ auth, request, params: { id } }: HttpContextContract) {
-    const { notes, confirmed_at } = await request.validate(TaskMadeValidator);
-    const task = await Task.query()
-      .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("id", id)
-      .firstOrFail();
-
-    await task
-      .merge({
-        notes,
-        confirmed_at,
-        status: "confirmed",
-        confirmed_by: auth.user!.id,
-      })
-      .save();
-
-    return task;
-  }
-
-  public async undoConfirmTask({ auth, params: { id } }: HttpContextContract) {
-    const task = await Task.query()
-      .where("tenant_id", auth.user!.tenant_id)
-      .andWhere("id", id)
-      .firstOrFail();
-
-    await task
-      .merge({
-        notes: null,
-        confirmed_at: null,
-        confirmed_by: null,
-        status: "pending",
-      })
-      .save();
-
-    return task;
   }
 }

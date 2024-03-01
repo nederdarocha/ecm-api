@@ -14,9 +14,12 @@ export default class TaskController {
       make_in_end,
       order_by,
       is_schedule,
+      type_task_id,
+      users,
     } = request.qs();
 
     const query = Task.query()
+      // .debug(true)
       .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
       .preload("order", (sq) => sq.select("id", "number"))
       .preload("customer", (sq) => sq.select("id", "name"))
@@ -35,12 +38,19 @@ export default class TaskController {
       query.andWhereHas("order", (query) => query.where("number", "iLike", `%${number}%`));
     }
 
+    if (users) {
+      query.andWhereHas("users", (query) => query.whereIn("users.id", users));
+    }
+
     if (status_all === "false") {
       query.andWhere("status", "pending");
     }
 
     if (is_schedule && is_schedule === "true") {
       query.andWhere("is_schedule", true);
+    }
+    if (type_task_id) {
+      query.andWhere("type_task_id", type_task_id);
     }
 
     if (customer_id) {
@@ -180,6 +190,10 @@ export default class TaskController {
       tenant_id,
       user_id: auth.user!.id,
     });
+
+    if (users) {
+      await task.related("users").sync(users);
+    }
 
     return task.serialize({
       fields: {
