@@ -183,6 +183,13 @@ export default class TaskController {
       return response.status(400).json({ message: "Informe a data de Prazo/Agendamento" });
     }
 
+    if (users && users.length > 0 && !make_in) {
+      return response.status(400).json({
+        message:
+          "Você atribuiu usuário(s) por isso é obrigatório informe a data de Prazo/Agendamento",
+      });
+    }
+
     const task = await Task.create({
       ...data,
       make_in,
@@ -229,6 +236,13 @@ export default class TaskController {
     const typeTask = await TypeTask.findOrFail(data.type_task_id);
     if (typeTask.name === "Audiência" && !make_in) {
       return response.status(400).json({ message: "Informe a data de Prazo/Agendamento" });
+    }
+
+    if (users && users.length > 0 && !make_in) {
+      return response.status(400).json({
+        message:
+          "Você atribuiu usuário(s) por isso é obrigatório informe a data de Prazo/Agendamento",
+      });
     }
 
     const task = await Task.query()
