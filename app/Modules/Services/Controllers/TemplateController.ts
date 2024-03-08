@@ -45,9 +45,12 @@ export default class TemplateController {
     const data = await this.service.getData({ customer_id, order_service_id });
     const file_name = slugify(file.name.replace(/\.|docx|-/gi, " ") + "_" + data.cliente_nome, "_");
 
+    // Configurações do cabeçalho para download
+    response.header("Content-Disposition", `attachment; filename=${file_name + "." + file.type}`);
+
     response.attachment(file_name + "." + file.type);
     response.header("Content-Type", file.content_type);
-    response.type("application/octet-stream");
+    // response.type("application/octet-stream");
 
     const readableStream = await Drive.getStream(file.key);
     const chunks: Array<string | Buffer> = [];
