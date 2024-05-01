@@ -123,10 +123,7 @@ export default class TaskController {
     );
   }
 
-  public async getByCustomerOrder({
-    auth,
-    params: { customer_id, order_id },
-  }: HttpContextContract) {
+  public async getByCustomerOrder({ auth, params: { order_id } }: HttpContextContract) {
     const tasks = await Task.query()
       .preload("orderService", (sq) =>
         sq.select("*").preload("service", (sq) => sq.select("id", "name"))
