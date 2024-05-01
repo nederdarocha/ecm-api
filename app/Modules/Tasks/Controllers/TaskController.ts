@@ -136,7 +136,7 @@ export default class TaskController {
       .preload("users", (sq) => sq.select("id", "first_name", "last_name"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("order_id", order_id)
-      .andWhere("customer_id", customer_id)
+      // .andWhere("customer_id", customer_id)
       .orderBy("made_at", "asc")
       .orderBy("created_at", "asc");
 

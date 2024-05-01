@@ -3,13 +3,19 @@ import Database from "@ioc:Adonis/Lucid/Database";
 import { DateTime } from "luxon";
 import Order from "../Models/Order";
 import Status from "../Models/Status";
+import Customer from "App/Modules/Customers/Models/Customer";
+import { HttpContextContract } from "@ioc:Adonis/Core/HttpContext";
+
+interface GetCustomerByName {
+  customerIds: string[];
+}
 
 export class OrderService {
   public async getOrderDraft(auth: AuthContract): Promise<Order | null> {
     const order = await Order.query()
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("user_id", auth.user!.id)
-      .andWhere("draft", true )
+      .andWhere("draft", true)
       .first();
 
     return order;
@@ -112,5 +118,31 @@ export class OrderService {
       return false;
     }
     return true;
+  }
+
+  public async getCustomerByName(ctx: HttpContextContract): Promise<GetCustomerByName | null> {
+    const { auth, request } = ctx;
+    let { name } = request.qs();
+
+    if (!name) {
+      return null;
+    }
+
+    name = name || "";
+    const tsquery = name ? name?.replace(/\s/g, "+") + ":*" : "";
+
+    const customers = await Customer.query()
+      // .debug(true)
+      .select("id", "name", "document")
+      .where("tenant_id", auth.user!.tenant_id)
+      .andWhere((sq) =>
+        sq
+          .orWhereRaw("to_tsvector(unaccent(name)) @@ to_tsquery(unaccent(?))", [tsquery])
+          .orWhere("document", "iLike", `%${name?.replace(/[.|-]/g, "")}%`)
+      )
+      .orderBy("name", "asc")
+      .limit(10);
+
+    return { customerIds: customers.map((c) => c.id) };
   }
 }

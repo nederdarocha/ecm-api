@@ -14,7 +14,8 @@ export default class OrderController {
     this.service = new OrderService();
   }
 
-  public async index({ auth, request, paginate }: HttpContextContract) {
+  public async index(ctx: HttpContextContract) {
+    const { auth, request, paginate } = ctx;
     const {
       number,
       defendant,
@@ -28,6 +29,9 @@ export default class OrderController {
       date_end,
       notes,
     } = request.qs();
+
+    //TODO busca clientes por nome
+    const customersIds = await this.service.getCustomerByName(ctx);
 
     const query = Order.query()
       .preload("status", (sq) => sq.select(["id", "name"]))
@@ -69,6 +73,12 @@ export default class OrderController {
 
     if (customer_id) {
       query.andWhereHas("customers", (query) => query.where("customer_id", customer_id?.value));
+    }
+
+    if (customersIds) {
+      query.andWhereHas("customers", (query) =>
+        query.whereIn("customer_id", customersIds.customerIds)
+      );
     }
 
     if (indicated_id) {
