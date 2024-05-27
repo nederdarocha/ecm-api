@@ -93,7 +93,7 @@ export class TemplateService {
       `${data?.end_rua}, ${data?.end_numero}, ${data?.end_complemento}, ${data?.end_bairro}, ${data?.end_cidade}, ${data?.end_uf} - CEP ${data?.end_cep}`
     )
       .replace(/null/g, "")
-      .replace(/,\s,/g, "")}`;
+      .replace(/,\s,/g, ",")}`;
 
     try {
       const res = {
