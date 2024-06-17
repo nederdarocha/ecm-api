@@ -96,7 +96,7 @@ export default class AddressesController {
   }
 
   public async update({ auth, request, params: { id } }: HttpContextContract) {
-    let { favorite, ...data } = await request.validate(AddressValidator);
+    let { favorite, complement, reference, ...data } = await request.validate(AddressValidator);
 
     const isAddressFavorite = await Address.query()
       .where("tenant_id", auth.user!.tenant_id)
@@ -119,7 +119,15 @@ export default class AddressesController {
       .andWhere("id", id)
       .firstOrFail();
 
-    await address.merge({ ...data, favorite, user_id: auth.user?.id }).save();
+    await address
+      .merge({
+        complement: complement || "",
+        reference: reference || "",
+        ...data,
+        favorite,
+        user_id: auth.user?.id,
+      })
+      .save();
     return address;
   }
 
