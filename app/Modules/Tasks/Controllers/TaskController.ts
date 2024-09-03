@@ -224,7 +224,7 @@ export default class TaskController {
   }
 
   public async update({ auth, request, params: { id }, response }: HttpContextContract) {
-    const { make_in, users, ...data } = await request.validate(TaskValidator);
+    const { make_in, users, notes, ...data } = await request.validate(TaskValidator);
     let status: "pending" | "confirmed" | "done" | "canceled" = "pending";
     if (make_in) {
       status = "pending";
@@ -251,7 +251,7 @@ export default class TaskController {
       await task.related("users").sync(users);
     }
 
-    await task.merge({ ...data, make_in: make_in || null, status }).save();
+    await task.merge({ ...data, notes: notes || null, make_in: make_in || null, status }).save();
 
     return task;
   }
