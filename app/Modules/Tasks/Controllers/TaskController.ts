@@ -189,6 +189,7 @@ export default class TaskController {
 
     const task = await Task.create({
       ...data,
+      is_schedule: make_in ? true : false,
       make_in,
       status,
       tenant_id,
@@ -251,7 +252,15 @@ export default class TaskController {
       await task.related("users").sync(users);
     }
 
-    await task.merge({ ...data, notes: notes || null, make_in: make_in || null, status }).save();
+    await task
+      .merge({
+        ...data,
+        is_schedule: make_in ? true : false,
+        notes: notes || null,
+        make_in: make_in || null,
+        status,
+      })
+      .save();
 
     return task;
   }
