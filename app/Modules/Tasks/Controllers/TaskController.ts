@@ -20,6 +20,7 @@ export default class TaskController {
 
     const query = Task.query()
       // .debug(true)
+      .distinct("*")
       .preload("confirmedBy", (sq) => sq.select("id", "first_name"))
       .preload("order", (sq) => sq.select("id", "number"))
       .preload("customer", (sq) => sq.select("id", "name"))
