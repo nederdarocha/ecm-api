@@ -44,7 +44,19 @@ export default class FilesController {
     return files;
   }
 
-  public async download({ userID, response, params: { id } }: HttpContextContract) {
+  public async download({ response, params: { id } }: HttpContextContract) {
+    const file = await File.query().where("id", id).firstOrFail();
+
+    const signedUrl = await Drive.getSignedUrl(decodeURIComponent(file.key), {
+      expiresIn: "10m",
+      contentDisposition: `attachment; filename="${file.name}"`,
+    });
+
+    return response.redirect(signedUrl);
+  }
+
+  /**@deprecated */
+  public async _download({ userID, response, params: { id } }: HttpContextContract) {
     const user = await User.findOrFail(userID);
     const file = await File.query()
       .where("tenant_id", user.tenant_id)
