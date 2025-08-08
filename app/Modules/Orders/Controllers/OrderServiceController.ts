@@ -72,11 +72,13 @@ export default class OrderServiceController {
       court_id,
       court_number,
       defendant,
+      author,
     } = await request.validate(OrderServiceValidator);
 
     await orderService
       .merge({
         defendant: defendant || null,
+        author: author || null,
         honorary_type,
         honorary_cents_value: honorary_cents_value || null,
         service_cents_amount: service_cents_amount || null,

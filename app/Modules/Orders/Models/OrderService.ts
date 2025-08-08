@@ -37,6 +37,9 @@ export default class OrderService extends BaseModel {
   @column({ serialize: (value) => (value ? value : "") })
   public defendant: string | null;
 
+  @column({ serialize: (value) => (value ? value : "") })
+  public author: string | null;
+
   @column()
   public user_id?: string;
 
