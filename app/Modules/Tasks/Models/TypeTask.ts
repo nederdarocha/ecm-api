@@ -1,11 +1,15 @@
 import { DateTime } from "luxon";
-import { column, BaseModel } from "@ioc:Adonis/Lucid/Orm";
+import { column, BaseModel, belongsTo, BelongsTo } from "@ioc:Adonis/Lucid/Orm";
+import Category from "App/Modules/Services/Models/Category";
 
 export default class TypeTask extends BaseModel {
   public static table = "type_tasks";
 
   @column({ isPrimary: true })
   public id: string;
+
+  @column()
+  public category_id: string;
 
   @column()
   public tenant_id: string;
@@ -21,6 +25,12 @@ export default class TypeTask extends BaseModel {
 
   @column()
   public user_id: string;
+
+  @belongsTo(() => Category, {
+    foreignKey: "category_id",
+    localKey: "id",
+  })
+  public category: BelongsTo<typeof Category>;
 
   @column.dateTime({ autoCreate: true, serializeAs: null })
   public createdAt: DateTime;

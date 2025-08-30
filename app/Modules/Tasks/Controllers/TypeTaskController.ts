@@ -7,6 +7,7 @@ export default class TypeTaskController {
   public async index({ auth }: HttpContextContract) {
     const typeTasks = await TypeTask.query()
       .where("tenant_id", auth.user!.tenant_id)
+      .preload("category", (sq) => sq.select("id", "name"))
       .orderBy("name", "asc");
 
     return typeTasks.map((typeTask) =>
@@ -52,7 +53,12 @@ export default class TypeTaskController {
       .firstOrFail();
 
     if (typeTask.name === "Audiência") {
-      return response.status(400).send({ message: "Não é possível editar a tarefa Audiência" });
+      return response
+        .status(400)
+        .send({
+          message:
+            "Não é possível editar a tarefa Audiência é uma tarefa especial obrigatória para o sistema",
+        });
     }
 
     await typeTask.merge({ ...data, user_id: auth.user!.id }).save();

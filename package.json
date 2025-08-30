@@ -2,7 +2,7 @@
   "name": "ecm-api",
   "description": "Easy Contract Manager",
   "author": "bento <izidorio@bento.dev.br>",
-  "version": "0.0.74",
+  "version": "0.0.75",
   "private": true,
   "scripts": {
     "dev": "node ace serve --watch",
