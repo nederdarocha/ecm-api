@@ -53,12 +53,10 @@ export default class TypeTaskController {
       .firstOrFail();
 
     if (typeTask.name === "Audiência") {
-      return response
-        .status(400)
-        .send({
-          message:
-            "Não é possível editar a tarefa Audiência é uma tarefa especial obrigatória para o sistema",
-        });
+      return response.status(400).send({
+        message:
+          "Não é possível editar a tarefa Audiência é uma tarefa especial obrigatória para o sistema",
+      });
     }
 
     await typeTask.merge({ ...data, user_id: auth.user!.id }).save();
