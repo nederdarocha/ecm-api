@@ -130,7 +130,7 @@ export default class TaskController {
         sq.select("*").preload("service", (sq) => sq.select("id", "name"))
       )
       .preload("customer", (sq) => sq.select("id", "name", "document", "natural"))
-      .preload("typeTask", (sq) => sq.select("id", "name"))
+      .preload("typeTask", (sq) => sq.select("id", "name", "type"))
       .preload("users", (sq) => sq.select("id", "first_name", "last_name"))
       .where("tenant_id", auth.user!.tenant_id)
       .andWhere("order_service_id", order_service_id)

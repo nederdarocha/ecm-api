@@ -9,6 +9,7 @@ export class TypeTaskValidator {
   public schema = schema.create({
     name: schema.string({ trim: true }),
     category_id: schema.string({ trim: true }, [rules.uuid()]),
+    type: schema.string({ trim: true }),
   });
 
   public messages = { ...commonMessages };

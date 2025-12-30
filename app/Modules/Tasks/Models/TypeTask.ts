@@ -26,6 +26,9 @@ export default class TypeTask extends BaseModel {
   @column()
   public user_id: string;
 
+  @column()
+  public type: string;
+
   @belongsTo(() => Category, {
     foreignKey: "category_id",
     localKey: "id",
