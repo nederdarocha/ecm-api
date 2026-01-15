@@ -63,7 +63,11 @@ export default class OrderController {
     }
 
     if (service_id) {
-      query.andWhereHas("orderServices", (query) => query.where("service_id", service_id?.value));
+      if (service_id.value === "blank") {
+        query.whereDoesntHave("orderServices", () => {});
+      } else {
+        query.andWhereHas("orderServices", (query) => query.where("service_id", service_id?.value));
+      }
     }
 
     if (court_id) {
