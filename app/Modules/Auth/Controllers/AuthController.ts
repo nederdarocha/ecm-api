@@ -139,20 +139,38 @@ export default class AuthController {
     }
   }
 
-  public async refresh({ request, auth }: HttpContextContract) {
+  public async refresh({ request, auth, response }: HttpContextContract) {
     const { refreshToken: refresh_token } = await request.validate(RefreshValidator);
     const user = auth.user;
 
-    const { accessToken, refreshToken, expiresAt } = await auth
-      .use("jwt")
-      .loginViaRefreshToken(refresh_token, {
-        payload: {
-          email: user?.email,
-          access_token: user?.access_token,
-        },
-      });
+    try {
+      const { accessToken, refreshToken, expiresAt } = await auth
+        .use("jwt")
+        .loginViaRefreshToken(refresh_token, {
+          payload: {
+            email: user?.email,
+            access_token: user?.access_token,
+          },
+        });
 
-    return { token: accessToken, refreshToken, expires_at: expiresAt };
+      return { token: accessToken, refreshToken, expires_at: expiresAt };
+    } catch (error) {
+      // Tratar especificamente o erro de refresh token inválido
+      if (error.code === "ERR_JWS_INVALID" || error.message?.includes("Invalid refresh token")) {
+        return response.status(401).send({
+          code: "ERR_JWS_INVALID",
+          message: "Refresh token inválido ou expirado",
+          status: 401,
+        });
+      }
+
+      // Para outros erros, retornar erro genérico
+      return response.status(401).send({
+        code: "ERR_REFRESH_TOKEN",
+        message: "Erro ao renovar o token",
+        status: 401,
+      });
+    }
   }
 
   public async signOut({ auth, request }: HttpContextContract) {

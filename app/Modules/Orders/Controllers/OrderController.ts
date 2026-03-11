@@ -19,6 +19,7 @@ export default class OrderController {
     const {
       number,
       defendant,
+      author,
       status_id,
       service_id,
       court_id,
@@ -51,12 +52,22 @@ export default class OrderController {
       );
     }
 
+    if (author) {
+      query.andWhereHas("orderServices", (query) =>
+        query.andWhereRaw("unaccent(author) iLike unaccent(?)", [`%${author}%`])
+      );
+    }
+
     if (status_id) {
       query.andWhere("status_id", status_id?.value);
     }
 
     if (service_id) {
-      query.andWhereHas("orderServices", (query) => query.where("service_id", service_id?.value));
+      if (service_id.value === "blank") {
+        query.whereDoesntHave("orderServices", () => {});
+      } else {
+        query.andWhereHas("orderServices", (query) => query.where("service_id", service_id?.value));
+      }
     }
 
     if (court_id) {
@@ -122,7 +133,7 @@ export default class OrderController {
           },
         },
         orderServices: {
-          fields: { pick: ["court_number", "defendant"] },
+          fields: { pick: ["court_number", "defendant", "author"] },
           relations: {
             court: { fields: { pick: ["initials"] } },
             service: { fields: { pick: ["name", "defendant"] } },
@@ -183,7 +194,7 @@ export default class OrderController {
         relations: {
           status: { fields: { pick: ["name"] } },
           orderServices: {
-            fields: { pick: ["court_number", "defendant"] },
+            fields: { pick: ["court_number", "defendant", "author"] },
             relations: {
               court: { fields: { pick: ["initials"] } },
               service: { fields: { pick: ["name", "defendant"] } },

@@ -5,8 +5,16 @@ Route.where("id", Route.matchers.uuid());
 Route.group(() => {
   // TaskUserController
   Route.get("tasks/users", "TaskUserController.getAllUsers").middleware(["acl:r-task"]);
+
+  // TaskController - busca pelo serviço selecionado
+  Route.get(
+    "tasks/:order_service_id/by-order-service",
+    "TaskController.getByOrderService"
+  ).middleware(["acl:r-task"]);
+
   // TaskController
   Route.get("tasks/:order_id/by-order", "TaskController.getByOrder").middleware(["acl:r-task"]);
+
   Route.get(
     "tasks/:customer_id/:order_id/by-customer-order",
     "TaskController.getByCustomerOrder"

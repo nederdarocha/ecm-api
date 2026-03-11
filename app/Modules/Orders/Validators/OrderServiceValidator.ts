@@ -11,6 +11,7 @@ export class OrderServiceValidator {
     honorary_cents_value: schema.number.optional(),
     service_cents_amount: schema.number.nullableAndOptional(),
     defendant: schema.string.nullableAndOptional(),
+    author: schema.string.nullableAndOptional(),
     court_id: schema.string.optional({ trim: true }, [rules.uuid()]),
     court_number: schema.string.optional({ trim: true }),
   });
