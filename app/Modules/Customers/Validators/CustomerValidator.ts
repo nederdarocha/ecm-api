@@ -31,6 +31,7 @@ export class CustomerValidator {
     proderj_password: schema.string.nullableAndOptional({ trim: true }),
     previdencia_id: schema.string.nullableAndOptional({ trim: true }),
     previdencia_password: schema.string.nullableAndOptional({ trim: true }),
+    pwd_govbr: schema.string.nullableAndOptional({ trim: true }),
     bank: schema.string.nullableAndOptional({ trim: true }),
     branch: schema.string.nullableAndOptional({ trim: true }),
     account_number: schema.string.nullableAndOptional({ trim: true }),

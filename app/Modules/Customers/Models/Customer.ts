@@ -64,6 +64,9 @@ export default class Customer extends BaseModel {
   public proderj_password?: string | null;
 
   @column()
+  public pwd_govbr?: string | null;
+
+  @column()
   public bank?: string | null;
 
   @column()
