@@ -58,8 +58,12 @@ export default class TaskController {
       query.andWhere("customer_id", customer_id);
     }
 
-    if (service_id) {
-      query.andWhereHas("orderService", (query) => query.where("service_id", service_id));
+    const serviceIdFilter =
+      typeof service_id === "object" && service_id !== null && "value" in service_id
+        ? (service_id as { value: string }).value
+        : service_id;
+    if (serviceIdFilter) {
+      query.andWhereHas("orderService", (query) => query.where("service_id", serviceIdFilter));
     }
 
     if (make_in_begin && make_in_end) {
