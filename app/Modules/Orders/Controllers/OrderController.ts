@@ -29,6 +29,7 @@ export default class OrderController {
       date_start,
       date_end,
       notes,
+      situacao,
     } = request.qs();
 
     //TODO busca clientes por nome
@@ -44,6 +45,10 @@ export default class OrderController {
 
     if (number) {
       query.andWhere("number", "iLike", `%${number}%`);
+    }
+
+    if (situacao && situacao !== "all") {
+      query.andWhere("situacao", situacao);
     }
 
     if (defendant) {
@@ -123,7 +128,7 @@ export default class OrderController {
     const orders = await query.orderBy("order", order).paginate(paginate.page, paginate.per_page);
 
     return orders.serialize({
-      fields: { pick: ["id", "order", "number", "started_at", "ended_at"] },
+      fields: { pick: ["id", "order", "number", "situacao",	 "started_at", "ended_at"] },
       relations: {
         status: { fields: { pick: ["name"] } },
         customers: {

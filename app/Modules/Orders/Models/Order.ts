@@ -51,6 +51,9 @@ export default class Order extends BaseModel {
   public status_id: string | null;
 
   @column()
+  public situacao: string | null;
+
+  @column()
   public user_id?: string;
 
   @column()
