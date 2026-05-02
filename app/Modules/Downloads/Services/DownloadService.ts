@@ -77,6 +77,7 @@ export class DownloadService {
             "Processo": os?.court_number || "",
             "Réu": os?.defendant || "",
             "Status": order?.status?.name || "",
+            "Situação": order?.situacao || "",
           });
         }
       }
