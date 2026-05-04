@@ -278,6 +278,7 @@ export default class OrderController {
       user_id: auth.user?.id,
       status_id,
       draft: true,
+      situacao: "Em andamento"
     });
 
     if (customer_id) {
