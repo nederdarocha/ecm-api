@@ -221,6 +221,12 @@ export default class TaskController {
       });
     }
 
+    if (typeTask.type.toLowerCase() === "tarefa") {
+      return response.status(400).json({
+        message: "A Tarefa/Prazo exige que você informe a data de prazo.",
+      });
+    }
+    
     const task = await Task.create({
       ...data,
       is_schedule: make_in ? true : false,
